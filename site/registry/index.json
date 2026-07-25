@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "dictionaries": [
+    {
+      "name": "en-base",
+      "language": "en",
+      "kind": "wordlist",
+      "description": "English base wordlist for dictionary mode (SCOWL up to size 60, ~119k words)",
+      "file": "dicts/en-base.txt",
+      "sha256": "26f1b3133aa631457df4afda313f858503ed7aa4609f87c7c69b356a8e55286b",
+      "entries": 120531,
+      "license": "SCOWL (permissive, Copyright Kevin Atkinson)"
+    },
+    {
+      "name": "python",
+      "language": "en",
+      "kind": "wordlist",
+      "description": "Python ecosystem terms (libraries, tools, idioms)",
+      "file": "dicts/python.txt",
+      "sha256": "f80705dee33689736c3035639aa78c48fba57461d01d98d8e1cd0fdf79491961",
+      "entries": 126,
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "rust",
+      "language": "en",
+      "kind": "wordlist",
+      "description": "Rust ecosystem terms (crates, tools, jargon)",
+      "file": "dicts/rust.txt",
+      "sha256": "9ec5884e9508ad5e24356de75a8b4fbc9780fbcbd977ade72ba4c93a34de32ef",
+      "entries": 81,
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "web",
+      "language": "en",
+      "kind": "wordlist",
+      "description": "Web development terms (frameworks, bundlers, platforms)",
+      "file": "dicts/web.txt",
+      "sha256": "ac4f1a38d345e9cf536f4efcb8a6511e4dcf535d5e9830264e53aed120b5e6af",
+      "entries": 101,
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "ja-variants",
+      "language": "ja",
+      "kind": "variants",
+      "description": "Katakana loanword notation variants (3k+ pairs, from the SudachiDict synonym dictionary)",
+      "file": "dicts/ja-variants.toml",
+      "sha256": "32cf35a66777360604543e1d5526c8f7df80f23d14d699cc3caacfc042352a5d",
+      "entries": 3173,
+      "license": "Apache-2.0 (Works Applications)"
+    },
+    {
+      "name": "ja-tech-variants",
+      "language": "ja",
+      "kind": "variants",
+      "description": "Curated modern-style katakana rules for tech writing (インターフェース, ソフトウェア, ...)",
+      "file": "dicts/ja-tech-variants.toml",
+      "sha256": "d57a7bc75f10b8b335a62df451e43b0192b1ffda00ce2ed2032396214078238f",
+      "entries": 42,
+      "license": "MIT OR Apache-2.0"
+    }
+  ]
+}

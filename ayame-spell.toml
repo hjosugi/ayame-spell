@@ -1,0 +1,37 @@
+# ayame-spell checking itself (dogfood config).
+
+[files]
+exclude = [
+    # dictionary data is not prose
+    "site/registry/dicts/**",
+    "crates/ayame-spell-core/data/**",
+    "third-party/**",
+]
+
+[words]
+# Deliberate example typos used in tests and documentation.
+ignore = [
+    "recieve",
+    "exmaple",
+    "seperate",
+    "dashbord",
+    "functon",
+    "nmae",
+    "wrold",
+    "definately",
+    "occured",
+    "zzqqy",
+    "zzxqy",
+    "teh",
+    "aple",
+    "neet",
+    "サーバ",
+    "インタフェース",
+]
+
+# The Rust sources embed katakana/fullwidth conversion tables and Japanese
+# test fixtures on purpose; the docs show before/after examples of every
+# Japanese check.
+[[overrides]]
+paths = ["crates/**", "README.md", "README.ja.md", "DESIGN.md"]
+japanese = false

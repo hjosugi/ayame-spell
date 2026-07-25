@@ -1,0 +1,33 @@
+[package]
+name = "ayame-spell"
+description = "Fast, low-noise spell checker for code and prose, for English and Japanese — CLI and LSP server"
+keywords = ["spellcheck", "typo", "cli", "lsp", "japanese"]
+categories = ["command-line-utilities", "development-tools", "text-processing"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "ayame-spell"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+libc = "0.2"
+ayame-spell-core.workspace = true
+clap.workspace = true
+crossbeam-channel.workspace = true
+dialoguer.workspace = true
+dirs.workspace = true
+ignore.workspace = true
+lsp-server.workspace = true
+lsp-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+toml_edit.workspace = true
+ureq.workspace = true

@@ -1,0 +1,78 @@
+{
+  "name": "ayame-spell",
+  "displayName": "ayame-spell",
+  "description": "Fast, low-noise spell checker for code and prose — English & Japanese (typo corrections, shared dictionaries, 表記ゆれ検出)",
+  "version": "0.1.0",
+  "publisher": "hjosugi",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hjosugi/ayame-spell"
+  },
+  "homepage": "https://hjosugi.github.io/ayame-spell/",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "spell",
+    "spellcheck",
+    "typo",
+    "japanese",
+    "校正",
+    "表記ゆれ"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "ayame-spell",
+      "properties": {
+        "ayame-spell.serverPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Path to the `ayame-spell` binary. Empty: use the bundled binary, then fall back to `$PATH`."
+        },
+        "ayame-spell.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the ayame-spell language server."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "ayame-spell.fixAll",
+        "title": "ayame-spell: Fix All Safe Issues in File"
+      },
+      {
+        "command": "ayame-spell.reviewWords",
+        "title": "ayame-spell: Review Flagged Words (Bulk Add / Ignore)"
+      },
+      {
+        "command": "ayame-spell.restart",
+        "title": "ayame-spell: Restart Server"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "build:production": "node esbuild.mjs --production",
+    "check": "tsc --noEmit",
+    "vscode:prepublish": "npm run build:production"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.5.0"
+  }
+}

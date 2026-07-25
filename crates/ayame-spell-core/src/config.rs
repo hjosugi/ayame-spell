@@ -1,0 +1,507 @@
+//! Configuration: `ayame-spell.toml` at the project root, merged over the
+//! per-user global config (`~/.config/ayame-spell/config.toml`).
+//!
+//! Dictionary references understand three forms:
+//! - `registry:name` — a dictionary installed from the ayame-spell registry
+//!   (`ayame-spell dict add name`), cached under `~/.cache/ayame-spell/`;
+//! - a path relative to the project root;
+//! - an absolute path.
+
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+
+use serde::{Deserialize, Serialize};
+
+use crate::japanese::{KatakanaStyle, SpacePolicy};
+
+pub const PROJECT_FILE_NAMES: [&str; 2] = ["ayame-spell.toml", ".ayame-spell.toml"];
+
+/// Globs excluded in every project on top of `.gitignore`: machine-written
+/// files whose "words" are package names and minified identifiers.
+pub const DEFAULT_EXCLUDES: [&str; 7] = [
+    "*.lock",
+    "*.sum",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "*.min.js",
+    "*.min.css",
+];
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Mode {
+    /// Flag only known misspellings (near-zero false positives).
+    #[default]
+    Corrections,
+    /// Corrections plus unknown-word detection against wordlists.
+    Dictionary,
+    Off,
+}
+
+/// Effective configuration with all defaults applied.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct Config {
+    pub check: CheckConfig,
+    pub files: FilesConfig,
+    pub words: WordsConfig,
+    pub corrections: CorrectionsConfig,
+    pub japanese: JapaneseConfig,
+    pub overrides: Vec<OverrideConfig>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct CheckConfig {
+    pub mode: Mode,
+    /// Words shorter than this are never flagged.
+    pub min_word_len: usize,
+    /// Longer digit-containing tokens are treated as hashes and skipped.
+    pub max_token_len: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct FilesConfig {
+    /// Glob patterns excluded in addition to `.gitignore`.
+    pub exclude: Vec<String>,
+    pub include_hidden: bool,
+    /// Files larger than this many bytes are skipped (0 = no limit).
+    pub max_file_size: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct WordsConfig {
+    /// Project word file, relative to the project root. Created on demand
+    /// by `ayame-spell words add` and editor quick fixes.
+    pub project: String,
+    /// Words never flagged, in any mode.
+    pub ignore: Vec<String>,
+    /// Wordlists for dictionary mode (`registry:name` or paths).
+    pub dictionaries: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct CorrectionsConfig {
+    /// Use the built-in English corrections table (typos-dict).
+    pub builtin: bool,
+    /// Extra correction tables: TSV files (`typo<TAB>fix[,fix]`) or
+    /// `registry:name` references.
+    pub extra: Vec<String>,
+    /// Inline corrections; a fix equal to its typo whitelists the word.
+    pub words: BTreeMap<String, Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct JapaneseConfig {
+    pub enabled: bool,
+    pub katakana_style: KatakanaStyleConfig,
+    /// Inline variant rules: `"変種" = "正規形"`.
+    pub variants: BTreeMap<String, String>,
+    /// Variant rule files (TOML `[variants]` tables) or `registry:name`.
+    pub variant_files: Vec<String>,
+    pub flag_fullwidth_alnum: bool,
+    pub flag_halfwidth_kana: bool,
+    pub fullwidth_space: SpacePolicyConfig,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum KatakanaStyleConfig {
+    #[default]
+    Consistency,
+    Long,
+    Short,
+    Off,
+}
+
+impl From<KatakanaStyleConfig> for KatakanaStyle {
+    fn from(v: KatakanaStyleConfig) -> Self {
+        match v {
+            KatakanaStyleConfig::Consistency => KatakanaStyle::Consistency,
+            KatakanaStyleConfig::Long => KatakanaStyle::Long,
+            KatakanaStyleConfig::Short => KatakanaStyle::Short,
+            KatakanaStyleConfig::Off => KatakanaStyle::Off,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SpacePolicyConfig {
+    #[default]
+    Code,
+    Always,
+    Never,
+}
+
+impl From<SpacePolicyConfig> for SpacePolicy {
+    fn from(v: SpacePolicyConfig) -> Self {
+        match v {
+            SpacePolicyConfig::Code => SpacePolicy::Code,
+            SpacePolicyConfig::Always => SpacePolicy::Always,
+            SpacePolicyConfig::Never => SpacePolicy::Never,
+        }
+    }
+}
+
+/// Per-glob overrides; later entries win.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct OverrideConfig {
+    pub paths: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<Mode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub japanese: Option<bool>,
+}
+
+// ---------------------------------------------------------------------------
+// Raw (partial) config as read from files, before merging and defaults.
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
+pub struct RawConfig {
+    check: RawCheck,
+    files: RawFiles,
+    words: RawWords,
+    corrections: RawCorrections,
+    japanese: RawJapanese,
+    overrides: Vec<OverrideConfig>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
+struct RawCheck {
+    mode: Option<Mode>,
+    min_word_len: Option<usize>,
+    max_token_len: Option<usize>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
+struct RawFiles {
+    exclude: Vec<String>,
+    include_hidden: Option<bool>,
+    max_file_size: Option<u64>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
+struct RawWords {
+    project: Option<String>,
+    ignore: Vec<String>,
+    dictionaries: Vec<String>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
+struct RawCorrections {
+    builtin: Option<bool>,
+    extra: Vec<String>,
+    words: BTreeMap<String, OneOrMany>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+enum OneOrMany {
+    One(String),
+    Many(Vec<String>),
+}
+
+impl OneOrMany {
+    fn into_vec(self) -> Vec<String> {
+        match self {
+            OneOrMany::One(s) => vec![s],
+            OneOrMany::Many(v) => v,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
+struct RawJapanese {
+    enabled: Option<bool>,
+    katakana_style: Option<KatakanaStyleConfig>,
+    variants: BTreeMap<String, String>,
+    variant_files: Vec<String>,
+    flag_fullwidth_alnum: Option<bool>,
+    flag_halfwidth_kana: Option<bool>,
+    fullwidth_space: Option<SpacePolicyConfig>,
+}
+
+impl RawConfig {
+    pub fn parse(text: &str) -> anyhow::Result<Self> {
+        Ok(toml::from_str(text)?)
+    }
+
+    /// Overlay `other` (higher priority) onto `self`. Scalars are replaced,
+    /// lists and maps are extended.
+    pub fn merge(mut self, other: RawConfig) -> Self {
+        self.check.mode = other.check.mode.or(self.check.mode);
+        self.check.min_word_len = other.check.min_word_len.or(self.check.min_word_len);
+        self.check.max_token_len = other.check.max_token_len.or(self.check.max_token_len);
+
+        self.files.exclude.extend(other.files.exclude);
+        self.files.include_hidden = other.files.include_hidden.or(self.files.include_hidden);
+        self.files.max_file_size = other.files.max_file_size.or(self.files.max_file_size);
+
+        self.words.project = other.words.project.or(self.words.project);
+        self.words.ignore.extend(other.words.ignore);
+        self.words.dictionaries.extend(other.words.dictionaries);
+
+        self.corrections.builtin = other.corrections.builtin.or(self.corrections.builtin);
+        self.corrections.extra.extend(other.corrections.extra);
+        self.corrections.words.extend(other.corrections.words);
+
+        self.japanese.enabled = other.japanese.enabled.or(self.japanese.enabled);
+        self.japanese.katakana_style = other
+            .japanese
+            .katakana_style
+            .or(self.japanese.katakana_style);
+        self.japanese.variants.extend(other.japanese.variants);
+        self.japanese
+            .variant_files
+            .extend(other.japanese.variant_files);
+        self.japanese.flag_fullwidth_alnum = other
+            .japanese
+            .flag_fullwidth_alnum
+            .or(self.japanese.flag_fullwidth_alnum);
+        self.japanese.flag_halfwidth_kana = other
+            .japanese
+            .flag_halfwidth_kana
+            .or(self.japanese.flag_halfwidth_kana);
+        self.japanese.fullwidth_space = other
+            .japanese
+            .fullwidth_space
+            .or(self.japanese.fullwidth_space);
+
+        self.overrides.extend(other.overrides);
+        self
+    }
+
+    pub fn finalize(self) -> Config {
+        let mut ignore = self.words.ignore;
+        for w in &mut ignore {
+            *w = w.to_lowercase();
+        }
+        Config {
+            check: CheckConfig {
+                mode: self.check.mode.unwrap_or_default(),
+                min_word_len: self.check.min_word_len.unwrap_or(3),
+                max_token_len: self.check.max_token_len.unwrap_or(40),
+            },
+            files: FilesConfig {
+                exclude: DEFAULT_EXCLUDES
+                    .iter()
+                    .map(ToString::to_string)
+                    .chain(self.files.exclude)
+                    .collect(),
+                include_hidden: self.files.include_hidden.unwrap_or(false),
+                max_file_size: self.files.max_file_size.unwrap_or(0),
+            },
+            words: WordsConfig {
+                project: self
+                    .words
+                    .project
+                    .unwrap_or_else(|| "ayame-words.txt".to_string()),
+                ignore,
+                dictionaries: self.words.dictionaries,
+            },
+            corrections: CorrectionsConfig {
+                builtin: self.corrections.builtin.unwrap_or(true),
+                extra: self.corrections.extra,
+                words: self
+                    .corrections
+                    .words
+                    .into_iter()
+                    .map(|(k, v)| (k, v.into_vec()))
+                    .collect(),
+            },
+            japanese: JapaneseConfig {
+                enabled: self.japanese.enabled.unwrap_or(true),
+                katakana_style: self.japanese.katakana_style.unwrap_or_default(),
+                variants: self.japanese.variants,
+                variant_files: self.japanese.variant_files,
+                flag_fullwidth_alnum: self.japanese.flag_fullwidth_alnum.unwrap_or(true),
+                flag_halfwidth_kana: self.japanese.flag_halfwidth_kana.unwrap_or(true),
+                fullwidth_space: self.japanese.fullwidth_space.unwrap_or_default(),
+            },
+            overrides: self.overrides,
+        }
+    }
+}
+
+/// A discovered and merged configuration.
+#[derive(Debug, Clone)]
+pub struct LoadedConfig {
+    pub config: Config,
+    /// Project root: the directory holding the config file, else the
+    /// nearest `.git` ancestor, else the start directory.
+    pub root: PathBuf,
+    pub project_file: Option<PathBuf>,
+    pub global_file: Option<PathBuf>,
+}
+
+impl LoadedConfig {
+    /// Resolve a dictionary/corrections reference to a path.
+    pub fn resolve_ref(&self, reference: &str) -> anyhow::Result<PathBuf> {
+        if let Some(name) = reference.strip_prefix("registry:") {
+            crate::registry_cache_path(name).ok_or_else(|| {
+                anyhow::anyhow!("cannot determine cache directory for registry:{name}")
+            })
+        } else {
+            let p = Path::new(reference);
+            Ok(if p.is_absolute() {
+                p.to_path_buf()
+            } else {
+                self.root.join(p)
+            })
+        }
+    }
+
+    /// Absolute path of the project word file.
+    pub fn project_words_path(&self) -> PathBuf {
+        let p = Path::new(&self.config.words.project);
+        if p.is_absolute() {
+            p.to_path_buf()
+        } else {
+            self.root.join(p)
+        }
+    }
+}
+
+/// Walk up from `start` to find the project config, merge it over the
+/// global config, and apply defaults.
+pub fn discover(start: &Path) -> anyhow::Result<LoadedConfig> {
+    let start = if start.is_file() {
+        start.parent().unwrap_or(start).to_path_buf()
+    } else {
+        start.to_path_buf()
+    };
+    let start = start.canonicalize().unwrap_or_else(|_| start.to_path_buf());
+
+    let mut project_file = None;
+    let mut git_root = None;
+    for dir in start.ancestors() {
+        for name in PROJECT_FILE_NAMES {
+            let candidate = dir.join(name);
+            if candidate.is_file() {
+                project_file = Some(candidate);
+                break;
+            }
+        }
+        if project_file.is_some() {
+            break;
+        }
+        if git_root.is_none() && dir.join(".git").exists() {
+            git_root = Some(dir.to_path_buf());
+        }
+    }
+
+    let root = project_file
+        .as_deref()
+        .and_then(Path::parent)
+        .map(Path::to_path_buf)
+        .or(git_root)
+        .unwrap_or(start);
+
+    let global_file = crate::global_config_dir()
+        .map(|d| d.join("config.toml"))
+        .filter(|p| p.is_file());
+
+    let mut raw = RawConfig::default();
+    if let Some(path) = &global_file {
+        let text = std::fs::read_to_string(path)?;
+        let parsed =
+            RawConfig::parse(&text).map_err(|e| anyhow::anyhow!("in {}: {e}", path.display()))?;
+        raw = raw.merge(parsed);
+    }
+    if let Some(path) = &project_file {
+        let text = std::fs::read_to_string(path)?;
+        let parsed =
+            RawConfig::parse(&text).map_err(|e| anyhow::anyhow!("in {}: {e}", path.display()))?;
+        raw = raw.merge(parsed);
+    }
+
+    Ok(LoadedConfig {
+        config: raw.finalize(),
+        root,
+        project_file,
+        global_file,
+    })
+}
+
+/// Defaults with no config files at all, rooted at `root`.
+pub fn defaults(root: &Path) -> LoadedConfig {
+    LoadedConfig {
+        config: RawConfig::default().finalize(),
+        root: root.to_path_buf(),
+        project_file: None,
+        global_file: None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn defaults_are_sensible() {
+        let c = RawConfig::default().finalize();
+        assert_eq!(c.check.mode, Mode::Corrections);
+        assert_eq!(c.check.min_word_len, 3);
+        assert!(c.corrections.builtin);
+        assert!(c.japanese.enabled);
+        assert_eq!(c.words.project, "ayame-words.txt");
+    }
+
+    #[test]
+    fn parse_and_merge() {
+        let global = RawConfig::parse(
+            r#"
+            [words]
+            ignore = ["globalword"]
+            "#,
+        )
+        .unwrap();
+        let project = RawConfig::parse(
+            r#"
+            [check]
+            mode = "dictionary"
+
+            [words]
+            ignore = ["projectword"]
+            dictionaries = ["registry:en-base"]
+
+            [corrections.words]
+            teh = "the"
+            neet = "neet"
+
+            [japanese]
+            katakana-style = "long"
+
+            [[overrides]]
+            paths = ["docs/**"]
+            mode = "corrections"
+            "#,
+        )
+        .unwrap();
+        let c = global.merge(project).finalize();
+        assert_eq!(c.check.mode, Mode::Dictionary);
+        assert_eq!(c.words.ignore, ["globalword", "projectword"]);
+        assert_eq!(c.corrections.words["teh"], vec!["the"]);
+        assert_eq!(c.japanese.katakana_style, KatakanaStyleConfig::Long);
+        assert_eq!(c.overrides.len(), 1);
+    }
+
+    #[test]
+    fn unknown_keys_are_rejected() {
+        assert!(RawConfig::parse("[check]\ntypo-key = 1\n").is_err());
+    }
+}

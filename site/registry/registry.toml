@@ -1,0 +1,50 @@
+# Source of truth for the dictionary registry.
+# Regenerate index.json with: cargo xtask registry
+
+[[dictionary]]
+name = "en-base"
+language = "en"
+kind = "wordlist"
+description = "English base wordlist for dictionary mode (SCOWL up to size 60, ~119k words)"
+file = "dicts/en-base.txt"
+license = "SCOWL (permissive, Copyright Kevin Atkinson)"
+
+[[dictionary]]
+name = "python"
+language = "en"
+kind = "wordlist"
+description = "Python ecosystem terms (libraries, tools, idioms)"
+file = "dicts/python.txt"
+license = "MIT OR Apache-2.0"
+
+[[dictionary]]
+name = "rust"
+language = "en"
+kind = "wordlist"
+description = "Rust ecosystem terms (crates, tools, jargon)"
+file = "dicts/rust.txt"
+license = "MIT OR Apache-2.0"
+
+[[dictionary]]
+name = "web"
+language = "en"
+kind = "wordlist"
+description = "Web development terms (frameworks, bundlers, platforms)"
+file = "dicts/web.txt"
+license = "MIT OR Apache-2.0"
+
+[[dictionary]]
+name = "ja-variants"
+language = "ja"
+kind = "variants"
+description = "Katakana loanword notation variants (3k+ pairs, from the SudachiDict synonym dictionary)"
+file = "dicts/ja-variants.toml"
+license = "Apache-2.0 (Works Applications)"
+
+[[dictionary]]
+name = "ja-tech-variants"
+language = "ja"
+kind = "variants"
+description = "Curated modern-style katakana rules for tech writing (インターフェース, ソフトウェア, ...)"
+file = "dicts/ja-tech-variants.toml"
+license = "MIT OR Apache-2.0"

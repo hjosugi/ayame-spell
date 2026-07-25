@@ -1,0 +1,30 @@
+[package]
+name = "ayame-spell-core"
+description = "Core spell-checking engine for ayame-spell: tokenizer, correction tables, wordlist dictionaries, and Japanese notation checks"
+keywords = ["spellcheck", "typo", "japanese"]
+categories = ["text-processing"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+dictgen = { workspace = true, optional = true }
+dirs.workspace = true
+fst.workspace = true
+globset.workspace = true
+memchr.workspace = true
+serde.workspace = true
+toml.workspace = true
+typos-dict = { workspace = true, optional = true }
+unicase = { workspace = true, optional = true }
+
+[features]
+default = ["builtin-en"]
+# Built-in English known-misspelling table (~95k entries) from the
+# MIT/Apache-2.0 licensed typos-dict crate.
+builtin-en = ["dep:typos-dict", "dep:dictgen", "dep:unicase"]
