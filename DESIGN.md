@@ -27,7 +27,7 @@ crates/
   ayame-spell-core   engine: tokenizer, corrections, FST wordlists,
                      Japanese checks, config (no I/O beyond file loads)
   ayame-spell        CLI (check/fix/words/dict/init/config) + LSP server
-  xtask              registry index generation
+  xtask              registry index and shell completion generation
 editors/vscode       thin LanguageClient + bulk-triage QuickPick UI
 site/                GitHub Pages: landing page + dictionary registry
 ```

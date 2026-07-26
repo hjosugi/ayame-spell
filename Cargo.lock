@@ -80,6 +80,7 @@ dependencies = [
  "anyhow",
  "ayame-spell-core",
  "clap",
+ "clap_complete",
  "crossbeam-channel",
  "dialoguer",
  "dirs",
@@ -184,6 +185,15 @@ dependencies = [
  "clap_lex",
  "strsim",
  "terminal_size",
+]
+
+[[package]]
+name = "clap_complete"
+version = "4.5.58"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75bf0b32ad2e152de789bb635ea4d3078f6b838ad7974143e99b99f45a04af4a"
+dependencies = [
+ "clap",
 ]
 
 [[package]]

@@ -38,12 +38,16 @@ jobs:
           mkdir "$name"
           if [[ "${{ matrix.os }}" == windows-latest ]]; then
             cp "target/${{ matrix.target }}/release/ayame-spell.exe" "$name/"
-            7z a "$name.zip" "$name"
           else
             cp "target/${{ matrix.target }}/release/ayame-spell" "$name/"
+          fi
+          cp LICENSE-MIT LICENSE-APACHE NOTICE.md "$name/"
+          cp -R contrib/completions "$name/"
+          if [[ "${{ matrix.os }}" == windows-latest ]]; then
+            7z a "$name.zip" "$name"
+          else
             tar czf "$name.tar.gz" "$name"
           fi
-          cp LICENSE-MIT LICENSE-APACHE NOTICE.md "$name/" || true
       - uses: softprops/action-gh-release@v2
         with:
           files: |

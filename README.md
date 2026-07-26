@@ -55,6 +55,41 @@ cargo install ayame-spell           # CLI + LSP server
 VS Code: install the **ayame-spell** extension (`editors/vscode` in this
 repo), which uses the binary above (bundled builds planned).
 
+### Shell completions
+
+Generate a completion script for bash, zsh, fish, PowerShell, or Elvish:
+
+```sh
+# bash (bash-completion)
+mkdir -p ~/.local/share/bash-completion/completions
+ayame-spell completions bash > ~/.local/share/bash-completion/completions/ayame-spell
+
+# zsh (add ~/.zfunc to fpath before running compinit in ~/.zshrc)
+mkdir -p ~/.zfunc
+ayame-spell completions zsh > ~/.zfunc/_ayame-spell
+# ~/.zshrc:
+fpath=(~/.zfunc $fpath)
+autoload -Uz compinit && compinit
+
+# fish
+mkdir -p ~/.config/fish/completions
+ayame-spell completions fish > ~/.config/fish/completions/ayame-spell.fish
+```
+
+For PowerShell, add the following line to `$PROFILE`:
+
+```powershell
+ayame-spell completions powershell | Out-String | Invoke-Expression
+```
+
+For Elvish, add the following line to `~/.config/elvish/rc.elv`:
+
+```elvish
+eval (ayame-spell completions elvish | slurp)
+```
+
+Release archives also contain pre-generated scripts in `completions/`.
+
 ## Quick start
 
 ```sh

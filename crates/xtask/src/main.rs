@@ -1,8 +1,10 @@
-//! `cargo xtask registry` — regenerate `site/registry/index.json` from
-//! `site/registry/registry.toml` plus the dictionary files' actual
-//! contents (sha256, entry counts).
+//! Repository automation:
+//! - `cargo xtask registry` regenerates the dictionary registry index.
+//! - `cargo xtask completions` regenerates checked-in shell completions.
 
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -47,8 +49,9 @@ fn main() -> anyhow::Result<()> {
     let task = std::env::args().nth(1).unwrap_or_default();
     match task.as_str() {
         "registry" => registry(),
+        "completions" => completions(),
         _ => {
-            eprintln!("usage: cargo xtask registry");
+            eprintln!("usage: cargo xtask <registry|completions>");
             std::process::exit(2);
         }
     }
@@ -105,6 +108,49 @@ fn registry() -> anyhow::Result<()> {
     std::fs::write(&out, serde_json::to_string_pretty(&index)? + "\n")?;
     println!("wrote {}", out.display());
     Ok(())
+}
+
+fn completions() -> anyhow::Result<()> {
+    let output_dir = repo_root().join("contrib").join("completions");
+    std::fs::create_dir_all(&output_dir)?;
+
+    for (shell, file_name) in [
+        ("bash", "ayame-spell.bash"),
+        ("zsh", "_ayame-spell"),
+        ("fish", "ayame-spell.fish"),
+        ("powershell", "_ayame-spell.ps1"),
+        ("elvish", "ayame-spell.elv"),
+    ] {
+        let output = Command::new(cargo())
+            .current_dir(repo_root())
+            .args([
+                "run",
+                "--quiet",
+                "-p",
+                "ayame-spell",
+                "--",
+                "completions",
+                shell,
+            ])
+            .output()?;
+
+        if !output.status.success() {
+            anyhow::bail!(
+                "failed to generate {shell} completions:\n{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+
+        let path = output_dir.join(file_name);
+        std::fs::write(&path, output.stdout)?;
+        println!("wrote {}", path.display());
+    }
+
+    Ok(())
+}
+
+fn cargo() -> OsString {
+    std::env::var_os("CARGO").unwrap_or_else(|| OsString::from("cargo"))
 }
 
 fn hex(bytes: &[u8]) -> String {

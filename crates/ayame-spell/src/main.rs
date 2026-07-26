@@ -3,9 +3,9 @@ mod dict;
 mod lsp;
 mod words;
 
-use std::path::PathBuf;
+use std::{io::Write, path::PathBuf};
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 
 #[derive(Parser)]
 #[command(
@@ -83,6 +83,11 @@ enum Cmd {
     },
     /// Print the effective merged configuration.
     Config,
+    /// Generate a shell completion script on standard output.
+    Completions {
+        #[arg(value_enum)]
+        shell: clap_complete::Shell,
+    },
     /// Run the LSP server (used by editor integrations).
     Lsp,
 }
@@ -108,6 +113,7 @@ fn main() {
         Some(Cmd::Dict { cmd }) => dict::run(cmd),
         Some(Cmd::Init { force }) => init(force),
         Some(Cmd::Config) => print_config(),
+        Some(Cmd::Completions { shell }) => print_completions(shell),
         Some(Cmd::Lsp) => lsp::run(),
     };
     match result {
@@ -117,6 +123,84 @@ fn main() {
             std::process::exit(2);
         }
     }
+}
+
+fn print_completions(shell: clap_complete::Shell) -> anyhow::Result<i32> {
+    std::io::stdout().write_all(&completion_script(shell)?)?;
+    Ok(0)
+}
+
+fn completion_script(shell: clap_complete::Shell) -> anyhow::Result<Vec<u8>> {
+    let mut command = Cli::command();
+    let name = command.get_name().to_owned();
+    let mut output = Vec::new();
+    clap_complete::generate(shell, &mut command, name, &mut output);
+
+    if shell == clap_complete::Shell::PowerShell {
+        let script = String::from_utf8(output)?;
+        output = add_powershell_value_completions(script)?.into_bytes();
+    } else if shell == clap_complete::Shell::Elvish {
+        let script = String::from_utf8(output)?;
+        output = add_elvish_value_completions(script)?.into_bytes();
+    }
+
+    Ok(output)
+}
+
+fn add_powershell_value_completions(script: String) -> anyhow::Result<String> {
+    const ANCHOR: &str = "    $command = @(\n";
+    const VALUE_COMPLETIONS: &str = r#"    $lastElement = $commandElements[$commandElements.Count - 1]
+    $valueFor = if ($lastElement.Value -in @('--format', 'completions')) {
+        $lastElement.Value
+    } elseif ($commandElements.Count -ge 3 -and
+              $lastElement.Value -eq $wordToComplete) {
+        $commandElements[$commandElements.Count - 2].Value
+    }
+
+    $values = switch ($valueFor) {
+        '--format' { @('human', 'brief', 'json') }
+        'completions' { @('bash', 'elvish', 'fish', 'powershell', 'zsh') }
+    }
+    if ($null -ne $values) {
+        $values |
+            Where-Object { $_ -like "$wordToComplete*" } |
+            ForEach-Object {
+                [CompletionResult]::new(
+                    $_, $_, [CompletionResultType]::ParameterValue, $_)
+            }
+        return
+    }
+
+"#;
+
+    if !script.contains(ANCHOR) {
+        anyhow::bail!("unexpected PowerShell completion template");
+    }
+    Ok(script.replacen(ANCHOR, &(VALUE_COMPLETIONS.to_owned() + ANCHOR), 1))
+}
+
+fn add_elvish_value_completions(script: String) -> anyhow::Result<String> {
+    const ANCHOR: &str = "    $completions[$command]\n}\n";
+    const VALUE_COMPLETIONS: &str = r#"    if (eq $words[-2] --format) {
+        cand human 'Output format'
+        cand brief 'Output format'
+        cand json 'Output format'
+    } elif (eq $words[-2] completions) {
+        cand bash 'Shell'
+        cand elvish 'Shell'
+        cand fish 'Shell'
+        cand powershell 'Shell'
+        cand zsh 'Shell'
+    } else {
+        $completions[$command]
+    }
+}
+"#;
+
+    if !script.contains(ANCHOR) {
+        anyhow::bail!("unexpected Elvish completion template");
+    }
+    Ok(script.replacen(ANCHOR, VALUE_COMPLETIONS, 1))
 }
 
 const INIT_TEMPLATE: &str = r#"# ayame-spell configuration
@@ -172,4 +256,24 @@ fn print_config() -> anyhow::Result<i32> {
     }
     print!("{}", toml_edit::ser::to_string_pretty(&loaded.config)?);
     Ok(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generates_completions_for_every_supported_shell() {
+        for shell in clap_complete::Shell::value_variants() {
+            let output = completion_script(*shell).unwrap();
+            let script = String::from_utf8(output).unwrap();
+
+            for candidate in ["check", "fix", "human", "brief", "json"] {
+                assert!(
+                    script.contains(candidate),
+                    "{shell} completion output should contain {candidate}"
+                );
+            }
+        }
+    }
 }

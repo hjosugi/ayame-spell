@@ -1,0 +1,625 @@
+#compdef ayame-spell
+
+autoload -U is-at-least
+
+_ayame-spell() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'--format=[Output format]:FORMAT:(human brief json)' \
+'-j+[Worker threads (default\: number of CPUs)]:THREADS:_default' \
+'--threads=[Worker threads (default\: number of CPUs)]:THREADS:_default' \
+'-w[Apply safe fixes in place (shorthand for \`fix\`)]' \
+'--write[Apply safe fixes in place (shorthand for \`fix\`)]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+'::paths -- Files or directories to check:_files' \
+":: :_ayame-spell_commands" \
+"*::: :->ayame-spell" \
+&& ret=0
+    case $state in
+    (ayame-spell)
+        words=($line[2] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-command-$line[2]:"
+        case $line[2] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+'--format=[]:FORMAT:(human brief json)' \
+'-j+[]:THREADS:_default' \
+'--threads=[]:THREADS:_default' \
+'-w[Apply safe fixes in place]' \
+'--write[Apply safe fixes in place]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths:_files' \
+&& ret=0
+;;
+(fix)
+_arguments "${_arguments_options[@]}" : \
+'-j+[]:THREADS:_default' \
+'--threads=[]:THREADS:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths:_files' \
+&& ret=0
+;;
+(words)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_ayame-spell__words_commands" \
+"*::: :->words" \
+&& ret=0
+
+    case $state in
+    (words)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-words-command-$line[1]:"
+        case $line[1] in
+            (collect)
+_arguments "${_arguments_options[@]}" : \
+'--min-count=[Only include words flagged at least this many times]:MIN_COUNT:_default' \
+'--plain[Print bare words only (ready to append to a word file)]' \
+'--json[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths:_files' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+'--global[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::words:_default' \
+&& ret=0
+;;
+(triage)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths:_files' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_ayame-spell__words__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-words-help-command-$line[1]:"
+        case $line[1] in
+            (collect)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(triage)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(dict)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_ayame-spell__dict_commands" \
+"*::: :->dict" \
+&& ret=0
+
+    case $state in
+    (dict)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-dict-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+'--cache-only[Download to the cache only; leave the project config untouched]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::names:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name:_default' \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_ayame-spell__dict__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-dict-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(init)
+_arguments "${_arguments_options[@]}" : \
+'--force[Overwrite an existing config file]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(lsp)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_ayame-spell__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-help-command-$line[1]:"
+        case $line[1] in
+            (check)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(fix)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(words)
+_arguments "${_arguments_options[@]}" : \
+":: :_ayame-spell__help__words_commands" \
+"*::: :->words" \
+&& ret=0
+
+    case $state in
+    (words)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-help-words-command-$line[1]:"
+        case $line[1] in
+            (collect)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(triage)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(dict)
+_arguments "${_arguments_options[@]}" : \
+":: :_ayame-spell__help__dict_commands" \
+"*::: :->dict" \
+&& ret=0
+
+    case $state in
+    (dict)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:ayame-spell-help-dict-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(init)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(lsp)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_ayame-spell_commands] )) ||
+_ayame-spell_commands() {
+    local commands; commands=(
+'check:Check files and report issues (the default)' \
+'fix:Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)' \
+'words:Word management\: bulk collection, triage, and dictionary additions' \
+'dict:Shared dictionaries from the ayame-spell registry' \
+'init:Write a starter ayame-spell.toml in the current directory' \
+'config:Print the effective merged configuration' \
+'completions:Generate a shell completion script on standard output' \
+'lsp:Run the LSP server (used by editor integrations)' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'ayame-spell commands' commands "$@"
+}
+(( $+functions[_ayame-spell__check_commands] )) ||
+_ayame-spell__check_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell check commands' commands "$@"
+}
+(( $+functions[_ayame-spell__completions_commands] )) ||
+_ayame-spell__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell completions commands' commands "$@"
+}
+(( $+functions[_ayame-spell__config_commands] )) ||
+_ayame-spell__config_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell config commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict_commands] )) ||
+_ayame-spell__dict_commands() {
+    local commands; commands=(
+'list:List available dictionaries and their install status' \
+'add:Download dictionaries and enable them in the project config' \
+'remove:Delete a cached dictionary and disable it in the project config' \
+'update:Re-download every cached dictionary from the registry' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'ayame-spell dict commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__add_commands] )) ||
+_ayame-spell__dict__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict add commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__help_commands] )) ||
+_ayame-spell__dict__help_commands() {
+    local commands; commands=(
+'list:List available dictionaries and their install status' \
+'add:Download dictionaries and enable them in the project config' \
+'remove:Delete a cached dictionary and disable it in the project config' \
+'update:Re-download every cached dictionary from the registry' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'ayame-spell dict help commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__help__add_commands] )) ||
+_ayame-spell__dict__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict help add commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__help__help_commands] )) ||
+_ayame-spell__dict__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict help help commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__help__list_commands] )) ||
+_ayame-spell__dict__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict help list commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__help__remove_commands] )) ||
+_ayame-spell__dict__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict help remove commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__help__update_commands] )) ||
+_ayame-spell__dict__help__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict help update commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__list_commands] )) ||
+_ayame-spell__dict__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict list commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__remove_commands] )) ||
+_ayame-spell__dict__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict remove commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__update_commands] )) ||
+_ayame-spell__dict__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict update commands' commands "$@"
+}
+(( $+functions[_ayame-spell__fix_commands] )) ||
+_ayame-spell__fix_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell fix commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help_commands] )) ||
+_ayame-spell__help_commands() {
+    local commands; commands=(
+'check:Check files and report issues (the default)' \
+'fix:Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)' \
+'words:Word management\: bulk collection, triage, and dictionary additions' \
+'dict:Shared dictionaries from the ayame-spell registry' \
+'init:Write a starter ayame-spell.toml in the current directory' \
+'config:Print the effective merged configuration' \
+'completions:Generate a shell completion script on standard output' \
+'lsp:Run the LSP server (used by editor integrations)' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'ayame-spell help commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__check_commands] )) ||
+_ayame-spell__help__check_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help check commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__completions_commands] )) ||
+_ayame-spell__help__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help completions commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__config_commands] )) ||
+_ayame-spell__help__config_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help config commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__dict_commands] )) ||
+_ayame-spell__help__dict_commands() {
+    local commands; commands=(
+'list:List available dictionaries and their install status' \
+'add:Download dictionaries and enable them in the project config' \
+'remove:Delete a cached dictionary and disable it in the project config' \
+'update:Re-download every cached dictionary from the registry' \
+    )
+    _describe -t commands 'ayame-spell help dict commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__dict__add_commands] )) ||
+_ayame-spell__help__dict__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help dict add commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__dict__list_commands] )) ||
+_ayame-spell__help__dict__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help dict list commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__dict__remove_commands] )) ||
+_ayame-spell__help__dict__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help dict remove commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__dict__update_commands] )) ||
+_ayame-spell__help__dict__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help dict update commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__fix_commands] )) ||
+_ayame-spell__help__fix_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help fix commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__help_commands] )) ||
+_ayame-spell__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help help commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__init_commands] )) ||
+_ayame-spell__help__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help init commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__lsp_commands] )) ||
+_ayame-spell__help__lsp_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help lsp commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__words_commands] )) ||
+_ayame-spell__help__words_commands() {
+    local commands; commands=(
+'collect:Collect flagged words across files, ranked by frequency' \
+'add:Add words to the project (default) or global word file' \
+'triage:Interactive bulk triage of flagged words\: multi-select what goes to the project dictionary, the global dictionary, or the ignore list' \
+    )
+    _describe -t commands 'ayame-spell help words commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__words__add_commands] )) ||
+_ayame-spell__help__words__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help words add commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__words__collect_commands] )) ||
+_ayame-spell__help__words__collect_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help words collect commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__words__triage_commands] )) ||
+_ayame-spell__help__words__triage_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help words triage commands' commands "$@"
+}
+(( $+functions[_ayame-spell__init_commands] )) ||
+_ayame-spell__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell init commands' commands "$@"
+}
+(( $+functions[_ayame-spell__lsp_commands] )) ||
+_ayame-spell__lsp_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell lsp commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words_commands] )) ||
+_ayame-spell__words_commands() {
+    local commands; commands=(
+'collect:Collect flagged words across files, ranked by frequency' \
+'add:Add words to the project (default) or global word file' \
+'triage:Interactive bulk triage of flagged words\: multi-select what goes to the project dictionary, the global dictionary, or the ignore list' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'ayame-spell words commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__add_commands] )) ||
+_ayame-spell__words__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell words add commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__collect_commands] )) ||
+_ayame-spell__words__collect_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell words collect commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__help_commands] )) ||
+_ayame-spell__words__help_commands() {
+    local commands; commands=(
+'collect:Collect flagged words across files, ranked by frequency' \
+'add:Add words to the project (default) or global word file' \
+'triage:Interactive bulk triage of flagged words\: multi-select what goes to the project dictionary, the global dictionary, or the ignore list' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'ayame-spell words help commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__help__add_commands] )) ||
+_ayame-spell__words__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell words help add commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__help__collect_commands] )) ||
+_ayame-spell__words__help__collect_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell words help collect commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__help__help_commands] )) ||
+_ayame-spell__words__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell words help help commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__help__triage_commands] )) ||
+_ayame-spell__words__help__triage_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell words help triage commands' commands "$@"
+}
+(( $+functions[_ayame-spell__words__triage_commands] )) ||
+_ayame-spell__words__triage_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell words triage commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_ayame-spell" ]; then
+    _ayame-spell "$@"
+else
+    compdef _ayame-spell ayame-spell
+fi

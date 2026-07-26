@@ -47,6 +47,41 @@ cargo install ayame-spell           # CLI + LSP サーバ
 VS Code: このリポジトリの `editors/vscode` 拡張をインストール
 (上記バイナリを使用。バイナリ同梱は今後対応予定)。
 
+### シェル補完
+
+bash、zsh、fish、PowerShell、Elvish 用の補完スクリプトを生成できます。
+
+```sh
+# bash (bash-completion)
+mkdir -p ~/.local/share/bash-completion/completions
+ayame-spell completions bash > ~/.local/share/bash-completion/completions/ayame-spell
+
+# zsh (~/.zshrc で compinit より前に ~/.zfunc を fpath へ追加)
+mkdir -p ~/.zfunc
+ayame-spell completions zsh > ~/.zfunc/_ayame-spell
+# ~/.zshrc:
+fpath=(~/.zfunc $fpath)
+autoload -Uz compinit && compinit
+
+# fish
+mkdir -p ~/.config/fish/completions
+ayame-spell completions fish > ~/.config/fish/completions/ayame-spell.fish
+```
+
+PowerShell は次の行を `$PROFILE` に追加します。
+
+```powershell
+ayame-spell completions powershell | Out-String | Invoke-Expression
+```
+
+Elvish は次の行を `~/.config/elvish/rc.elv` に追加します。
+
+```elvish
+eval (ayame-spell completions elvish | slurp)
+```
+
+リリースアーカイブにも生成済みスクリプトを `completions/` として同梱します。
+
 ## クイックスタート
 
 ```sh

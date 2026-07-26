@@ -19,8 +19,12 @@ jobs:
       - run: cargo test --workspace
       - name: registry index is up to date
         run: |
-          cargo run -p xtask -- registry
+          cargo xtask registry
           git diff --exit-code site/registry/index.json
+      - name: shell completions are up to date
+        run: |
+          cargo xtask completions
+          git diff --exit-code -- contrib/completions
 
   vscode-extension:
     runs-on: ubuntu-latest

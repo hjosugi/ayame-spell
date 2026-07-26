@@ -20,6 +20,7 @@ ayame-spell-core = { version = "0.1.0", path = "crates/ayame-spell-core" }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive", "wrap_help"] }
+clap_complete = "=4.5.58"
 crossbeam-channel = "0.5"
 dialoguer = "0.11"
 dictgen = "0.5"
