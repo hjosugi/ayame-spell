@@ -6,6 +6,9 @@ exclude = [
     "site/registry/dicts/**",
     "crates/ayame-spell-core/data/**",
     "third-party/**",
+    # Intentional typo/notation fixtures and exact Marketplace mockup text.
+    "editors/vscode/test-fixtures/**",
+    "editors/vscode/media/source/**",
 ]
 
 [words]
