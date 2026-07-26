@@ -58,6 +58,7 @@ jobs:
           cache: npm
           cache-dependency-path: editors/vscode/package-lock.json
       - run: npm ci --prefix editors/vscode
+      - run: npm run check:version --prefix editors/vscode
       - name: Package CLI and VS Code extension
         shell: bash
         run: |
@@ -188,6 +189,7 @@ jobs:
           cache: npm
           cache-dependency-path: editors/vscode/package-lock.json
       - run: npm ci --prefix editors/vscode
+      - run: npm run check:version --prefix editors/vscode
       - name: Package CLI and VS Code extension
         shell: bash
         run: |

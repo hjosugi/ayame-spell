@@ -8,6 +8,7 @@ test/**
 test-fixtures/**
 node_modules/**
 out/**
+scripts/**
 tsconfig.json
 **/*.map
 media/icon-source.png

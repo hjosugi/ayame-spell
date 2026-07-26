@@ -20,6 +20,13 @@
     "url": "https://github.com/hjosugi/ayame-spell/issues"
   },
   "qna": "marketplace",
+  "badges": [
+    {
+      "url": "https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml/badge.svg",
+      "href": "https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml",
+      "description": "CI status"
+    }
+  ],
   "engines": {
     "vscode": "^1.91.0"
   },
@@ -180,16 +187,19 @@
         "description": "%walkthrough.description%",
         "steps": [
           {
-            "id": "seeCorrections",
+            "id": "chooseMode",
             "title": "%walkthrough.corrections.title%",
             "description": "%walkthrough.corrections.description%",
             "media": {
               "image": "media/corrections.png",
               "altText": "%walkthrough.corrections.alt%"
-            }
+            },
+            "completionEvents": [
+              "onCommand:ayame-spell.toggleMode"
+            ]
           },
           {
-            "id": "configure",
+            "id": "installDictionary",
             "title": "%walkthrough.configure.title%",
             "description": "%walkthrough.configure.description%",
             "media": {
@@ -197,7 +207,7 @@
               "altText": "%walkthrough.configure.alt%"
             },
             "completionEvents": [
-              "onCommand:ayame-spell.openConfig"
+              "onCommand:ayame-spell.installDictionary"
             ]
           },
           {
@@ -219,7 +229,8 @@
   "scripts": {
     "build": "node esbuild.mjs",
     "build:production": "node esbuild.mjs --production",
-    "check": "tsc --noEmit",
+    "check": "npm run check:version && tsc --noEmit",
+    "check:version": "node scripts/check-version.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
