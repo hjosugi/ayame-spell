@@ -1,0 +1,7 @@
+dist/
+media/
+node_modules/
+out/
+server/
+.vscode-test/
+package-lock.json

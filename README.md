@@ -52,8 +52,10 @@ in a single fast Rust binary.
 cargo install ayame-spell           # CLI + LSP server
 ```
 
-VS Code: install the **ayame-spell** extension (`editors/vscode` in this
-repo), which uses the binary above (bundled builds planned).
+VS Code: install the **ayame-spell** extension. Platform-specific VSIX builds
+from [GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest)
+include the native server, so no Rust installation is required. See the
+[extension guide](editors/vscode/README.md).
 
 ### Shell completions
 

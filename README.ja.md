@@ -44,8 +44,10 @@ ayame-spell はこの3つの良いところを1つの Rust バイナリに統合
 cargo install ayame-spell           # CLI + LSP サーバ
 ```
 
-VS Code: このリポジトリの `editors/vscode` 拡張をインストール
-(上記バイナリを使用。バイナリ同梱は今後対応予定)。
+VS Code: **ayame-spell** 拡張をインストールしてください。
+[GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest) の
+プラットフォーム別 VSIX にはネイティブサーバーが同梱されるため、Rust の
+インストールは不要です。詳しくは[拡張ガイド](editors/vscode/README.md)を参照してください。
 
 ### シェル補完
 

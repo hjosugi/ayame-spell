@@ -1,0 +1,9 @@
+[check]
+mode = "corrections"
+
+[words]
+ignore = []
+
+[japanese]
+enabled = true
+katakana-style = "consistency"

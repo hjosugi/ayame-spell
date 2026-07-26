@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag whose Intel macOS asset should be rebuilt
+        description: Existing release tag whose Intel macOS CLI and VSIX assets should be rebuilt
         required: true
         type: string
 
@@ -22,14 +22,19 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            vscode_target: linux-x64
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
+            vscode_target: linux-arm64
           - os: macos-latest
             target: aarch64-apple-darwin
+            vscode_target: darwin-arm64
           - os: macos-15-intel
             target: x86_64-apple-darwin
+            vscode_target: darwin-x64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            vscode_target: win32-x64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -38,15 +43,26 @@ jobs:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --release --target ${{ matrix.target }} -p ayame-spell
-      - name: Package
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+      - run: npm ci --prefix editors/vscode
+      - name: Package CLI and VS Code extension
         shell: bash
         run: |
           name="ayame-spell-${GITHUB_REF_NAME}-${{ matrix.target }}"
           mkdir "$name"
+          mkdir -p "editors/vscode/server/${{ matrix.vscode_target }}"
           if [[ "${{ matrix.os }}" == windows-latest ]]; then
             cp "target/${{ matrix.target }}/release/ayame-spell.exe" "$name/"
+            cp "target/${{ matrix.target }}/release/ayame-spell.exe" \
+              "editors/vscode/server/${{ matrix.vscode_target }}/"
           else
             cp "target/${{ matrix.target }}/release/ayame-spell" "$name/"
+            cp "target/${{ matrix.target }}/release/ayame-spell" \
+              "editors/vscode/server/${{ matrix.vscode_target }}/"
           fi
           cp LICENSE-MIT LICENSE-APACHE NOTICE.md "$name/"
           cp -R contrib/completions "$name/"
@@ -55,11 +71,96 @@ jobs:
           else
             tar czf "$name.tar.gz" "$name"
           fi
+          npm run build:production --prefix editors/vscode
+          (
+            cd editors/vscode
+            npx vsce package \
+              --target "${{ matrix.vscode_target }}" \
+              --out "../../ayame-spell-${GITHUB_REF_NAME}-${{ matrix.vscode_target }}.vsix"
+          )
       - uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
           files: |
             ayame-spell-*.tar.gz
             ayame-spell-*.zip
+            ayame-spell-*.vsix
+
+  checksums:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate release checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir release-assets
+          gh release download "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir release-assets \
+            --pattern 'ayame-spell-*'
+          (
+            cd release-assets
+            sha256sum ayame-spell-* > SHA256SUMS
+          )
+          gh release upload "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            release-assets/SHA256SUMS \
+            --clobber
+
+  publish-vscode:
+    if: >-
+      github.event_name == 'push' &&
+      vars.PUBLISH_VSCODE == 'true'
+    needs: checksums
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+      - run: npm ci --prefix editors/vscode
+      - name: Download platform VSIX packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir release-assets
+          gh release download "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir release-assets \
+            --pattern '*.vsix'
+      - name: Verify publishing credentials are configured
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          test -n "$VSCE_PAT" || {
+            echo 'VSCE_PAT is required when PUBLISH_VSCODE=true'
+            exit 1
+          }
+          test -n "$OVSX_PAT" || {
+            echo 'OVSX_PAT is required when PUBLISH_VSCODE=true'
+            exit 1
+          }
+      - name: Publish to Visual Studio Marketplace
+        working-directory: editors/vscode
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: >-
+          npx vsce publish
+          --packagePath ../../release-assets/*.vsix
+          --skip-duplicate
+      - name: Publish to Open VSX
+        working-directory: editors/vscode
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: >-
+          npx ovsx publish
+          --packagePath ../../release-assets/*.vsix
+          --skip-duplicate
 
   repair-intel-macos:
     if: github.event_name == 'workflow_dispatch'
@@ -73,7 +174,13 @@ jobs:
           targets: x86_64-apple-darwin
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --release --target x86_64-apple-darwin -p ayame-spell
-      - name: Package
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+      - run: npm ci --prefix editors/vscode
+      - name: Package CLI and VS Code extension
         shell: bash
         run: |
           name="ayame-spell-${{ inputs.tag }}-x86_64-apple-darwin"
@@ -82,7 +189,19 @@ jobs:
           cp LICENSE-MIT LICENSE-APACHE NOTICE.md "$name/"
           cp -R contrib/completions "$name/"
           tar czf "$name.tar.gz" "$name"
+          mkdir -p editors/vscode/server/darwin-x64
+          cp target/x86_64-apple-darwin/release/ayame-spell \
+            editors/vscode/server/darwin-x64/
+          npm run build:production --prefix editors/vscode
+          (
+            cd editors/vscode
+            npx vsce package \
+              --target darwin-x64 \
+              --out "../../ayame-spell-${{ inputs.tag }}-darwin-x64.vsix"
+          )
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
-          files: ayame-spell-*.tar.gz
+          files: |
+            ayame-spell-*.tar.gz
+            ayame-spell-*.vsix

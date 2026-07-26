@@ -33,14 +33,34 @@ jobs:
         working-directory: editors/vscode
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: editors/vscode/package-lock.json
       - run: npm ci
       - run: npm run check
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm audit
       - run: npm run build
+      - name: Build language server for integration tests
+        run: cargo build --manifest-path ../../Cargo.toml -p ayame-spell
+      - name: Run VS Code integration tests
+        env:
+          AYAME_SPELL_SERVER_PATH: ${{ github.workspace }}/target/debug/ayame-spell
+        run: xvfb-run -a npm test
+      - name: Validate platform VSIX
+        run: |
+          mkdir -p server/linux-x64
+          cp ../../target/debug/ayame-spell server/linux-x64/
+          npx vsce package \
+            --target linux-x64 \
+            --out ayame-spell-ci-linux-x64.vsix
+          unzip -l ayame-spell-ci-linux-x64.vsix |
+            grep 'extension/server/linux-x64/ayame-spell'
 
   selfcheck:
     runs-on: ubuntu-latest

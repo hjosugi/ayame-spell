@@ -75,7 +75,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "ayame-spell"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "ayame-spell-core",
@@ -97,7 +97,7 @@ dependencies = [
 
 [[package]]
 name = "ayame-spell-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "dictgen",
@@ -1416,7 +1416,7 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 
 [[package]]
 name = "xtask"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "serde",

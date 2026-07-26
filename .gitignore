@@ -3,4 +3,6 @@ node_modules/
 dist/
 out/
 *.vsix
+.vscode-test/
+/editors/vscode/server/
 .DS_Store

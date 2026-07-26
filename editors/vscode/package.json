@@ -1,26 +1,51 @@
 {
   "name": "ayame-spell",
-  "displayName": "ayame-spell",
-  "description": "Fast, low-noise spell checker for code and prose — English & Japanese (typo corrections, shared dictionaries, 表記ゆれ検出)",
-  "version": "0.1.0",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "0.2.0",
   "publisher": "hjosugi",
   "license": "MIT OR Apache-2.0",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1f2459",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hjosugi/ayame-spell"
+    "url": "https://github.com/hjosugi/ayame-spell",
+    "directory": "editors/vscode"
   },
   "homepage": "https://hjosugi.github.io/ayame-spell/",
+  "bugs": {
+    "url": "https://github.com/hjosugi/ayame-spell/issues"
+  },
+  "qna": "marketplace",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.91.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%capabilities.untrusted%"
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "%capabilities.virtual%"
+    }
   },
   "categories": [
     "Linters",
+    "Programming Languages",
     "Other"
   ],
   "keywords": [
     "spell",
     "spellcheck",
     "typo",
+    "linter",
     "japanese",
     "校正",
     "表記ゆれ"
@@ -33,30 +58,161 @@
     "configuration": {
       "title": "ayame-spell",
       "properties": {
-        "ayame-spell.serverPath": {
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Path to the `ayame-spell` binary. Empty: use the bundled binary, then fall back to `$PATH`."
-        },
         "ayame-spell.enable": {
           "type": "boolean",
           "default": true,
-          "description": "Enable the ayame-spell language server."
+          "scope": "resource",
+          "description": "%configuration.enable%"
+        },
+        "ayame-spell.serverPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "%configuration.serverPath%"
+        },
+        "ayame-spell.mode": {
+          "type": "string",
+          "enum": [
+            "inherit",
+            "corrections",
+            "dictionary",
+            "off"
+          ],
+          "enumDescriptions": [
+            "%configuration.mode.inherit%",
+            "%configuration.mode.corrections%",
+            "%configuration.mode.dictionary%",
+            "%configuration.mode.off%"
+          ],
+          "default": "inherit",
+          "scope": "resource",
+          "description": "%configuration.mode%"
+        },
+        "ayame-spell.japanese.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "%configuration.japanese%"
+        },
+        "ayame-spell.diagnosticSeverity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
+          "default": "warning",
+          "scope": "resource",
+          "description": "%configuration.severity%"
+        },
+        "ayame-spell.fixOnSave": {
+          "type": "boolean",
+          "default": false,
+          "scope": "resource",
+          "description": "%configuration.fixOnSave%"
+        },
+        "ayame-spell.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "scope": "window",
+          "description": "%configuration.trace%"
         }
       }
     },
     "commands": [
       {
         "command": "ayame-spell.fixAll",
-        "title": "ayame-spell: Fix All Safe Issues in File"
+        "title": "%command.fixAll%"
       },
       {
         "command": "ayame-spell.reviewWords",
-        "title": "ayame-spell: Review Flagged Words (Bulk Add / Ignore)"
+        "title": "%command.reviewWords%"
+      },
+      {
+        "command": "ayame-spell.addSelectionProject",
+        "title": "%command.addSelectionProject%"
+      },
+      {
+        "command": "ayame-spell.addSelectionGlobal",
+        "title": "%command.addSelectionGlobal%"
+      },
+      {
+        "command": "ayame-spell.openConfig",
+        "title": "%command.openConfig%"
+      },
+      {
+        "command": "ayame-spell.installDictionary",
+        "title": "%command.installDictionary%"
+      },
+      {
+        "command": "ayame-spell.toggleMode",
+        "title": "%command.toggleMode%"
       },
       {
         "command": "ayame-spell.restart",
-        "title": "ayame-spell: Restart Server"
+        "title": "%command.restart%"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ayame-spell.addSelectionProject",
+          "when": "editorHasSelection && resourceScheme == file",
+          "group": "ayame-spell@1"
+        },
+        {
+          "command": "ayame-spell.addSelectionGlobal",
+          "when": "editorHasSelection && resourceScheme == file",
+          "group": "ayame-spell@2"
+        }
+      ]
+    },
+    "walkthroughs": [
+      {
+        "id": "ayameSpellGettingStarted",
+        "title": "%walkthrough.title%",
+        "description": "%walkthrough.description%",
+        "steps": [
+          {
+            "id": "seeCorrections",
+            "title": "%walkthrough.corrections.title%",
+            "description": "%walkthrough.corrections.description%",
+            "media": {
+              "image": "media/corrections.png",
+              "altText": "%walkthrough.corrections.alt%"
+            }
+          },
+          {
+            "id": "configure",
+            "title": "%walkthrough.configure.title%",
+            "description": "%walkthrough.configure.description%",
+            "media": {
+              "image": "media/japanese-variants.png",
+              "altText": "%walkthrough.configure.alt%"
+            },
+            "completionEvents": [
+              "onCommand:ayame-spell.openConfig"
+            ]
+          },
+          {
+            "id": "reviewWords",
+            "title": "%walkthrough.review.title%",
+            "description": "%walkthrough.review.description%",
+            "media": {
+              "image": "media/review-words.png",
+              "altText": "%walkthrough.review.alt%"
+            },
+            "completionEvents": [
+              "onCommand:ayame-spell.reviewWords"
+            ]
+          }
+        ]
       }
     ]
   },
@@ -64,15 +220,36 @@
     "build": "node esbuild.mjs",
     "build:production": "node esbuild.mjs --production",
     "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run build && vscode-test",
+    "package:linux-x64": "vsce package --target linux-x64",
     "vscode:prepublish": "npm run build:production"
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "^10.1.0"
+  },
+  "overrides": {
+    "brace-expansion": "5.0.8",
+    "diff": "9.0.0",
+    "glob": "13.0.6",
+    "minimatch": "10.2.5",
+    "serialize-javascript": "7.0.7"
   },
   "devDependencies": {
-    "@types/node": "^20.14.0",
-    "@types/vscode": "^1.85.0",
-    "esbuild": "^0.24.0",
-    "typescript": "^5.5.0"
+    "@eslint/js": "^10.0.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.15.0",
+    "@types/vscode": "^1.91.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^3.9.2",
+    "eslint": "^10.0.0",
+    "esbuild": "^0.28.1",
+    "ovsx": "^1.0.2",
+    "prettier": "^3.9.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.65.0"
   }
 }

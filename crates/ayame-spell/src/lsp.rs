@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use anyhow::Context;
-use ayame_spell_core::config::LoadedConfig;
+use ayame_spell_core::config::{LoadedConfig, Mode};
 use ayame_spell_core::{Checker, Issue, IssueKind};
 use lsp_server::{Connection, Message, RequestId, Response};
 use lsp_types::notification::Notification as _;
@@ -25,7 +25,7 @@ use serde::Deserialize;
 
 const CMD_ADD_WORDS: &str = "ayame-spell.addWords";
 const CMD_IGNORE_WORDS: &str = "ayame-spell.ignoreWords";
-const CMD_FIX_ALL: &str = "ayame-spell.fixAll";
+const CMD_FIX_ALL: &str = "ayame-spell.server.fixAll";
 
 /// Diagnostics cap per document, so a giant generated file cannot flood
 /// the editor. The cap is reported via a log message when hit.
@@ -45,8 +45,46 @@ struct Server {
     root: PathBuf,
     loaded: LoadedConfig,
     checker: Checker,
+    editor_options: EditorOptions,
     docs: HashMap<Url, Doc>,
     next_request_id: i32,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EditorOptions {
+    mode: Option<Mode>,
+    japanese_enabled: Option<bool>,
+    diagnostic_severity: Option<EditorDiagnosticSeverity>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum EditorDiagnosticSeverity {
+    Error,
+    Warning,
+    Information,
+    Hint,
+}
+
+impl EditorDiagnosticSeverity {
+    fn lsp(self) -> DiagnosticSeverity {
+        match self {
+            Self::Error => DiagnosticSeverity::ERROR,
+            Self::Warning => DiagnosticSeverity::WARNING,
+            Self::Information => DiagnosticSeverity::INFORMATION,
+            Self::Hint => DiagnosticSeverity::HINT,
+        }
+    }
+}
+
+fn apply_editor_options(loaded: &mut LoadedConfig, options: EditorOptions) {
+    if let Some(mode) = options.mode {
+        loaded.config.check.mode = mode;
+    }
+    if let Some(enabled) = options.japanese_enabled {
+        loaded.config.japanese.enabled = enabled;
+    }
 }
 
 pub fn run() -> anyhow::Result<i32> {
@@ -70,14 +108,25 @@ pub fn run() -> anyhow::Result<i32> {
 
     #[allow(deprecated)]
     let root = init
-        .root_uri
+        .workspace_folders
         .as_ref()
-        .and_then(|u| u.to_file_path().ok())
+        .and_then(|folders| folders.first())
+        .and_then(|folder| folder.uri.to_file_path().ok())
+        .or_else(|| {
+            init.root_uri
+                .as_ref()
+                .and_then(|uri| uri.to_file_path().ok())
+        })
         .or_else(|| std::env::current_dir().ok())
         .context("cannot determine workspace root")?;
 
-    let loaded = ayame_spell_core::config::discover(&root)
+    let editor_options: EditorOptions = init
+        .initialization_options
+        .and_then(|value| serde_json::from_value(value).ok())
+        .unwrap_or_default();
+    let mut loaded = ayame_spell_core::config::discover(&root)
         .unwrap_or_else(|_| ayame_spell_core::config::defaults(&root));
+    apply_editor_options(&mut loaded, editor_options);
     let (checker, warnings) = Checker::new(&loaded);
 
     let mut server = Server {
@@ -85,6 +134,7 @@ pub fn run() -> anyhow::Result<i32> {
         root,
         loaded,
         checker,
+        editor_options,
         docs: HashMap::new(),
         next_request_id: 1_000_000,
     };
@@ -192,6 +242,7 @@ impl Server {
     fn reload_config(&mut self) {
         self.loaded = ayame_spell_core::config::discover(&self.root)
             .unwrap_or_else(|_| ayame_spell_core::config::defaults(&self.root));
+        apply_editor_options(&mut self.loaded, self.editor_options);
         let (checker, warnings) = Checker::new(&self.loaded);
         self.checker = checker;
         for w in warnings {
@@ -225,10 +276,15 @@ impl Server {
             .take(MAX_DIAGNOSTICS)
             .map(|issue| Diagnostic {
                 range: issue_range(&lines, issue),
-                severity: Some(match issue.kind {
-                    IssueKind::Typo => DiagnosticSeverity::WARNING,
-                    _ => DiagnosticSeverity::INFORMATION,
-                }),
+                severity: Some(
+                    self.editor_options
+                        .diagnostic_severity
+                        .map(EditorDiagnosticSeverity::lsp)
+                        .unwrap_or_else(|| match issue.kind {
+                            IssueKind::Typo => DiagnosticSeverity::WARNING,
+                            _ => DiagnosticSeverity::INFORMATION,
+                        }),
+                ),
                 code: Some(NumberOrString::String(issue.kind.code().to_string())),
                 source: Some("ayame-spell".to_string()),
                 message: issue.message(),
@@ -318,10 +374,15 @@ impl Server {
         }
 
         if doc.issues.iter().any(|i| i.safe_fix().is_some()) {
-            actions.push(CodeActionOrCommand::Command(Command {
+            actions.push(CodeActionOrCommand::CodeAction(lsp_types::CodeAction {
                 title: "ayame-spell: fix all safe issues in file".to_string(),
-                command: CMD_FIX_ALL.to_string(),
-                arguments: Some(vec![serde_json::json!({ "uri": uri })]),
+                kind: Some(lsp_types::CodeActionKind::new("source.fixAll.ayame-spell")),
+                command: Some(Command {
+                    title: "ayame-spell: fix all safe issues in file".to_string(),
+                    command: CMD_FIX_ALL.to_string(),
+                    arguments: Some(vec![serde_json::json!({ "uri": uri })]),
+                }),
+                ..lsp_types::CodeAction::default()
             }));
         }
         actions
@@ -480,4 +541,33 @@ fn ranges_overlap(a: &Range, b: &Range) -> bool {
     let starts_before_end = (a.start.line, a.start.character) <= (b.end.line, b.end.character);
     let ends_after_start = (a.end.line, a.end.character) >= (b.start.line, b.start.character);
     starts_before_end && ends_after_start
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn editor_initialization_options_override_discovered_config() {
+        let options: EditorOptions = serde_json::from_value(serde_json::json!({
+            "mode": "dictionary",
+            "japaneseEnabled": false,
+            "diagnosticSeverity": "hint"
+        }))
+        .unwrap();
+        let mut loaded = ayame_spell_core::config::defaults(std::path::Path::new("."));
+
+        apply_editor_options(&mut loaded, options);
+
+        assert_eq!(loaded.config.check.mode, Mode::Dictionary);
+        assert!(!loaded.config.japanese.enabled);
+        assert_eq!(
+            options.diagnostic_severity,
+            Some(EditorDiagnosticSeverity::Hint)
+        );
+        assert_eq!(
+            options.diagnostic_severity.unwrap().lsp(),
+            DiagnosticSeverity::HINT
+        );
+    }
 }
