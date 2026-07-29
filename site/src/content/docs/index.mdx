@@ -1,0 +1,107 @@
+---
+title: ayame-spell
+description: Fast, low-noise spell checking for English and Japanese code and prose.
+template: splash
+hero:
+  tagline: Fast, low-noise spell checking for English and Japanese code and prose. One configuration powers the CLI, LSP server, and editor integrations.
+  actions:
+    - text: Get started
+      link: /ayame-spell/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/hjosugi/ayame-spell
+      icon: external
+---
+
+import RegistryTable from "../../components/RegistryTable.astro";
+
+<h2 id="why-ayame-spell">Why ayame-spell?</h2>
+
+<div class="landing-grid">
+  <article class="landing-card">
+    <h3>🎯 Low noise by default</h3>
+    <p>
+      Corrections mode reports known misspellings without underlining names such
+      as <code>Kadane</code> or <code>heapq</code>.
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>📚 Shared dictionaries</h3>
+    <p>
+      Commit project words to Git, keep personal words global, and install
+      curated wordlists from the registry.
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>🗾 Japanese-aware</h3>
+    <p>
+      Find inconsistent katakana, fullwidth alphanumerics, halfwidth kana, and
+      fullwidth spaces without imposing one writing style.
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>⚡ No silent truncation</h3>
+    <p>
+      The Rust engine checks large files to the end. Any configured size skips
+      are counted and reported.
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>🧹 Bulk workflows</h3>
+    <p>
+      Rank unknown words by frequency and triage many findings into project,
+      global, or ignored words in one pass.
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>🔌 CLI + LSP + editors</h3>
+    <p>
+      CI and editors use the same engine and configuration, so local feedback
+      matches the build.
+    </p>
+  </article>
+</div>
+
+<h2 id="install">Install</h2>
+
+```sh
+cargo install ayame-spell
+ayame-spell
+ayame-spell fix
+```
+
+The first command installs both the CLI and the LSP server. See
+[Getting started](./getting-started/) for release binaries and project setup.
+
+<h2 id="quick-start">Quick start</h2>
+
+```sh
+ayame-spell init
+ayame-spell dict add en-base python
+ayame-spell words collect
+ayame-spell words triage
+```
+
+Corrections mode works with no configuration. Add `en-base` and switch selected
+paths to dictionary mode when you want unknown-word detection.
+
+<h2 id="registry">Dictionary registry</h2>
+
+Registry downloads are SHA-256 verified and cached locally.
+
+<RegistryTable locale="en" />
+
+See the [registry guide](./registry/) for installation, custom registries, and
+dictionary contribution format.
+
+<h2 id="comparison">How it compares</h2>
+
+| Approach | False positives | Unknown typos | Shared dictionaries | Japanese |
+| --- | --- | --- | --- | --- |
+| Corrections tables (typos, codespell) | Very low | Missed | Usually no | No |
+| Dictionaries (cSpell, Harper) | Needs tuning | Found | Yes | Limited |
+| ayame-spell | Selectable by path | Selectable by path | Yes | First-class |
+
+Use corrections mode for a quiet CI baseline and dictionary mode where
+completeness matters. Both modes can coexist through `[[overrides]]`.

@@ -89,7 +89,12 @@ enum Cmd {
         shell: clap_complete::Shell,
     },
     /// Run the LSP server (used by editor integrations).
-    Lsp,
+    Lsp {
+        /// Use standard input/output transport. Accepted for client
+        /// compatibility; stdio is always the transport.
+        #[arg(long)]
+        stdio: bool,
+    },
 }
 
 fn main() {
@@ -114,7 +119,7 @@ fn main() {
         Some(Cmd::Init { force }) => init(force),
         Some(Cmd::Config) => print_config(),
         Some(Cmd::Completions { shell }) => print_completions(shell),
-        Some(Cmd::Lsp) => lsp::run(),
+        Some(Cmd::Lsp { stdio: _ }) => lsp::run(),
     };
     match result {
         Ok(code) => std::process::exit(code),
@@ -204,7 +209,7 @@ fn add_elvish_value_completions(script: String) -> anyhow::Result<String> {
 }
 
 const INIT_TEMPLATE: &str = r#"# ayame-spell configuration
-# Reference: https://github.com/hjosugi/ayame-spell#configuration
+# Reference: https://hjosugi.github.io/ayame-spell/reference/configuration/
 
 [check]
 # "corrections": flag only known misspellings (near-zero false positives).
@@ -275,5 +280,11 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn lsp_accepts_conventional_stdio_flag() {
+        let cli = Cli::try_parse_from(["ayame-spell", "lsp", "--stdio"]).unwrap();
+        assert!(matches!(cli.cmd, Some(Cmd::Lsp { stdio: true })));
     }
 }

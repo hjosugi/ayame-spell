@@ -660,7 +660,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__lsp)
-            opts="-h --help"
+            opts="-h --stdio --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

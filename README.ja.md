@@ -1,6 +1,6 @@
 # 🌸 ayame-spell
 
-[English README](README.md) · [Website](https://hjosugi.github.io/ayame-spell/) · [設計メモ](DESIGN.md)
+[English README](README.md) · [ドキュメント](https://hjosugi.github.io/ayame-spell/ja/) · [設計メモ](DESIGN.md)
 
 **コードと文章のための高速・低ノイズなスペルチェッカー(英語・日本語対応)。**
 1つの設定ファイルで CLI(CI 用)・LSP サーバ・VS Code 拡張がすべて同じ結果を返します。
@@ -106,6 +106,8 @@ ignore リストへ一括で振り分けられます。VS Code では
 
 プロジェクトルートの `ayame-spell.toml`(または `.ayame-spell.toml`)。
 ユーザー全体の設定 `~/.config/ayame-spell/config.toml` に上書きマージされます。
+[完全な設定リファレンス](https://hjosugi.github.io/ayame-spell/ja/reference/configuration/)
+に、全キー、既定値、マージ規則、上書きの優先順位を掲載しています。
 
 ```toml
 [check]

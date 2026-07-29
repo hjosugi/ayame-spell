@@ -1,0 +1,59 @@
+---
+import index from "../../registry/index.json";
+
+interface Props {
+  locale?: "en" | "ja";
+}
+
+const { locale = "en" } = Astro.props;
+const labels =
+  locale === "ja"
+    ? {
+        name: "名前",
+        language: "言語",
+        kind: "種類",
+        entries: "項目数",
+        license: "ライセンス",
+      }
+    : {
+        name: "Name",
+        language: "Language",
+        kind: "Kind",
+        entries: "Entries",
+        license: "License",
+      };
+
+const kinds =
+  locale === "ja"
+    ? { wordlist: "単語リスト", variants: "表記ゆれ", corrections: "修正表" }
+    : {};
+---
+
+<div class="registry-table">
+  <table>
+    <thead>
+      <tr>
+        <th>{labels.name}</th>
+        <th>{labels.language}</th>
+        <th>{labels.kind}</th>
+        <th>{labels.entries}</th>
+        <th>{labels.license}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        index.dictionaries.map((dictionary) => (
+          <tr>
+            <td>
+              <code>{dictionary.name}</code>
+            </td>
+            <td>{dictionary.language}</td>
+            <td>{kinds[dictionary.kind as keyof typeof kinds] ?? dictionary.kind}</td>
+            <td>{dictionary.entries.toLocaleString(locale)}</td>
+            <td>{dictionary.license ?? "—"}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

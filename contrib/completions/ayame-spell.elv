@@ -147,6 +147,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --help 'Print help'
         }
         &'ayame-spell;lsp'= {
+            cand --stdio 'Use standard input/output transport. Accepted for client compatibility; stdio is always the transport'
             cand -h 'Print help'
             cand --help 'Print help'
         }

@@ -2,6 +2,15 @@
 
 All notable VS Code extension changes are documented here.
 
+## 0.3.0
+
+- Add a complete English/Japanese documentation site with search, language
+  routing, generated CLI reference, and editor setup guides.
+- Accept the conventional `ayame-spell lsp --stdio` invocation used by generic
+  language-server clients.
+- Document Neovim, Helix, Zed, Emacs, Sublime Text, and JetBrains setup, and
+  include a development Zed extension adapter.
+
 ## 0.2.0
 
 - Ship platform-specific VSIX packages with the ayame-spell server for Windows

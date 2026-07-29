@@ -1,6 +1,6 @@
 # 🌸 ayame-spell
 
-[日本語 README](README.ja.md) · [Website](https://hjosugi.github.io/ayame-spell/) · [Design notes](DESIGN.md)
+[日本語 README](README.ja.md) · [Documentation](https://hjosugi.github.io/ayame-spell/) · [Design notes](DESIGN.md)
 
 **Fast, low-noise spell checker for code and prose — English & Japanese.**
 One config file drives the CLI (CI), the LSP server, and the VS Code
@@ -115,6 +115,8 @@ In VS Code the same flow is **ayame-spell: Review Flagged Words**.
 `ayame-spell.toml` (or `.ayame-spell.toml`) at the project root, merged
 over the per-user global config `~/.config/ayame-spell/config.toml`.
 All keys are optional; the defaults are what you saw above.
+See the [complete configuration reference](https://hjosugi.github.io/ayame-spell/reference/configuration/)
+for every key, default, merge rule, and override precedence rule.
 
 ```toml
 [check]

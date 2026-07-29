@@ -1,0 +1,25 @@
+---
+import Default from "@astrojs/starlight/components/SocialIcons.astro";
+
+const isJapanese = Astro.currentLocale === "ja";
+const versionLabel = isJapanese
+  ? "ドキュメントのバージョン"
+  : "Documentation version";
+---
+
+<label class="version-picker">
+  <span class="sr-only">{versionLabel}</span>
+  <select
+    aria-label={versionLabel}
+    onchange="if (this.value) window.location.href = this.value"
+  >
+    <option value="">{isJapanese ? "v0.3（最新）" : "v0.3 (latest)"}</option>
+    <option value="https://github.com/hjosugi/ayame-spell/tree/v0.2.0/site">
+      v0.2
+    </option>
+    <option value="https://github.com/hjosugi/ayame-spell/releases">
+      {isJapanese ? "すべてのリリース" : "All releases"}
+    </option>
+  </select>
+</label>
+<Default><slot /></Default>

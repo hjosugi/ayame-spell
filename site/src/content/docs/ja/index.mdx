@@ -1,0 +1,107 @@
+---
+title: ayame-spell
+description: 英語と日本語のコード・文章に対応する、高速で低ノイズなスペルチェッカー。
+template: splash
+hero:
+  tagline: 英語と日本語のコード・文章に対応する、高速で低ノイズなスペルチェッカー。CLI・LSP サーバー・エディター連携で同じ設定を共有します。
+  actions:
+    - text: はじめる
+      link: /ayame-spell/ja/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub で見る
+      link: https://github.com/hjosugi/ayame-spell
+      icon: external
+---
+
+import RegistryTable from "../../../components/RegistryTable.astro";
+
+<h2 id="why-ayame-spell">ayame-spell を使う理由</h2>
+
+<div class="landing-grid">
+  <article class="landing-card">
+    <h3>🎯 既定で低ノイズ</h3>
+    <p>
+      修正表モードは既知のスペルミスだけを報告します。<code>Kadane</code> や
+      <code>heapq</code> のような名前に不要な赤線を出しません。
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>📚 共有できる辞書</h3>
+    <p>
+      プロジェクト単語は Git で共有し、個人用単語は全プロジェクトで使えます。
+      レジストリから厳選済みの辞書も導入できます。
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>🗾 日本語を標準サポート</h3>
+    <p>
+      カタカナ表記ゆれ、全角英数、半角カナ、全角スペースを検出します。
+      特定の表記を一律に強制する必要はありません。
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>⚡ 黙って打ち切らない</h3>
+    <p>
+      Rust 製エンジンが大きなファイルも末尾まで確認します。サイズ上限で
+      スキップした場合は、必ず件数を報告します。
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>🧹 一括処理</h3>
+    <p>
+      未知語を頻度順に集計し、複数の指摘をプロジェクト辞書・個人辞書・
+      無視リストへ一度に振り分けられます。
+    </p>
+  </article>
+  <article class="landing-card">
+    <h3>🔌 CLI・LSP・エディター</h3>
+    <p>
+      CI とエディターが同じエンジンと設定を使うため、手元とビルドの結果が
+      一致します。
+    </p>
+  </article>
+</div>
+
+<h2 id="install">インストール</h2>
+
+```sh
+cargo install ayame-spell
+ayame-spell
+ayame-spell fix
+```
+
+最初のコマンドで CLI と LSP サーバーの両方が入ります。リリースバイナリと
+プロジェクト設定は[はじめに](./getting-started/)を参照してください。
+
+<h2 id="quick-start">クイックスタート</h2>
+
+```sh
+ayame-spell init
+ayame-spell dict add en-base python
+ayame-spell words collect
+ayame-spell words triage
+```
+
+修正表モードは設定なしで動きます。未知語も検出したい場所では `en-base` を
+追加し、対象パスを辞書モードへ切り替えます。
+
+<h2 id="registry">辞書レジストリ</h2>
+
+レジストリから取得したファイルは SHA-256 で検証し、ローカルにキャッシュします。
+
+<RegistryTable locale="ja" />
+
+導入方法、社内レジストリ、辞書の作り方は
+[レジストリガイド](./registry/)を参照してください。
+
+<h2 id="comparison">ほかの方式との違い</h2>
+
+| 方式 | 誤検出 | 未知のスペルミス | 共有辞書 | 日本語 |
+| --- | --- | --- | --- | --- |
+| 修正表方式（typos、codespell） | 非常に少ない | 見逃す | 通常なし | 非対応 |
+| 辞書方式（cSpell、Harper） | 調整が必要 | 検出 | あり | 限定的 |
+| ayame-spell | パスごとに選択 | パスごとに選択 | あり | 標準対応 |
+
+静かな CI の基準には修正表モード、網羅性が必要な場所には辞書モードを使います。
+`[[overrides]]` により、一つのプロジェクト内で両方を併用できます。

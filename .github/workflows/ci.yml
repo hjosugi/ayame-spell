@@ -25,6 +25,12 @@ jobs:
         run: |
           cargo xtask completions
           git diff --exit-code -- contrib/completions
+      - name: CLI documentation is up to date
+        run: |
+          cargo xtask cli-docs
+          git diff --exit-code -- \
+            site/src/content/docs/reference/cli.md \
+            site/src/content/docs/ja/reference/cli.md
 
   vscode-extension:
     runs-on: ubuntu-latest
@@ -70,3 +76,30 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: ayame-spell checks its own repository
         run: cargo run -p ayame-spell -- check .
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci --prefix site
+      - run: npm run check --prefix site
+
+  zed-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: editors/zed
+      - run: >-
+          cargo check
+          --manifest-path editors/zed/Cargo.toml
+          --target wasm32-wasip2

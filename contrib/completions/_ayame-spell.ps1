@@ -198,6 +198,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;lsp' {
+            [CompletionResult]::new('--stdio', '--stdio', [CompletionResultType]::ParameterName, 'Use standard input/output transport. Accepted for client compatibility; stdio is always the transport')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break

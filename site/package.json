@@ -1,0 +1,23 @@
+{
+  "name": "ayame-spell-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "predev": "npm run sync:registry",
+    "build": "astro build",
+    "prebuild": "npm run sync:registry",
+    "preview": "astro preview",
+    "sync:registry": "node scripts/sync-registry.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "check": "npm run check:i18n && astro check && npm run build"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.4",
+    "astro": "^7.1.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3"
+  }
+}

@@ -59,11 +59,10 @@ packages because the Marketplace rejects user-provided SVG content.
 
 ## Release announcement copy
 
-> ayame-spell 0.2.0 ships a zero-Rust-install VS Code experience. Download the
-> platform-matched extension for Windows x64, Linux x64/ARM64, or macOS
-> Intel/Apple silicon to get quiet English typo correction, Japanese notation
-> checks, shared dictionaries, and bulk word review backed by the bundled Rust
-> language server.
+> ayame-spell 0.3.0 adds complete English and Japanese documentation, including
+> configuration, rule, CLI, registry, CI, migration, and editor setup
+> references. Platform-matched packages continue to bundle the Rust language
+> server for Windows x64, Linux x64/ARM64, and macOS Intel/Apple silicon.
 
 ## Listing QA
 

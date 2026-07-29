@@ -233,6 +233,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (lsp)
 _arguments "${_arguments_options[@]}" : \
+'--stdio[Use standard input/output transport. Accepted for client compatibility; stdio is always the transport]' \
 '-h[Print help]' \
 '--help[Print help]' \
 && ret=0

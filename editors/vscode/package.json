@@ -2,7 +2,7 @@
   "name": "ayame-spell",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "hjosugi",
   "license": "MIT OR Apache-2.0",
   "icon": "icon.png",

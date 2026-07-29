@@ -36,5 +36,11 @@ ignore = [
 # test fixtures on purpose; the docs show before/after examples of every
 # Japanese check.
 [[overrides]]
-paths = ["crates/**", "README.md", "README.ja.md", "DESIGN.md"]
+paths = [
+    "crates/**",
+    "site/src/content/docs/**",
+    "README.md",
+    "README.ja.md",
+    "DESIGN.md",
+]
 japanese = false

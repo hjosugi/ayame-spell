@@ -1,0 +1,54 @@
+id = "ayame-spell"
+name = "ayame-spell"
+version = "0.3.0"
+schema_version = 1
+authors = ["hjosugi"]
+description = "Low-noise English and Japanese spell checking through the ayame-spell LSP server"
+repository = "https://github.com/hjosugi/ayame-spell"
+
+[language_servers.ayame-spell]
+name = "ayame-spell"
+languages = [
+  "Markdown",
+  "Plain Text",
+  "Git Commit",
+  "Rust",
+  "Python",
+  "JavaScript",
+  "TypeScript",
+  "TSX",
+  "Go",
+  "Java",
+  "C",
+  "C++",
+  "C#",
+  "Ruby",
+  "PHP",
+  "HTML",
+  "CSS",
+  "JSON",
+  "YAML",
+  "TOML",
+]
+
+[language_servers.ayame-spell.language_ids]
+"Markdown" = "markdown"
+"Plain Text" = "plaintext"
+"Git Commit" = "git-commit"
+"Rust" = "rust"
+"Python" = "python"
+"JavaScript" = "javascript"
+"TypeScript" = "typescript"
+"TSX" = "typescriptreact"
+"Go" = "go"
+"Java" = "java"
+"C" = "c"
+"C++" = "cpp"
+"C#" = "csharp"
+"Ruby" = "ruby"
+"PHP" = "php"
+"HTML" = "html"
+"CSS" = "css"
+"JSON" = "json"
+"YAML" = "yaml"
+"TOML" = "toml"
