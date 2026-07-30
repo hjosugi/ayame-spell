@@ -75,6 +75,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'Output format')
             [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Language for `--list-rules` (defaults from LANG)')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
+            [CompletionResult]::new('--no-baseline', '--no-baseline', [CompletionResultType]::ParameterName, 'Ignore `ayame-spell-baseline.json` and report every finding')
             [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
             [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
             [CompletionResult]::new('-q', '-q', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
@@ -94,6 +95,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
+            [CompletionResult]::new('baseline', 'baseline', [CompletionResultType]::ParameterValue, 'Record current findings so only new findings fail later checks')
             [CompletionResult]::new('explain', 'explain', [CompletionResultType]::ParameterValue, 'Explain a stable issue code and how to configure or silence it')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'List every stable issue code')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate a shell completion script on standard output')
@@ -113,6 +115,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'format')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
+            [CompletionResult]::new('--no-baseline', '--no-baseline', [CompletionResultType]::ParameterName, 'Ignore `ayame-spell-baseline.json` and report every finding')
             [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
             [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
             [CompletionResult]::new('-q', '-q', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
@@ -135,6 +138,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
+            [CompletionResult]::new('--no-baseline', '--no-baseline', [CompletionResultType]::ParameterName, 'Ignore `ayame-spell-baseline.json` and report every finding')
             [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
             [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
             [CompletionResult]::new('-q', '-q', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
@@ -152,7 +156,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('collect', 'collect', [CompletionResultType]::ParameterValue, 'Collect flagged words across files, ranked by frequency')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add words to the project (default) or global word file')
-            [CompletionResult]::new('triage', 'triage', [CompletionResultType]::ParameterValue, 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list')
+            [CompletionResult]::new('triage', 'triage', [CompletionResultType]::ParameterValue, 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
@@ -171,6 +175,9 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;words;triage' {
+            [CompletionResult]::new('--kind', '--kind', [CompletionResultType]::ParameterName, 'Only include one finding kind')
+            [CompletionResult]::new('--min-count', '--min-count', [CompletionResultType]::ParameterName, 'Only include words flagged at least this many times')
+            [CompletionResult]::new('--limit', '--limit', [CompletionResultType]::ParameterName, 'Review at most this many words after sorting and filtering')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
@@ -178,7 +185,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         'ayame-spell;words;help' {
             [CompletionResult]::new('collect', 'collect', [CompletionResultType]::ParameterValue, 'Collect flagged words across files, ranked by frequency')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add words to the project (default) or global word file')
-            [CompletionResult]::new('triage', 'triage', [CompletionResultType]::ParameterValue, 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list')
+            [CompletionResult]::new('triage', 'triage', [CompletionResultType]::ParameterValue, 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
@@ -290,6 +297,28 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
+        'ayame-spell;baseline' {
+            [CompletionResult]::new('--config', '--config', [CompletionResultType]::ParameterName, 'Load exactly this configuration file')
+            [CompletionResult]::new('--mode', '--mode', [CompletionResultType]::ParameterName, 'Override `[check].mode`')
+            [CompletionResult]::new('--exclude', '--exclude', [CompletionResultType]::ParameterName, 'Exclude an additional glob (repeatable)')
+            [CompletionResult]::new('--color', '--color', [CompletionResultType]::ParameterName, 'Colour policy for human output')
+            [CompletionResult]::new('--stdin-filename', '--stdin-filename', [CompletionResultType]::ParameterName, 'Display name used for standard input (also selects overrides)')
+            [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
+            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
+            [CompletionResult]::new('--no-baseline', '--no-baseline', [CompletionResultType]::ParameterName, 'Ignore `ayame-spell-baseline.json` and report every finding')
+            [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
+            [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
+            [CompletionResult]::new('-q', '-q', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--prune', '--prune', [CompletionResultType]::ParameterName, 'Remove baseline entries whose finding no longer exists')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
         'ayame-spell;explain' {
             [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Explanation language (defaults from LANG)')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
@@ -325,6 +354,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
+            [CompletionResult]::new('baseline', 'baseline', [CompletionResultType]::ParameterValue, 'Record current findings so only new findings fail later checks')
             [CompletionResult]::new('explain', 'explain', [CompletionResultType]::ParameterValue, 'Explain a stable issue code and how to configure or silence it')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'List every stable issue code')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate a shell completion script on standard output')
@@ -342,7 +372,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         'ayame-spell;help;words' {
             [CompletionResult]::new('collect', 'collect', [CompletionResultType]::ParameterValue, 'Collect flagged words across files, ranked by frequency')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Add words to the project (default) or global word file')
-            [CompletionResult]::new('triage', 'triage', [CompletionResultType]::ParameterValue, 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list')
+            [CompletionResult]::new('triage', 'triage', [CompletionResultType]::ParameterValue, 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one')
             break
         }
         'ayame-spell;help;words;collect' {
@@ -385,6 +415,9 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;help;config' {
+            break
+        }
+        'ayame-spell;help;baseline' {
             break
         }
         'ayame-spell;help;explain' {

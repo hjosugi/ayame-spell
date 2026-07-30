@@ -26,6 +26,7 @@ _ayame-spell() {
 '--format=[Output format]:FORMAT:(human brief json github sarif)' \
 '--lang=[Language for \`--list-rules\` (defaults from LANG)]:RULE_LANG:(en ja)' \
 '--no-config[Ignore project and global configuration files]' \
+'--no-baseline[Ignore \`ayame-spell-baseline.json\` and report every finding]' \
 '--no-ignore[Do not honour \`.gitignore\`, \`.ignore\`, or Git exclude files]' \
 '--hidden[Include hidden files and directories]' \
 '(-v --verbose)-q[Print findings only, without summaries]' \
@@ -61,6 +62,7 @@ _arguments "${_arguments_options[@]}" : \
 '--threads=[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
 '--format=[]:FORMAT:(human brief json github sarif)' \
 '--no-config[Ignore project and global configuration files]' \
+'--no-baseline[Ignore \`ayame-spell-baseline.json\` and report every finding]' \
 '--no-ignore[Do not honour \`.gitignore\`, \`.ignore\`, or Git exclude files]' \
 '--hidden[Include hidden files and directories]' \
 '(-v --verbose)-q[Print findings only, without summaries]' \
@@ -85,6 +87,7 @@ _arguments "${_arguments_options[@]}" : \
 '-j+[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
 '--threads=[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
 '--no-config[Ignore project and global configuration files]' \
+'--no-baseline[Ignore \`ayame-spell-baseline.json\` and report every finding]' \
 '--no-ignore[Do not honour \`.gitignore\`, \`.ignore\`, or Git exclude files]' \
 '--hidden[Include hidden files and directories]' \
 '(-v --verbose)-q[Print findings only, without summaries]' \
@@ -132,6 +135,9 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (triage)
 _arguments "${_arguments_options[@]}" : \
+'--kind=[Only include one finding kind]:KIND:(typo unknown-word ja-variant)' \
+'--min-count=[Only include words flagged at least this many times]:MIN_COUNT:_default' \
+'--limit=[Review at most this many words after sorting and filtering]:LIMIT:_default' \
 '-h[Print help]' \
 '--help[Print help]' \
 '*::paths:_files' \
@@ -300,6 +306,30 @@ _arguments "${_arguments_options[@]}" : \
 '--help[Print help]' \
 && ret=0
 ;;
+(baseline)
+_arguments "${_arguments_options[@]}" : \
+'(--no-config)--config=[Load exactly this configuration file]:PATH:_files' \
+'--mode=[Override \`\[check\].mode\`]:MODE:(corrections dictionary off)' \
+'*--exclude=[Exclude an additional glob (repeatable)]:GLOB:_default' \
+'--color=[Colour policy for human output]:COLOR:(auto always never)' \
+'--stdin-filename=[Display name used for standard input (also selects overrides)]:PATH:_files' \
+'--max-file-size=[Skip files larger than this many bytes (overrides \`\[files\].max-file-size\`)]:BYTES:_default' \
+'-j+[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
+'--threads=[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
+'--no-config[Ignore project and global configuration files]' \
+'--no-baseline[Ignore \`ayame-spell-baseline.json\` and report every finding]' \
+'--no-ignore[Do not honour \`.gitignore\`, \`.ignore\`, or Git exclude files]' \
+'--hidden[Include hidden files and directories]' \
+'(-v --verbose)-q[Print findings only, without summaries]' \
+'(-v --verbose)--quiet[Print findings only, without summaries]' \
+'*-v[Report configuration sources, skipped files, and elapsed time]' \
+'*--verbose[Report configuration sources, skipped files, and elapsed time]' \
+'--prune[Remove baseline entries whose finding no longer exists]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths -- Files or directories to check (`-` reads standard input):_files' \
+&& ret=0
+;;
 (explain)
 _arguments "${_arguments_options[@]}" : \
 '--lang=[Explanation language (defaults from LANG)]:LANG:(en ja)' \
@@ -433,6 +463,10 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(baseline)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (explain)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -475,6 +509,7 @@ _ayame-spell_commands() {
 'dict:Shared dictionaries from the ayame-spell registry' \
 'init:Write a starter ayame-spell.toml in the current directory' \
 'config:Print the effective merged configuration' \
+'baseline:Record current findings so only new findings fail later checks' \
 'explain:Explain a stable issue code and how to configure or silence it' \
 'rules:List every stable issue code' \
 'completions:Generate a shell completion script on standard output' \
@@ -483,6 +518,11 @@ _ayame-spell_commands() {
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'ayame-spell commands' commands "$@"
+}
+(( $+functions[_ayame-spell__baseline_commands] )) ||
+_ayame-spell__baseline_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell baseline commands' commands "$@"
 }
 (( $+functions[_ayame-spell__check_commands] )) ||
 _ayame-spell__check_commands() {
@@ -614,6 +654,7 @@ _ayame-spell__help_commands() {
 'dict:Shared dictionaries from the ayame-spell registry' \
 'init:Write a starter ayame-spell.toml in the current directory' \
 'config:Print the effective merged configuration' \
+'baseline:Record current findings so only new findings fail later checks' \
 'explain:Explain a stable issue code and how to configure or silence it' \
 'rules:List every stable issue code' \
 'completions:Generate a shell completion script on standard output' \
@@ -622,6 +663,11 @@ _ayame-spell__help_commands() {
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'ayame-spell help commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__baseline_commands] )) ||
+_ayame-spell__help__baseline_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help baseline commands' commands "$@"
 }
 (( $+functions[_ayame-spell__help__check_commands] )) ||
 _ayame-spell__help__check_commands() {
@@ -720,7 +766,7 @@ _ayame-spell__help__words_commands() {
     local commands; commands=(
 'collect:Collect flagged words across files, ranked by frequency' \
 'add:Add words to the project (default) or global word file' \
-'triage:Interactive bulk triage of flagged words\: multi-select what goes to the project dictionary, the global dictionary, or the ignore list' \
+'triage:Search flagged words and choose a dictionary, ignore, fix, or skip action for each one' \
     )
     _describe -t commands 'ayame-spell help words commands' commands "$@"
 }
@@ -759,7 +805,7 @@ _ayame-spell__words_commands() {
     local commands; commands=(
 'collect:Collect flagged words across files, ranked by frequency' \
 'add:Add words to the project (default) or global word file' \
-'triage:Interactive bulk triage of flagged words\: multi-select what goes to the project dictionary, the global dictionary, or the ignore list' \
+'triage:Search flagged words and choose a dictionary, ignore, fix, or skip action for each one' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'ayame-spell words commands' commands "$@"
@@ -779,7 +825,7 @@ _ayame-spell__words__help_commands() {
     local commands; commands=(
 'collect:Collect flagged words across files, ranked by frequency' \
 'add:Add words to the project (default) or global word file' \
-'triage:Interactive bulk triage of flagged words\: multi-select what goes to the project dictionary, the global dictionary, or the ignore list' \
+'triage:Search flagged words and choose a dictionary, ignore, fix, or skip action for each one' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'ayame-spell words help commands' commands "$@"

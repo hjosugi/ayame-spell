@@ -66,6 +66,28 @@ GitHub 形式はネイティブな Workflow command を出力し、`GITHUB_ACTIO
 人向け形式は解析せず、コンパイラー風のログには `brief`、自動処理には `json` を
 使ってください。
 
+## 既存リポジトリを一括修正せず導入する
+
+最初に内容ベースのベースラインを作成してコミットします。
+
+```sh
+ayame-spell baseline .
+git add ayame-spell-baseline.json
+```
+
+以後の `ayame-spell check .` は既存の指摘を抑制し、新しく増えた指摘だけで失敗
+します。フィンガープリントは行番号ではなく、パス、ルール、語、周辺行の内容を
+使うため、行を挿入してもベースラインは無効になりません。全件を監査する場合は
+`ayame-spell check --no-baseline .` を使います。
+
+既存の指摘を直した後は不要なエントリーを除去し、コミット済みファイルとの差分を
+確認します。
+
+```sh
+ayame-spell baseline --prune .
+git diff --exit-code ayame-spell-baseline.json
+```
+
 ## CI でレジストリ辞書を使う
 
 レジストリ参照はローカルキャッシュから解決するため、チェック前に導入します。

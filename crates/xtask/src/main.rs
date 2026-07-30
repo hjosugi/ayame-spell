@@ -374,6 +374,7 @@ Exit status and machine-readable fields are documented in
 | `words collect [PATH]...` | Collect findings ranked by frequency. |
 | `words add <WORDS>...` | Add project or user words. |
 | `words triage [PATH]...` | Review several findings interactively. |
+| `baseline [PATH]...` | Record or prune existing findings for incremental adoption. |
 | `dict list` | List registry dictionaries and installation state. |
 | `dict add <NAMES>...` | Fetch dictionaries and add them to project config. |
 | `dict remove <NAME>` | Delete a cache entry and disable it in config. |
@@ -400,6 +401,11 @@ Exit status and machine-readable fields are documented in
 | `--min-count <N>` | `words collect` | Emit words seen at least N times; default 1. |
 | `--plain` | `words collect` | Emit words only, ready to append. |
 | `--json` | `words collect` | JSON Lines with `word`, `count`, `kind`, `example`. |
+| `--kind <KIND>` | `words triage` | Filter to `typo`, `unknown-word`, or `ja-variant`. |
+| `--min-count <N>` | `words triage` | Review words seen at least N times. |
+| `--limit <N>` | `words triage` | Review at most N words after filtering. |
+| `--no-baseline` | default, `check`, `fix` | Report every finding without baseline suppression. |
+| `--prune` | `baseline` | Remove entries whose finding no longer exists. |
 | `<WORDS>...` | `words add` | One or more words to add. |
 | `--global` | `words add` | Add user words instead of project words. |
 | `<NAMES>...` | `dict add` | One or more registry names to fetch. |
@@ -477,6 +483,7 @@ const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 | `words collect [PATH]...` | 指摘語を頻度順に収集。 |
 | `words add <WORDS>...` | プロジェクトまたはユーザー単語を追加。 |
 | `words triage [PATH]...` | 複数の指摘語を対話形式で一括整理。 |
+| `baseline [PATH]...` | 段階導入用に既存の指摘を記録または整理。 |
 | `dict list` | レジストリ辞書と導入状態を一覧表示。 |
 | `dict add <NAMES>...` | 辞書を取得してプロジェクト設定へ追加。 |
 | `dict remove <NAME>` | キャッシュを削除して設定から無効化。 |
@@ -503,6 +510,11 @@ const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 | `--min-count <N>` | `words collect` | N 回以上現れた語だけを出力。既定は 1。 |
 | `--plain` | `words collect` | 追記しやすいよう、語だけを出力。 |
 | `--json` | `words collect` | `word`、`count`、`kind`、`example` の JSON Lines。 |
+| `--kind <KIND>` | `words triage` | `typo`、`unknown-word`、`ja-variant` で絞り込み。 |
+| `--min-count <N>` | `words triage` | N 回以上現れた語だけを確認。 |
+| `--limit <N>` | `words triage` | 絞り込み後の確認件数を最大 N 語に制限。 |
+| `--no-baseline` | 既定、`check`、`fix` | ベースラインで抑制せず全指摘を表示。 |
+| `--prune` | `baseline` | 現在は存在しない指摘のエントリーを除去。 |
 | `<WORDS>...` | `words add` | 追加する一つ以上の単語。 |
 | `--global` | `words add` | プロジェクト単語ではなくユーザー単語へ追加。 |
 | `<NAMES>...` | `dict add` | 取得する一つ以上のレジストリ名。 |

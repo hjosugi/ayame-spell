@@ -112,13 +112,19 @@ ayame-spell init             # write a starter ayame-spell.toml
 # dictionary mode with shared wordlists:
 ayame-spell dict add en-base python   # download + enable in config
 ayame-spell words collect             # unknown words, ranked by frequency
-ayame-spell words triage              # interactive bulk add/ignore
+ayame-spell words triage              # searchable per-word add/ignore/fix
+ayame-spell baseline                  # adopt a legacy repository incrementally
 ```
 
-`ayame-spell words triage` is the answer to "I don't want to add words one
-by one": multi-select any number of flagged words and send them to the
-project dictionary, your global dictionary, or the ignore list in one pass.
+`ayame-spell words triage` is the answer to "I don't want to restart for every
+large batch": search and page through the findings, then add, ignore, fix, or
+skip each word in one pass. The final summary names every changed file.
 In VS Code the same flow is **ayame-spell: Review Flagged Words**.
+
+For an existing repository, run `ayame-spell baseline .` and commit
+`ayame-spell-baseline.json`. Normal checks then report only new findings;
+`check --no-baseline` audits everything and `baseline --prune` removes entries
+that no longer exist.
 
 ## Configuration
 

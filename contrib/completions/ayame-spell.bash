@@ -16,6 +16,9 @@ _ayame-spell() {
             ",$1")
                 cmd="ayame__spell"
                 ;;
+            ayame__spell,baseline)
+                cmd="ayame__spell__baseline"
+                ;;
             ayame__spell,check)
                 cmd="ayame__spell__check"
                 ;;
@@ -93,6 +96,9 @@ _ayame-spell() {
                 ;;
             ayame__spell__dict__help,update)
                 cmd="ayame__spell__dict__help__update"
+                ;;
+            ayame__spell__help,baseline)
+                cmd="ayame__spell__help__baseline"
                 ;;
             ayame__spell__help,check)
                 cmd="ayame__spell__help__check"
@@ -188,7 +194,7 @@ _ayame-spell() {
 
     case "${cmd}" in
         ayame__spell)
-            opts="-q -v -j -w -h -V --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --list-rules --lang --help --version [PATH]... check fix words dict init config explain rules completions completion-candidates lsp help"
+            opts="-q -v -j -w -h -V --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --list-rules --lang --help --version [PATH]... check fix words dict init config baseline explain rules completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -241,8 +247,54 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        ayame__spell__baseline)
+            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --prune --help [PATH]..."
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --mode)
+                    COMPREPLY=($(compgen -W "corrections dictionary off" -- "${cur}"))
+                    return 0
+                    ;;
+                --exclude)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --color)
+                    COMPREPLY=($(compgen -W "auto always never" -- "${cur}"))
+                    return 0
+                    ;;
+                --stdin-filename)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --max-file-size)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --threads)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -j)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         ayame__spell__check)
-            opts="-q -v -j -w -h --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --help [PATH]..."
+            opts="-q -v -j -w -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -586,7 +638,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__fix)
-            opts="-q -v -j -h --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --dry-run --interactive --help [PATH]..."
+            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --dry-run --interactive --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -632,8 +684,22 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__help)
-            opts="check fix words dict init config explain rules completions completion-candidates lsp help"
+            opts="check fix words dict init config baseline explain rules completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__help__baseline)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -1102,12 +1168,24 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__words__triage)
-            opts="-h --help [PATH]..."
+            opts="-h --kind --min-count --limit --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --kind)
+                    COMPREPLY=($(compgen -W "typo unknown-word ja-variant" -- "${cur}"))
+                    return 0
+                    ;;
+                --min-count)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --limit)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

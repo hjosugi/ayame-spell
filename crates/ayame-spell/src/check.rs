@@ -1,6 +1,6 @@
 //! Parallel file walking, checking, reporting, and in-place fixing.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{IsTerminal, Read};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -12,7 +12,8 @@ use ayame_spell_core::{Checker, Issue, Mode};
 use dialoguer::Select;
 use ignore::overrides::OverrideBuilder;
 use ignore::{WalkBuilder, WalkState};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
 use crate::{ColorChoice, Format};
 
@@ -43,6 +44,7 @@ pub struct Stats {
 pub struct RunOptions {
     pub paths: Vec<PathBuf>,
     pub fix: FixMode,
+    pub baseline: BaselineMode,
     pub format: Format,
     pub threads: Option<usize>,
     pub config: Option<PathBuf>,
@@ -64,6 +66,34 @@ pub enum FixMode {
     Apply,
     DryRun,
     Interactive,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum BaselineMode {
+    Apply,
+    Ignore,
+    Write,
+    Prune,
+}
+
+const BASELINE_VERSION: u8 = 1;
+const BASELINE_FILE: &str = "ayame-spell-baseline.json";
+
+#[derive(Deserialize, Serialize)]
+struct Baseline {
+    version: u8,
+    entries: Vec<BaselineEntry>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BaselineEntry {
+    fingerprint: String,
+    path: String,
+    code: String,
+    word: String,
+    context_hash: String,
+    count: usize,
 }
 
 /// Load configuration and build a checker, printing warnings to stderr.
@@ -122,7 +152,7 @@ pub fn scan(
         }
         builder.overrides(ob.build()?);
     }
-    builder.filter_entry(|e| e.file_name() != ".git");
+    builder.filter_entry(|entry| entry.file_name() != ".git" && entry.file_name() != BASELINE_FILE);
 
     let (tx, rx) = crossbeam_channel::unbounded::<FileReport>();
     let (error_tx, error_rx) = crossbeam_channel::unbounded::<String>();
@@ -290,6 +320,177 @@ fn file_is_unchanged(path: &Path, original: &[u8], modified: Option<SystemTime>)
         .ok()
         .and_then(|metadata| metadata.modified().ok());
     current_modified == modified && std::fs::read(path).is_ok_and(|bytes| bytes == original)
+}
+
+fn baseline_path(loaded: &LoadedConfig) -> PathBuf {
+    loaded.root.join(BASELINE_FILE)
+}
+
+fn baseline_report_path(root: &Path, report: &FileReport) -> String {
+    report
+        .path
+        .strip_prefix(root)
+        .unwrap_or(&report.path)
+        .to_string_lossy()
+        .replace('\\', "/")
+}
+
+fn baseline_entry(path: &str, item: &Item) -> BaselineEntry {
+    let mut context = Sha256::new();
+    context.update(item.line_text.trim().as_bytes());
+    let context_hash = hex_digest(context.finalize());
+    let mut fingerprint = Sha256::new();
+    fingerprint.update(path.as_bytes());
+    fingerprint.update([0]);
+    fingerprint.update(item.issue.kind.code().as_bytes());
+    fingerprint.update([0]);
+    fingerprint.update(item.issue.word.to_lowercase().as_bytes());
+    fingerprint.update([0]);
+    fingerprint.update(context_hash.as_bytes());
+    BaselineEntry {
+        fingerprint: hex_digest(fingerprint.finalize()),
+        path: path.to_string(),
+        code: item.issue.kind.code().to_string(),
+        word: item.issue.word.clone(),
+        context_hash,
+        count: 1,
+    }
+}
+
+fn hex_digest(bytes: impl AsRef<[u8]>) -> String {
+    bytes
+        .as_ref()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+fn baseline_from_reports(root: &Path, reports: &[FileReport]) -> Baseline {
+    let mut entries: BTreeMap<String, BaselineEntry> = BTreeMap::new();
+    for report in reports {
+        let path = baseline_report_path(root, report);
+        for item in &report.items {
+            let entry = baseline_entry(&path, item);
+            entries
+                .entry(entry.fingerprint.clone())
+                .and_modify(|existing| existing.count += 1)
+                .or_insert(entry);
+        }
+    }
+    Baseline {
+        version: BASELINE_VERSION,
+        entries: entries.into_values().collect(),
+    }
+}
+
+fn read_baseline(path: &Path) -> anyhow::Result<Option<Baseline>> {
+    let text = match std::fs::read_to_string(path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error.into()),
+    };
+    let baseline: Baseline = serde_json::from_str(&text)
+        .with_context(|| format!("cannot parse baseline {}", path.display()))?;
+    anyhow::ensure!(
+        baseline.version == BASELINE_VERSION,
+        "unsupported baseline version {} in {}",
+        baseline.version,
+        path.display()
+    );
+    Ok(Some(baseline))
+}
+
+fn write_baseline(path: &Path, baseline: &Baseline) -> anyhow::Result<()> {
+    let mut output = serde_json::to_string_pretty(baseline)?;
+    output.push('\n');
+    std::fs::write(path, output)
+        .with_context(|| format!("cannot write baseline {}", path.display()))
+}
+
+fn suppress_baseline(root: &Path, reports: &mut [FileReport], baseline: &Baseline) -> usize {
+    let mut remaining: HashMap<&str, usize> = baseline
+        .entries
+        .iter()
+        .map(|entry| (entry.fingerprint.as_str(), entry.count))
+        .collect();
+    let mut suppressed = 0;
+    for report in reports {
+        let path = baseline_report_path(root, report);
+        report.items.retain(|item| {
+            let entry = baseline_entry(&path, item);
+            let Some(count) = remaining.get_mut(entry.fingerprint.as_str()) else {
+                return true;
+            };
+            if *count == 0 {
+                return true;
+            }
+            *count -= 1;
+            suppressed += 1;
+            false
+        });
+    }
+    suppressed
+}
+
+fn prune_baseline(existing: Baseline, current: &Baseline) -> (Baseline, usize) {
+    let current_counts: HashMap<&str, usize> = current
+        .entries
+        .iter()
+        .map(|entry| (entry.fingerprint.as_str(), entry.count))
+        .collect();
+    let before: usize = existing.entries.iter().map(|entry| entry.count).sum();
+    let mut entries = Vec::new();
+    for mut entry in existing.entries {
+        let count = current_counts
+            .get(entry.fingerprint.as_str())
+            .copied()
+            .unwrap_or(0)
+            .min(entry.count);
+        if count > 0 {
+            entry.count = count;
+            entries.push(entry);
+        }
+    }
+    let after: usize = entries.iter().map(|entry| entry.count).sum();
+    (
+        Baseline {
+            version: BASELINE_VERSION,
+            entries,
+        },
+        before - after,
+    )
+}
+
+fn apply_report_fixes(reports: &mut [FileReport]) -> anyhow::Result<()> {
+    for report in reports {
+        let issues: Vec<Issue> = report.items.iter().map(|item| item.issue.clone()).collect();
+        let (updated, fixed, remaining) = apply_fixes(&report.original_text, &issues);
+        if fixed > 0 {
+            anyhow::ensure!(
+                file_is_unchanged(
+                    &report.path,
+                    report.original_text.as_bytes(),
+                    report.modified
+                ),
+                "{} changed on disk after scanning; refusing to overwrite it",
+                report.path.display()
+            );
+            write_in_place(&report.path, &updated)?;
+        }
+        let lines: Vec<&str> = report.original_text.split('\n').collect();
+        report.items = remaining
+            .into_iter()
+            .map(|issue| {
+                let line_text = lines
+                    .get(issue.line as usize - 1)
+                    .map(|line| line.trim_end_matches('\r').to_string())
+                    .unwrap_or_default();
+                Item { issue, line_text }
+            })
+            .collect();
+        report.fixed = fixed;
+    }
+    Ok(())
 }
 
 /// Apply all safe fixes; returns the new text, the number of fixes applied,
@@ -582,6 +783,10 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
             options.fix == FixMode::None,
             "standard input cannot be used with --write or `fix`"
         );
+        anyhow::ensure!(
+            !matches!(options.baseline, BaselineMode::Write | BaselineMode::Prune),
+            "standard input cannot be used with `baseline`"
+        );
     } else {
         anyhow::ensure!(
             options.stdin_filename.is_none(),
@@ -631,7 +836,7 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
     }
 
     let started = Instant::now();
-    let (reports, stats) = if uses_stdin {
+    let (mut reports, stats) = if uses_stdin {
         scan_stdin(
             &checker,
             options
@@ -645,10 +850,48 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
             &checker,
             &options.paths,
             options.threads,
-            options.fix == FixMode::Apply,
+            false,
             options.no_ignore,
         )?
     };
+
+    let baseline_file = baseline_path(&loaded);
+    let mut baseline_suppressed = 0;
+    match options.baseline {
+        BaselineMode::Write => {
+            let baseline = baseline_from_reports(&loaded.root, &reports);
+            let count: usize = baseline.entries.iter().map(|entry| entry.count).sum();
+            write_baseline(&baseline_file, &baseline)?;
+            println!("wrote {count} finding(s) to {}", baseline_file.display());
+            return Ok(0);
+        }
+        BaselineMode::Prune => {
+            let existing = read_baseline(&baseline_file)?.with_context(|| {
+                format!(
+                    "baseline does not exist: {}; run `ayame-spell baseline` first",
+                    baseline_file.display()
+                )
+            })?;
+            let current = baseline_from_reports(&loaded.root, &reports);
+            let (baseline, pruned) = prune_baseline(existing, &current);
+            write_baseline(&baseline_file, &baseline)?;
+            println!(
+                "pruned {pruned} stale finding(s) from {}",
+                baseline_file.display()
+            );
+            return Ok(0);
+        }
+        BaselineMode::Apply if !uses_stdin => {
+            if let Some(baseline) = read_baseline(&baseline_file)? {
+                baseline_suppressed = suppress_baseline(&loaded.root, &mut reports, &baseline);
+            }
+        }
+        BaselineMode::Apply | BaselineMode::Ignore => {}
+    }
+
+    if options.fix == FixMode::Apply {
+        apply_report_fixes(&mut reports)?;
+    }
 
     if options.fix == FixMode::DryRun {
         let code = dry_run(&reports, options.quiet)?;
@@ -750,6 +993,11 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
                 stats.skipped_large
             ));
         }
+        if baseline_suppressed > 0 {
+            summary.push_str(&format!(
+                ", {baseline_suppressed} baseline finding(s) suppressed"
+            ));
+        }
         eprintln!("{summary}");
     }
 
@@ -760,6 +1008,9 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
             stats.skipped_binary,
             stats.skipped_large
         );
+        if baseline_suppressed > 0 {
+            eprintln!("baseline suppressed: {baseline_suppressed}");
+        }
     }
 
     Ok(if issue_count > 0 { 1 } else { 0 })

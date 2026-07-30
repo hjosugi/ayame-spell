@@ -39,6 +39,10 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Localized rule hovers plus quick fixes for global/project words, inline
   ignores, configured corrections, document-wide Japanese normalization, and
   `source.fixAll.ayame-spell`.
+- Content-based baselines for adopting repositories incrementally, including
+  full-audit and stale-entry pruning workflows.
+- Searchable, paged, per-word triage with finding filters, bulk occurrence
+  fixes, non-interactive safeguards, and exact changed-file summaries.
 
 ### Changed
 

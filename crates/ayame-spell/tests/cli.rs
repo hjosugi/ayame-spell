@@ -206,6 +206,73 @@ fn explain_and_rules_cover_every_code_in_both_languages() {
 }
 
 #[test]
+fn baseline_suppresses_legacy_findings_survives_line_shifts_and_prunes() {
+    let project = Project::new();
+    let legacy = project.write(
+        "legacy.md",
+        "This is teh existing finding.\nThis recieve remains too.\n",
+    );
+
+    let create = project.run(&["baseline", "legacy.md"]);
+    assert_code(&create, 0);
+    let baseline_path = project.root.join("ayame-spell-baseline.json");
+    let baseline: Value =
+        serde_json::from_slice(&fs::read(&baseline_path).expect("baseline file")).unwrap();
+    assert_eq!(baseline["version"], 1);
+    assert_eq!(
+        baseline["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|entry| entry["count"].as_u64().unwrap())
+            .sum::<u64>(),
+        2
+    );
+
+    let clean = project.run(&["check", "--format", "json", "legacy.md"]);
+    assert_code(&clean, 0);
+    assert_eq!(json_records(&clean)[0]["issues"], 0);
+
+    fs::write(
+        &legacy,
+        "A clean inserted line.\nThis is teh existing finding.\nThis recieve remains too.\nA new teh appears here.\n",
+    )
+    .unwrap();
+    let shifted = project.run(&["check", "--format", "json", "legacy.md"]);
+    assert_code(&shifted, 1);
+    let shifted_records = json_records(&shifted);
+    assert_eq!(
+        shifted_records
+            .iter()
+            .filter(|record| record["type"] == "issue")
+            .count(),
+        1
+    );
+    assert_eq!(shifted_records[0]["line"], 4);
+
+    let all = project.run(&["check", "--no-baseline", "--format", "json", "legacy.md"]);
+    assert_code(&all, 1);
+    assert_eq!(
+        json_records(&all)
+            .iter()
+            .filter(|record| record["type"] == "issue")
+            .count(),
+        3
+    );
+
+    fs::write(
+        &legacy,
+        "A clean inserted line.\nThis is the existing finding.\nThis recieve remains too.\nA new teh appears here.\n",
+    )
+    .unwrap();
+    let prune = project.run(&["baseline", "--prune", "legacy.md"]);
+    assert_code(&prune, 0);
+    assert!(String::from_utf8_lossy(&prune.stdout).contains("pruned 1 stale"));
+    let pruned: Value = serde_json::from_slice(&fs::read(baseline_path).unwrap()).unwrap();
+    assert_eq!(pruned["entries"].as_array().unwrap().len(), 1);
+}
+
+#[test]
 fn every_rule_has_an_end_to_end_fixture() {
     struct Case {
         fixture: &'static str,
@@ -521,6 +588,25 @@ fn words_commands_cover_collect_add_and_noninteractive_triage() {
     let triage = project.run(&["words", "triage", "clean.md"]);
     assert_code(&triage, 0);
     assert!(String::from_utf8_lossy(&triage.stdout).contains("nothing to triage"));
+
+    let filtered = project.run(&[
+        "words",
+        "triage",
+        "--kind",
+        "ja-variant",
+        "--min-count",
+        "2",
+        "--limit",
+        "10",
+        "input.md",
+    ]);
+    assert_code(&filtered, 0);
+    assert!(String::from_utf8_lossy(&filtered.stdout).contains("nothing to triage"));
+
+    let non_tty = project.run(&["words", "triage", "input.md"]);
+    assert_code(&non_tty, 2);
+    assert!(String::from_utf8_lossy(&non_tty.stderr)
+        .contains("words triage needs an interactive terminal"));
 }
 
 struct RegistryServer {

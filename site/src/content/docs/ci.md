@@ -66,6 +66,27 @@ when `GITHUB_ACTIONS=true`. For code scanning, generate and upload SARIF:
 Do not parse the human format; use `brief` for compiler-style logs or `json`
 for automation.
 
+## Adopt an existing repository without a cleanup freeze
+
+Create and commit a content-based baseline once:
+
+```sh
+ayame-spell baseline .
+git add ayame-spell-baseline.json
+```
+
+`ayame-spell check .` now suppresses those existing findings while still
+failing on new ones. Fingerprints use the file path, rule, word, and surrounding
+line content rather than a line number, so inserting lines does not invalidate
+the baseline. Audit everything with `ayame-spell check --no-baseline .`.
+
+As old findings are fixed, remove their entries and verify the committed file:
+
+```sh
+ayame-spell baseline --prune .
+git diff --exit-code ayame-spell-baseline.json
+```
+
 ## Registry dictionaries in CI
 
 Registry references resolve from the local cache, so install them before the

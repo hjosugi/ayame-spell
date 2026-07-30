@@ -27,6 +27,7 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `words collect [PATH]...` | 指摘語を頻度順に収集。 |
 | `words add <WORDS>...` | プロジェクトまたはユーザー単語を追加。 |
 | `words triage [PATH]...` | 複数の指摘語を対話形式で一括整理。 |
+| `baseline [PATH]...` | 段階導入用に既存の指摘を記録または整理。 |
 | `dict list` | レジストリ辞書と導入状態を一覧表示。 |
 | `dict add <NAMES>...` | 辞書を取得してプロジェクト設定へ追加。 |
 | `dict remove <NAME>` | キャッシュを削除して設定から無効化。 |
@@ -53,6 +54,11 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `--min-count <N>` | `words collect` | N 回以上現れた語だけを出力。既定は 1。 |
 | `--plain` | `words collect` | 追記しやすいよう、語だけを出力。 |
 | `--json` | `words collect` | `word`、`count`、`kind`、`example` の JSON Lines。 |
+| `--kind <KIND>` | `words triage` | `typo`、`unknown-word`、`ja-variant` で絞り込み。 |
+| `--min-count <N>` | `words triage` | N 回以上現れた語だけを確認。 |
+| `--limit <N>` | `words triage` | 絞り込み後の確認件数を最大 N 語に制限。 |
+| `--no-baseline` | 既定、`check`、`fix` | ベースラインで抑制せず全指摘を表示。 |
+| `--prune` | `baseline` | 現在は存在しない指摘のエントリーを除去。 |
 | `<WORDS>...` | `words add` | 追加する一つ以上の単語。 |
 | `--global` | `words add` | プロジェクト単語ではなくユーザー単語へ追加。 |
 | `<NAMES>...` | `dict add` | 取得する一つ以上のレジストリ名。 |
@@ -126,6 +132,7 @@ Commands:
   dict         Shared dictionaries from the ayame-spell registry
   init         Write a starter ayame-spell.toml in the current directory
   config       Print the effective merged configuration
+  baseline     Record current findings so only new findings fail later checks
   explain      Explain a stable issue code and how to configure or silence it
   rules        List every stable issue code
   completions  Generate a shell completion script on standard output
@@ -142,6 +149,9 @@ Options:
 
       --no-config
           Ignore project and global configuration files
+
+      --no-baseline
+          Ignore `ayame-spell-baseline.json` and report every finding
 
       --mode <MODE>
           Override `[check].mode`
@@ -215,6 +225,7 @@ Arguments:
 Options:
       --config <PATH>          Load exactly this configuration file
       --no-config              Ignore project and global configuration files
+      --no-baseline            Ignore `ayame-spell-baseline.json` and report every finding
       --mode <MODE>            Override `[check].mode` [possible values: corrections, dictionary,
                                off]
       --exclude <GLOB>         Exclude an additional glob (repeatable)
@@ -247,6 +258,7 @@ Arguments:
 Options:
       --config <PATH>          Load exactly this configuration file
       --no-config              Ignore project and global configuration files
+      --no-baseline            Ignore `ayame-spell-baseline.json` and report every finding
       --mode <MODE>            Override `[check].mode` [possible values: corrections, dictionary,
                                off]
       --exclude <GLOB>         Exclude an additional glob (repeatable)
@@ -276,8 +288,7 @@ Usage: ayame-spell words <COMMAND>
 Commands:
   collect  Collect flagged words across files, ranked by frequency
   add      Add words to the project (default) or global word file
-  triage   Interactive bulk triage of flagged words: multi-select what goes to the project
-           dictionary, the global dictionary, or the ignore list
+  triage   Search flagged words and choose a dictionary, ignore, fix, or skip action for each one
   help     Print this message or the help of the given subcommand(s)
 
 Options:
@@ -322,16 +333,19 @@ Options:
 
 ```text
 $ ayame-spell words triage --help
-Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the
-global dictionary, or the ignore list
+Search flagged words and choose a dictionary, ignore, fix, or skip action for each one
 
-Usage: ayame-spell words triage [PATH]...
+Usage: ayame-spell words triage [OPTIONS] [PATH]...
 
 Arguments:
   [PATH]...
 
 Options:
-  -h, --help  Print help
+      --kind <KIND>            Only include one finding kind [possible values: typo, unknown-word,
+                               ja-variant]
+      --min-count <MIN_COUNT>  Only include words flagged at least this many times [default: 1]
+      --limit <LIMIT>          Review at most this many words after sorting and filtering
+  -h, --help                   Print help
 ```
 
 ## `ayame-spell dict`
@@ -475,6 +489,38 @@ Usage: ayame-spell config
 
 Options:
   -h, --help  Print help
+```
+
+## `ayame-spell baseline`
+
+```text
+$ ayame-spell baseline --help
+Record current findings so only new findings fail later checks
+
+Usage: ayame-spell baseline [OPTIONS] [PATH]...
+
+Arguments:
+  [PATH]...  Files or directories to check (`-` reads standard input)
+
+Options:
+      --config <PATH>          Load exactly this configuration file
+      --no-config              Ignore project and global configuration files
+      --no-baseline            Ignore `ayame-spell-baseline.json` and report every finding
+      --mode <MODE>            Override `[check].mode` [possible values: corrections, dictionary,
+                               off]
+      --exclude <GLOB>         Exclude an additional glob (repeatable)
+      --no-ignore              Do not honour `.gitignore`, `.ignore`, or Git exclude files
+      --hidden                 Include hidden files and directories
+      --color <COLOR>          Colour policy for human output [default: auto] [possible values:
+                               auto, always, never]
+  -q, --quiet                  Print findings only, without summaries
+  -v, --verbose...             Report configuration sources, skipped files, and elapsed time
+      --stdin-filename <PATH>  Display name used for standard input (also selects overrides)
+      --max-file-size <BYTES>  Skip files larger than this many bytes (overrides
+                               `[files].max-file-size`)
+  -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
+      --prune                  Remove baseline entries whose finding no longer exists
+  -h, --help                   Print help
 ```
 
 ## `ayame-spell explain`

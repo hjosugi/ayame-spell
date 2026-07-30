@@ -29,6 +29,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --format 'Output format'
             cand --lang 'Language for `--list-rules` (defaults from LANG)'
             cand --no-config 'Ignore project and global configuration files'
+            cand --no-baseline 'Ignore `ayame-spell-baseline.json` and report every finding'
             cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
             cand --hidden 'Include hidden files and directories'
             cand -q 'Print findings only, without summaries'
@@ -48,6 +49,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand dict 'Shared dictionaries from the ayame-spell registry'
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print the effective merged configuration'
+            cand baseline 'Record current findings so only new findings fail later checks'
             cand explain 'Explain a stable issue code and how to configure or silence it'
             cand rules 'List every stable issue code'
             cand completions 'Generate a shell completion script on standard output'
@@ -66,6 +68,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --threads 'Worker threads (overrides the detected CPU count)'
             cand --format 'format'
             cand --no-config 'Ignore project and global configuration files'
+            cand --no-baseline 'Ignore `ayame-spell-baseline.json` and report every finding'
             cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
             cand --hidden 'Include hidden files and directories'
             cand -q 'Print findings only, without summaries'
@@ -87,6 +90,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand -j 'Worker threads (overrides the detected CPU count)'
             cand --threads 'Worker threads (overrides the detected CPU count)'
             cand --no-config 'Ignore project and global configuration files'
+            cand --no-baseline 'Ignore `ayame-spell-baseline.json` and report every finding'
             cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
             cand --hidden 'Include hidden files and directories'
             cand -q 'Print findings only, without summaries'
@@ -103,7 +107,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --help 'Print help'
             cand collect 'Collect flagged words across files, ranked by frequency'
             cand add 'Add words to the project (default) or global word file'
-            cand triage 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list'
+            cand triage 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'ayame-spell;words;collect'= {
@@ -119,13 +123,16 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --help 'Print help'
         }
         &'ayame-spell;words;triage'= {
+            cand --kind 'Only include one finding kind'
+            cand --min-count 'Only include words flagged at least this many times'
+            cand --limit 'Review at most this many words after sorting and filtering'
             cand -h 'Print help'
             cand --help 'Print help'
         }
         &'ayame-spell;words;help'= {
             cand collect 'Collect flagged words across files, ranked by frequency'
             cand add 'Add words to the project (default) or global word file'
-            cand triage 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list'
+            cand triage 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'ayame-spell;words;help;collect'= {
@@ -215,6 +222,27 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand -h 'Print help'
             cand --help 'Print help'
         }
+        &'ayame-spell;baseline'= {
+            cand --config 'Load exactly this configuration file'
+            cand --mode 'Override `[check].mode`'
+            cand --exclude 'Exclude an additional glob (repeatable)'
+            cand --color 'Colour policy for human output'
+            cand --stdin-filename 'Display name used for standard input (also selects overrides)'
+            cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
+            cand -j 'Worker threads (overrides the detected CPU count)'
+            cand --threads 'Worker threads (overrides the detected CPU count)'
+            cand --no-config 'Ignore project and global configuration files'
+            cand --no-baseline 'Ignore `ayame-spell-baseline.json` and report every finding'
+            cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
+            cand --hidden 'Include hidden files and directories'
+            cand -q 'Print findings only, without summaries'
+            cand --quiet 'Print findings only, without summaries'
+            cand -v 'Report configuration sources, skipped files, and elapsed time'
+            cand --verbose 'Report configuration sources, skipped files, and elapsed time'
+            cand --prune 'Remove baseline entries whose finding no longer exists'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
         &'ayame-spell;explain'= {
             cand --lang 'Explanation language (defaults from LANG)'
             cand -h 'Print help'
@@ -245,6 +273,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand dict 'Shared dictionaries from the ayame-spell registry'
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print the effective merged configuration'
+            cand baseline 'Record current findings so only new findings fail later checks'
             cand explain 'Explain a stable issue code and how to configure or silence it'
             cand rules 'List every stable issue code'
             cand completions 'Generate a shell completion script on standard output'
@@ -259,7 +288,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;help;words'= {
             cand collect 'Collect flagged words across files, ranked by frequency'
             cand add 'Add words to the project (default) or global word file'
-            cand triage 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list'
+            cand triage 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one'
         }
         &'ayame-spell;help;words;collect'= {
         }
@@ -290,6 +319,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;help;init'= {
         }
         &'ayame-spell;help;config'= {
+        }
+        &'ayame-spell;help;baseline'= {
         }
         &'ayame-spell;help;explain'= {
         }

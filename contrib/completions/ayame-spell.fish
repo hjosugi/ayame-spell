@@ -1,6 +1,6 @@
 # Print an optspec for argparse to handle cmd's options that are independent of any subcommand.
 function __fish_ayame_spell_global_optspecs
-	string join \n config= no-config mode= exclude= no-ignore hidden color= q/quiet v/verbose stdin-filename= max-file-size= j/threads= w/write format= list-rules lang= h/help V/version
+	string join \n config= no-config no-baseline mode= exclude= no-ignore hidden color= q/quiet v/verbose stdin-filename= max-file-size= j/threads= w/write format= list-rules lang= h/help V/version
 end
 
 function __fish_ayame_spell_needs_command
@@ -43,6 +43,7 @@ sarif\t''"
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -l lang -d 'Language for `--list-rules` (defaults from LANG)' -r -f -a "en\t''
 ja\t''"
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -l no-config -d 'Ignore project and global configuration files'
+complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -l no-baseline -d 'Ignore `ayame-spell-baseline.json` and report every finding'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -l no-ignore -d 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -l hidden -d 'Include hidden files and directories'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -s q -l quiet -d 'Print findings only, without summaries'
@@ -57,6 +58,7 @@ complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "words" -d 'Wor
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "dict" -d 'Shared dictionaries from the ayame-spell registry'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "init" -d 'Write a starter ayame-spell.toml in the current directory'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "config" -d 'Print the effective merged configuration'
+complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "baseline" -d 'Record current findings so only new findings fail later checks'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "explain" -d 'Explain a stable issue code and how to configure or silence it'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "rules" -d 'List every stable issue code'
 complete -c ayame-spell -n "__fish_ayame_spell_needs_command" -a "completions" -d 'Generate a shell completion script on standard output'
@@ -80,6 +82,7 @@ json\t''
 github\t''
 sarif\t''"
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand check" -l no-config -d 'Ignore project and global configuration files'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand check" -l no-baseline -d 'Ignore `ayame-spell-baseline.json` and report every finding'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand check" -l no-ignore -d 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand check" -l hidden -d 'Include hidden files and directories'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand check" -s q -l quiet -d 'Print findings only, without summaries'
@@ -98,6 +101,7 @@ complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -l stdin-fi
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -l max-file-size -d 'Skip files larger than this many bytes (overrides `[files].max-file-size`)' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -s j -l threads -d 'Worker threads (overrides the detected CPU count)' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -l no-config -d 'Ignore project and global configuration files'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -l no-baseline -d 'Ignore `ayame-spell-baseline.json` and report every finding'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -l no-ignore -d 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -l hidden -d 'Include hidden files and directories'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -s q -l quiet -d 'Print findings only, without summaries'
@@ -108,7 +112,7 @@ complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand fix" -s h -l hel
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and not __fish_seen_subcommand_from collect add triage help" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and not __fish_seen_subcommand_from collect add triage help" -f -a "collect" -d 'Collect flagged words across files, ranked by frequency'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and not __fish_seen_subcommand_from collect add triage help" -f -a "add" -d 'Add words to the project (default) or global word file'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and not __fish_seen_subcommand_from collect add triage help" -f -a "triage" -d 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and not __fish_seen_subcommand_from collect add triage help" -f -a "triage" -d 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and not __fish_seen_subcommand_from collect add triage help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from collect" -l min-count -d 'Only include words flagged at least this many times' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from collect" -l plain -d 'Print bare words only (ready to append to a word file)'
@@ -116,10 +120,15 @@ complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fis
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from collect" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from add" -l global
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from add" -s h -l help -d 'Print help'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from triage" -l kind -d 'Only include one finding kind' -r -f -a "typo\t''
+unknown-word\t''
+ja-variant\t''"
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from triage" -l min-count -d 'Only include words flagged at least this many times' -r
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from triage" -l limit -d 'Review at most this many words after sorting and filtering' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from triage" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "collect" -d 'Collect flagged words across files, ranked by frequency'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "add" -d 'Add words to the project (default) or global word file'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "triage" -d 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "triage" -d 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "list" -d 'List available dictionaries and their install status'
@@ -166,6 +175,25 @@ complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand init" -l interac
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand init" -l yes -d 'Use the non-interactive starter configuration'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand init" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand config" -s h -l help -d 'Print help'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l config -d 'Load exactly this configuration file' -r -F
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l mode -d 'Override `[check].mode`' -r -f -a "corrections\t''
+dictionary\t''
+off\t''"
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l exclude -d 'Exclude an additional glob (repeatable)' -r
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l color -d 'Colour policy for human output' -r -f -a "auto\t''
+always\t''
+never\t''"
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l stdin-filename -d 'Display name used for standard input (also selects overrides)' -r -F
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l max-file-size -d 'Skip files larger than this many bytes (overrides `[files].max-file-size`)' -r
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -s j -l threads -d 'Worker threads (overrides the detected CPU count)' -r
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l no-config -d 'Ignore project and global configuration files'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l no-baseline -d 'Ignore `ayame-spell-baseline.json` and report every finding'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l no-ignore -d 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l hidden -d 'Include hidden files and directories'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -s q -l quiet -d 'Print findings only, without summaries'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -s v -l verbose -d 'Report configuration sources, skipped files, and elapsed time'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -l prune -d 'Remove baseline entries whose finding no longer exists'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand baseline" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand explain" -l lang -d 'Explanation language (defaults from LANG)' -r -f -a "en\t''
 ja\t''"
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand explain" -s h -l help -d 'Print help'
@@ -176,21 +204,22 @@ complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand completions" -s 
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand completion-candidates" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand lsp" -l stdio -d 'Use standard input/output transport. Accepted for client compatibility; stdio is always the transport'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand lsp" -s h -l help -d 'Print help'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "check" -d 'Check files and report issues (the default)'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "fix" -d 'Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "words" -d 'Word management: bulk collection, triage, and dictionary additions'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "dict" -d 'Shared dictionaries from the ayame-spell registry'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "init" -d 'Write a starter ayame-spell.toml in the current directory'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "config" -d 'Print the effective merged configuration'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "explain" -d 'Explain a stable issue code and how to configure or silence it'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "rules" -d 'List every stable issue code'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "completions" -d 'Generate a shell completion script on standard output'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "completion-candidates" -d 'Internal, non-network completion candidate provider'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "lsp" -d 'Run the LSP server (used by editor integrations)'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config explain rules completions completion-candidates lsp help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "check" -d 'Check files and report issues (the default)'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "fix" -d 'Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "words" -d 'Word management: bulk collection, triage, and dictionary additions'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "dict" -d 'Shared dictionaries from the ayame-spell registry'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "init" -d 'Write a starter ayame-spell.toml in the current directory'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "config" -d 'Print the effective merged configuration'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "baseline" -d 'Record current findings so only new findings fail later checks'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "explain" -d 'Explain a stable issue code and how to configure or silence it'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "rules" -d 'List every stable issue code'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "completions" -d 'Generate a shell completion script on standard output'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "completion-candidates" -d 'Internal, non-network completion candidate provider'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "lsp" -d 'Run the LSP server (used by editor integrations)'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and not __fish_seen_subcommand_from check fix words dict init config baseline explain rules completions completion-candidates lsp help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from words" -f -a "collect" -d 'Collect flagged words across files, ranked by frequency'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from words" -f -a "add" -d 'Add words to the project (default) or global word file'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from words" -f -a "triage" -d 'Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the global dictionary, or the ignore list'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from words" -f -a "triage" -d 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "list" -d 'List available dictionaries and their install status'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "add" -d 'Download dictionaries and enable them in the project config'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "search" -d 'Search registry names and descriptions'

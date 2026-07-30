@@ -59,6 +59,10 @@ struct ScanArgs {
     #[arg(long)]
     no_config: bool,
 
+    /// Ignore `ayame-spell-baseline.json` and report every finding.
+    #[arg(long)]
+    no_baseline: bool,
+
     /// Override `[check].mode`.
     #[arg(long, value_enum)]
     mode: Option<ModeArg>,
@@ -188,6 +192,14 @@ enum Cmd {
     },
     /// Print the effective merged configuration.
     Config,
+    /// Record current findings so only new findings fail later checks.
+    Baseline {
+        #[command(flatten)]
+        scan: ScanArgs,
+        /// Remove baseline entries whose finding no longer exists.
+        #[arg(long)]
+        prune: bool,
+    },
     /// Explain a stable issue code and how to configure or silence it.
     Explain {
         /// Issue code, for example `ja-variant`.
@@ -289,6 +301,7 @@ fn main() {
                 yes,
             }) => init(force, interactive, yes),
             Some(Cmd::Config) => print_config(),
+            Some(Cmd::Baseline { scan, prune }) => run_baseline(scan, prune),
             Some(Cmd::Explain { code, lang }) => explain_rule(&code, output_language(lang)),
             Some(Cmd::Rules { lang }) => print_rules(output_language(lang)),
             Some(Cmd::Completions { shell }) => print_completions(shell),
@@ -417,10 +430,41 @@ fn word_file_candidates(prefix: &str) -> anyhow::Result<Vec<String>> {
 }
 
 fn run_scan(scan: ScanArgs, fix: check::FixMode, format: Format) -> anyhow::Result<i32> {
+    let baseline = if scan.no_baseline {
+        check::BaselineMode::Ignore
+    } else {
+        check::BaselineMode::Apply
+    };
     check::run(check::RunOptions {
         paths: scan.paths,
         fix,
+        baseline,
         format,
+        threads: scan.threads,
+        config: scan.config,
+        no_config: scan.no_config,
+        mode: scan.mode.map(Into::into),
+        exclude: scan.exclude,
+        no_ignore: scan.no_ignore,
+        hidden: scan.hidden,
+        color: scan.color,
+        quiet: scan.quiet,
+        verbose: scan.verbose,
+        stdin_filename: scan.stdin_filename,
+        max_file_size: scan.max_file_size,
+    })
+}
+
+fn run_baseline(scan: ScanArgs, prune: bool) -> anyhow::Result<i32> {
+    check::run(check::RunOptions {
+        paths: scan.paths,
+        fix: check::FixMode::None,
+        baseline: if prune {
+            check::BaselineMode::Prune
+        } else {
+            check::BaselineMode::Write
+        },
+        format: Format::Human,
         threads: scan.threads,
         config: scan.config,
         no_config: scan.no_config,
