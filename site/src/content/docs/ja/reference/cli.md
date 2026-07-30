@@ -59,6 +59,8 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `--limit <N>` | `words triage` | 絞り込み後の確認件数を最大 N 語に制限。 |
 | `--no-baseline` | 既定、`check`、`fix` | ベースラインで抑制せず全指摘を表示。 |
 | `--prune` | `baseline` | 現在は存在しない指摘のエントリーを除去。 |
+| `--schema` | `config` | バージョン固定の設定 JSON Schema を出力。 |
+| `--validate [PATH]` | `config` | 検出または指定した設定ファイルを検証。 |
 | `<WORDS>...` | `words add` | 追加する一つ以上の単語。 |
 | `--global` | `words add` | プロジェクト単語ではなくユーザー単語へ追加。 |
 | `<NAMES>...` | `dict add` | 取得する一つ以上のレジストリ名。 |
@@ -131,7 +133,7 @@ Commands:
   words        Word management: bulk collection, triage, and dictionary additions
   dict         Shared dictionaries from the ayame-spell registry
   init         Write a starter ayame-spell.toml in the current directory
-  config       Print the effective merged configuration
+  config       Print, validate, or describe the configuration
   baseline     Record current findings so only new findings fail later checks
   explain      Explain a stable issue code and how to configure or silence it
   rules        List every stable issue code
@@ -483,12 +485,17 @@ Options:
 
 ```text
 $ ayame-spell config --help
-Print the effective merged configuration
+Print, validate, or describe the configuration
 
-Usage: ayame-spell config
+Usage: ayame-spell config [OPTIONS] [PATH]
+
+Arguments:
+  [PATH]  Configuration file to validate
 
 Options:
-  -h, --help  Print help
+      --schema    Print the versioned JSON Schema
+      --validate  Validate a configuration file (discovers the project file when PATH is omitted)
+  -h, --help      Print help
 ```
 
 ## `ayame-spell baseline`

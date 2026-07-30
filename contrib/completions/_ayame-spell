@@ -302,8 +302,11 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (config)
 _arguments "${_arguments_options[@]}" : \
+'(--validate)--schema[Print the versioned JSON Schema]' \
+'--validate[Validate a configuration file (discovers the project file when PATH is omitted)]' \
 '-h[Print help]' \
 '--help[Print help]' \
+'::path -- Configuration file to validate:_files' \
 && ret=0
 ;;
 (baseline)
@@ -508,7 +511,7 @@ _ayame-spell_commands() {
 'words:Word management\: bulk collection, triage, and dictionary additions' \
 'dict:Shared dictionaries from the ayame-spell registry' \
 'init:Write a starter ayame-spell.toml in the current directory' \
-'config:Print the effective merged configuration' \
+'config:Print, validate, or describe the configuration' \
 'baseline:Record current findings so only new findings fail later checks' \
 'explain:Explain a stable issue code and how to configure or silence it' \
 'rules:List every stable issue code' \
@@ -653,7 +656,7 @@ _ayame-spell__help_commands() {
 'words:Word management\: bulk collection, triage, and dictionary additions' \
 'dict:Shared dictionaries from the ayame-spell registry' \
 'init:Write a starter ayame-spell.toml in the current directory' \
-'config:Print the effective merged configuration' \
+'config:Print, validate, or describe the configuration' \
 'baseline:Record current findings so only new findings fail later checks' \
 'explain:Explain a stable issue code and how to configure or silence it' \
 'rules:List every stable issue code' \

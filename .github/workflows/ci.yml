@@ -40,6 +40,10 @@ jobs:
           git diff --exit-code -- \
             site/src/content/docs/reference/rules.md \
             site/src/content/docs/ja/reference/rules.md
+      - name: configuration schema is up to date
+        run: |
+          cargo xtask config-schema
+          git diff --exit-code -- site/public/schema/v1/ayame-spell.json
       - name: manual page is up to date
         run: |
           cargo xtask man

@@ -48,7 +48,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand words 'Word management: bulk collection, triage, and dictionary additions'
             cand dict 'Shared dictionaries from the ayame-spell registry'
             cand init 'Write a starter ayame-spell.toml in the current directory'
-            cand config 'Print the effective merged configuration'
+            cand config 'Print, validate, or describe the configuration'
             cand baseline 'Record current findings so only new findings fail later checks'
             cand explain 'Explain a stable issue code and how to configure or silence it'
             cand rules 'List every stable issue code'
@@ -219,6 +219,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --help 'Print help'
         }
         &'ayame-spell;config'= {
+            cand --schema 'Print the versioned JSON Schema'
+            cand --validate 'Validate a configuration file (discovers the project file when PATH is omitted)'
             cand -h 'Print help'
             cand --help 'Print help'
         }
@@ -272,7 +274,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand words 'Word management: bulk collection, triage, and dictionary additions'
             cand dict 'Shared dictionaries from the ayame-spell registry'
             cand init 'Write a starter ayame-spell.toml in the current directory'
-            cand config 'Print the effective merged configuration'
+            cand config 'Print, validate, or describe the configuration'
             cand baseline 'Record current findings so only new findings fail later checks'
             cand explain 'Explain a stable issue code and how to configure or silence it'
             cand rules 'List every stable issue code'

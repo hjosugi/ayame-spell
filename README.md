@@ -126,6 +126,10 @@ For an existing repository, run `ayame-spell baseline .` and commit
 `check --no-baseline` audits everything and `baseline --prune` removes entries
 that no longer exist.
 
+CI can be as small as `uses: hjosugi/ayame-spell@v1`; a composite Action,
+pre-commit check/fix hooks, SARIF upload, GitLab, and CircleCI recipes are in the
+[CI guide](https://hjosugi.github.io/ayame-spell/ci/).
+
 ## Configuration
 
 `ayame-spell.toml` (or `.ayame-spell.toml`) at the project root, merged
@@ -133,6 +137,9 @@ over the per-user global config `~/.config/ayame-spell/config.toml`.
 All keys are optional; the defaults are what you saw above.
 See the [complete configuration reference](https://hjosugi.github.io/ayame-spell/reference/configuration/)
 for every key, default, merge rule, and override precedence rule.
+Editor completion is available through the published
+[JSON Schema](https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json);
+use `ayame-spell config --validate` to catch unknown keys with suggestions.
 
 ```toml
 [check]

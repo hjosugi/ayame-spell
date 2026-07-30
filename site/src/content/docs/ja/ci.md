@@ -9,6 +9,22 @@ ayame-spell は指摘が残っていると終了コード `1` を返すため、
 
 ## GitHub Actions
 
+このリポジトリには composite Action が含まれます。メジャーリリースと checker
+バージョンを固定します。
+
+```yaml
+      - uses: actions/checkout@v6
+      - uses: hjosugi/ayame-spell@v1
+        with:
+          version: 1.0.0
+```
+
+指定した crates.io バージョンを厳密に導入し、GitHub の注釈を出力します。
+`sarif: true` なら代わりに SARIF をアップロードします。この場合、呼び出し側
+workflow に `security-events: write` を付与してください。
+
+ソースからビルドする同等の設定は次のとおりです。
+
 ```yaml
 name: spelling
 
@@ -44,6 +60,46 @@ spell:
   script:
     - ayame-spell check . --format brief
 ```
+
+## CircleCI
+
+```yaml
+version: 2.1
+jobs:
+  spelling:
+    docker:
+      - image: cimg/rust:1.80
+    steps:
+      - checkout
+      - run: cargo install --locked ayame-spell
+      - run: ayame-spell check . --format brief
+workflows:
+  spelling:
+    jobs: [spelling]
+```
+
+シェルを使える任意の CI では、次のポータブルな手順を使えます。
+
+```sh
+cargo install --locked ayame-spell
+ayame-spell check . --format brief
+```
+
+## pre-commit
+
+チェック用と手動修正用のフックを公開しています。
+
+```yaml
+repos:
+  - repo: https://github.com/hjosugi/ayame-spell
+    rev: v1.0.0
+    hooks:
+      - id: ayame-spell
+```
+
+ファイルを明示的に書き換える場合は `id: ayame-spell-fix` と
+`stages: [manual]` を使い、
+`pre-commit run ayame-spell-fix --all-files` を実行します。
 
 ## GitHub 注釈と SARIF
 

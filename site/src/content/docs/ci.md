@@ -9,6 +9,22 @@ local wordlists used by the configuration.
 
 ## GitHub Actions
 
+The repository includes a composite Action. Pin its major release and the
+checker version:
+
+```yaml
+      - uses: actions/checkout@v6
+      - uses: hjosugi/ayame-spell@v1
+        with:
+          version: 1.0.0
+```
+
+It installs the exact requested crates.io version and emits native GitHub
+annotations. Set `sarif: true` to upload a SARIF result instead; the calling
+workflow must grant `security-events: write`.
+
+The equivalent build-from-source recipe is:
+
 ```yaml
 name: spelling
 
@@ -44,6 +60,46 @@ spell:
   script:
     - ayame-spell check . --format brief
 ```
+
+## CircleCI
+
+```yaml
+version: 2.1
+jobs:
+  spelling:
+    docker:
+      - image: cimg/rust:1.80
+    steps:
+      - checkout
+      - run: cargo install --locked ayame-spell
+      - run: ayame-spell check . --format brief
+workflows:
+  spelling:
+    jobs: [spelling]
+```
+
+On any shell-based CI runner, the portable fallback is:
+
+```sh
+cargo install --locked ayame-spell
+ayame-spell check . --format brief
+```
+
+## pre-commit
+
+The repository exports both checking and manual fixing hooks:
+
+```yaml
+repos:
+  - repo: https://github.com/hjosugi/ayame-spell
+    rev: v1.0.0
+    hooks:
+      - id: ayame-spell
+```
+
+Use `id: ayame-spell-fix` with `stages: [manual]`, then run
+`pre-commit run ayame-spell-fix --all-files` when you explicitly want files
+rewritten.
 
 ## GitHub annotations and SARIF
 

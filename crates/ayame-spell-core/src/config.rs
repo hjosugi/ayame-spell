@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::japanese::{KatakanaStyle, SpacePolicy};
 
 pub const PROJECT_FILE_NAMES: [&str; 2] = ["ayame-spell.toml", ".ayame-spell.toml"];
+pub const CONFIG_SCHEMA: &str = include_str!("../schema/ayame-spell.json");
 
 /// Globs excluded in every project on top of `.gitignore`: machine-written
 /// files whose "words" are package names and minified identifiers.
@@ -337,6 +338,110 @@ impl RawConfig {
     }
 }
 
+/// Validate one configuration file without discovery or merging.
+///
+/// This reports unknown keys before deserializing values so the error can
+/// include a nearby valid key.
+pub fn validate_config(text: &str) -> anyhow::Result<()> {
+    let value: toml::Value = toml::from_str(text)?;
+    validate_keys(&value, "")?;
+    RawConfig::parse(text)?;
+    Ok(())
+}
+
+fn validate_keys(value: &toml::Value, path: &str) -> anyhow::Result<()> {
+    let Some(table) = value.as_table() else {
+        return Ok(());
+    };
+    let Some(allowed) = allowed_keys(path) else {
+        return Ok(());
+    };
+    for (key, child) in table {
+        if !allowed.contains(&key.as_str()) {
+            let suggestion = allowed
+                .iter()
+                .min_by_key(|candidate| edit_distance(key, candidate))
+                .filter(|candidate| edit_distance(key, candidate) <= suggestion_limit(key))
+                .map(|candidate| join_key(path, candidate));
+            let unknown = join_key(path, key);
+            if let Some(suggestion) = suggestion {
+                anyhow::bail!("unknown config key `{unknown}`; did you mean `{suggestion}`?");
+            }
+            anyhow::bail!("unknown config key `{unknown}`");
+        }
+        let child_path = join_key(path, key);
+        if child_path == "overrides" {
+            if let Some(items) = child.as_array() {
+                for item in items {
+                    validate_keys(item, "overrides")?;
+                }
+            }
+        } else {
+            validate_keys(child, &child_path)?;
+        }
+    }
+    Ok(())
+}
+
+fn allowed_keys(path: &str) -> Option<&'static [&'static str]> {
+    match path {
+        "" => Some(&[
+            "check",
+            "files",
+            "words",
+            "corrections",
+            "japanese",
+            "overrides",
+        ]),
+        "check" => Some(&["mode", "min-word-len", "max-token-len"]),
+        "files" => Some(&["exclude", "include-hidden", "max-file-size"]),
+        "words" => Some(&["project", "ignore", "dictionaries"]),
+        "corrections" => Some(&["builtin", "extra", "words"]),
+        "japanese" => Some(&[
+            "enabled",
+            "katakana-style",
+            "variants",
+            "variant-files",
+            "flag-fullwidth-alnum",
+            "flag-halfwidth-kana",
+            "fullwidth-space",
+        ]),
+        "overrides" => Some(&["paths", "mode", "japanese"]),
+        // User-defined correction and variant keys are intentionally open.
+        "corrections.words" | "japanese.variants" => None,
+        _ => Some(&[]),
+    }
+}
+
+fn join_key(path: &str, key: &str) -> String {
+    if path.is_empty() {
+        key.to_string()
+    } else {
+        format!("{path}.{key}")
+    }
+}
+
+fn suggestion_limit(key: &str) -> usize {
+    3.max(key.chars().count() / 3)
+}
+
+fn edit_distance(left: &str, right: &str) -> usize {
+    let right: Vec<char> = right.chars().collect();
+    let mut previous: Vec<usize> = (0..=right.len()).collect();
+    for (row, left_char) in left.chars().enumerate() {
+        let mut current = vec![row + 1];
+        for (column, right_char) in right.iter().enumerate() {
+            current.push(
+                (previous[column + 1] + 1)
+                    .min(current[column] + 1)
+                    .min(previous[column] + usize::from(left_char != *right_char)),
+            );
+        }
+        previous = current;
+    }
+    previous[right.len()]
+}
+
 /// A discovered and merged configuration.
 #[derive(Debug, Clone)]
 pub struct LoadedConfig {
@@ -553,6 +658,59 @@ mod tests {
     #[test]
     fn unknown_keys_are_rejected() {
         assert!(RawConfig::parse("[check]\ntypo-key = 1\n").is_err());
+    }
+
+    #[test]
+    fn validation_suggests_the_nearest_full_key() {
+        let error = validate_config("[japanese]\nkatakana-stle = \"long\"\n")
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("unknown config key `japanese.katakana-stle`"));
+        assert!(error.contains("did you mean `japanese.katakana-style`?"));
+    }
+
+    #[test]
+    fn published_schema_tracks_every_effective_config_key() {
+        let schema: serde_json::Value = serde_json::from_str(CONFIG_SCHEMA).unwrap();
+        let config = serde_json::to_value(RawConfig::default().finalize()).unwrap();
+        assert_schema_keys(&schema, &config);
+
+        let override_value = serde_json::to_value(OverrideConfig {
+            paths: vec!["docs/**".to_string()],
+            mode: Some(Mode::Dictionary),
+            japanese: Some(false),
+        })
+        .unwrap();
+        assert_eq!(
+            sorted_keys(&schema["properties"]["overrides"]["items"]["properties"]),
+            sorted_keys(&override_value)
+        );
+    }
+
+    fn assert_schema_keys(schema: &serde_json::Value, config: &serde_json::Value) {
+        assert_eq!(
+            sorted_keys(&schema["properties"]),
+            sorted_keys(config),
+            "top-level schema keys must match Config"
+        );
+        for section in ["check", "files", "words", "corrections", "japanese"] {
+            assert_eq!(
+                sorted_keys(&schema["properties"][section]["properties"]),
+                sorted_keys(&config[section]),
+                "schema keys must match Config.{section}"
+            );
+        }
+    }
+
+    fn sorted_keys(value: &serde_json::Value) -> Vec<&str> {
+        let mut keys: Vec<&str> = value
+            .as_object()
+            .expect("JSON object")
+            .keys()
+            .map(String::as_str)
+            .collect();
+        keys.sort_unstable();
+        keys
     }
 
     #[test]

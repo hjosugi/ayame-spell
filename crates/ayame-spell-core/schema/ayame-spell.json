@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json",
+  "title": "ayame-spell configuration",
+  "description": "Configuration for ayame-spell. Every key is optional and unknown keys are errors.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/mode",
+          "default": "corrections",
+          "description": "English checking mode. Japanese checks are independent."
+        },
+        "min-word-len": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3,
+          "description": "Words shorter than this are never flagged."
+        },
+        "max-token-len": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 40,
+          "description": "Longer digit-containing tokens are treated as hashes and skipped."
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Glob patterns excluded in addition to .gitignore and built-in excludes."
+        },
+        "include-hidden": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include hidden files and directories."
+        },
+        "max-file-size": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Skip files larger than this many bytes; zero means unlimited."
+        }
+      }
+    },
+    "words": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project": {
+          "type": "string",
+          "default": "ayame-words.txt",
+          "description": "Project word file, relative to the project root unless absolute."
+        },
+        "ignore": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Words never flagged in any mode."
+        },
+        "dictionaries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reference" },
+          "default": [],
+          "description": "Wordlists used by dictionary mode."
+        }
+      }
+    },
+    "corrections": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "builtin": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use the built-in English corrections table."
+        },
+        "extra": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reference" },
+          "default": [],
+          "description": "Extra TSV correction tables or registry references."
+        },
+        "words": {
+          "type": "object",
+          "default": {},
+          "description": "Inline typo to replacement mappings.",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "japanese": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable configured Japanese checks."
+        },
+        "katakana-style": {
+          "type": "string",
+          "enum": ["consistency", "long", "short", "off"],
+          "default": "consistency",
+          "description": "Katakana long-vowel policy."
+        },
+        "variants": {
+          "type": "object",
+          "default": {},
+          "description": "Inline variant to preferred-form mappings.",
+          "additionalProperties": { "type": "string" }
+        },
+        "variant-files": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reference" },
+          "default": [],
+          "description": "TOML variant rule files or registry references."
+        },
+        "flag-fullwidth-alnum": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report fullwidth ASCII letters and digits."
+        },
+        "flag-halfwidth-kana": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report halfwidth katakana."
+        },
+        "fullwidth-space": {
+          "type": "string",
+          "enum": ["code", "always", "never"],
+          "default": "code",
+          "description": "Where fullwidth U+3000 spaces are reported."
+        }
+      }
+    },
+    "overrides": {
+      "type": "array",
+      "default": [],
+      "description": "Per-glob overrides applied in file order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["paths"],
+        "properties": {
+          "paths": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "description": "Glob patterns relative to the project root."
+          },
+          "mode": { "$ref": "#/$defs/mode" },
+          "japanese": {
+            "type": "boolean",
+            "description": "Enable or disable Japanese checks for matching files."
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "mode": {
+      "type": "string",
+      "enum": ["corrections", "dictionary", "off"]
+    },
+    "reference": {
+      "type": "string",
+      "description": "Absolute path, project-relative path, or registry:name reference."
+    }
+  }
+}

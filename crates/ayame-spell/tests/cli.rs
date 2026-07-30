@@ -411,6 +411,38 @@ fn global_and_project_configs_merge() {
 }
 
 #[test]
+fn config_schema_and_validation_cover_editor_workflows() {
+    let project = Project::new();
+    project.write(
+        "ayame-spell.toml",
+        "[check]\nmode = \"corrections\"\n[japanese]\nkatakana-style = \"long\"\n",
+    );
+
+    let schema = project.run(&["config", "--schema"]);
+    assert_code(&schema, 0);
+    let document: Value = serde_json::from_slice(&schema.stdout).unwrap();
+    assert_eq!(
+        document["$id"],
+        "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json"
+    );
+    assert_eq!(
+        document["properties"]["japanese"]["properties"]["katakana-style"]["default"],
+        "consistency"
+    );
+
+    let valid = project.run(&["config", "--validate"]);
+    assert_code(&valid, 0);
+    assert!(String::from_utf8_lossy(&valid.stdout).contains("valid:"));
+
+    project.write("invalid.toml", "[japanese]\nkatakana-stle = \"long\"\n");
+    let invalid = project.run(&["config", "--validate", "invalid.toml"]);
+    assert_code(&invalid, 2);
+    let error = String::from_utf8_lossy(&invalid.stderr);
+    assert!(error.contains("unknown config key `japanese.katakana-stle`"));
+    assert!(error.contains("did you mean `japanese.katakana-style`?"));
+}
+
+#[test]
 fn overrides_and_inline_directives_take_precedence() {
     let project = Project::new();
     project.write(

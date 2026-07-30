@@ -59,6 +59,8 @@ Exit status and machine-readable fields are documented in
 | `--limit <N>` | `words triage` | Review at most N words after filtering. |
 | `--no-baseline` | default, `check`, `fix` | Report every finding without baseline suppression. |
 | `--prune` | `baseline` | Remove entries whose finding no longer exists. |
+| `--schema` | `config` | Print the versioned configuration JSON Schema. |
+| `--validate [PATH]` | `config` | Validate a discovered or explicit configuration file. |
 | `<WORDS>...` | `words add` | One or more words to add. |
 | `--global` | `words add` | Add user words instead of project words. |
 | `<NAMES>...` | `dict add` | One or more registry names to fetch. |
@@ -132,7 +134,7 @@ Commands:
   words        Word management: bulk collection, triage, and dictionary additions
   dict         Shared dictionaries from the ayame-spell registry
   init         Write a starter ayame-spell.toml in the current directory
-  config       Print the effective merged configuration
+  config       Print, validate, or describe the configuration
   baseline     Record current findings so only new findings fail later checks
   explain      Explain a stable issue code and how to configure or silence it
   rules        List every stable issue code
@@ -484,12 +486,17 @@ Options:
 
 ```text
 $ ayame-spell config --help
-Print the effective merged configuration
+Print, validate, or describe the configuration
 
-Usage: ayame-spell config
+Usage: ayame-spell config [OPTIONS] [PATH]
+
+Arguments:
+  [PATH]  Configuration file to validate
 
 Options:
-  -h, --help  Print help
+      --schema    Print the versioned JSON Schema
+      --validate  Validate a configuration file (discovers the project file when PATH is omitted)
+  -h, --help      Print help
 ```
 
 ## `ayame-spell baseline`

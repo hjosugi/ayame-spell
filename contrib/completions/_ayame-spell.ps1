@@ -94,7 +94,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('words', 'words', [CompletionResultType]::ParameterValue, 'Word management: bulk collection, triage, and dictionary additions')
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
-            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print, validate, or describe the configuration')
             [CompletionResult]::new('baseline', 'baseline', [CompletionResultType]::ParameterValue, 'Record current findings so only new findings fail later checks')
             [CompletionResult]::new('explain', 'explain', [CompletionResultType]::ParameterValue, 'Explain a stable issue code and how to configure or silence it')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'List every stable issue code')
@@ -293,6 +293,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;config' {
+            [CompletionResult]::new('--schema', '--schema', [CompletionResultType]::ParameterName, 'Print the versioned JSON Schema')
+            [CompletionResult]::new('--validate', '--validate', [CompletionResultType]::ParameterName, 'Validate a configuration file (discovers the project file when PATH is omitted)')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
@@ -353,7 +355,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('words', 'words', [CompletionResultType]::ParameterValue, 'Word management: bulk collection, triage, and dictionary additions')
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
-            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
+            [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print, validate, or describe the configuration')
             [CompletionResult]::new('baseline', 'baseline', [CompletionResultType]::ParameterValue, 'Record current findings so only new findings fail later checks')
             [CompletionResult]::new('explain', 'explain', [CompletionResultType]::ParameterValue, 'Explain a stable issue code and how to configure or silence it')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'List every stable issue code')

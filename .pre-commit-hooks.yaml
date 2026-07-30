@@ -1,0 +1,16 @@
+- id: ayame-spell
+  name: ayame-spell
+  description: Check changed text files with ayame-spell.
+  entry: ayame-spell check --format brief
+  language: rust
+  pass_filenames: true
+  types: [text]
+
+- id: ayame-spell-fix
+  name: ayame-spell fix
+  description: Apply safe spelling fixes to selected text files.
+  entry: ayame-spell fix
+  language: rust
+  pass_filenames: true
+  types: [text]
+  stages: [manual]

@@ -26,6 +26,7 @@ typos-dict = { workspace = true, optional = true }
 unicase = { workspace = true, optional = true }
 
 [dev-dependencies]
+serde_json.workspace = true
 tempfile = "=3.14.0"
 
 [features]

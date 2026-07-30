@@ -56,11 +56,29 @@ fn main() -> anyhow::Result<()> {
         "cli-docs" => cli_docs(),
         "rules-docs" => rules_docs(),
         "man" => man_page(),
+        "config-schema" => config_schema(),
         _ => {
-            eprintln!("usage: cargo xtask <registry|completions|cli-docs|rules-docs|man>");
+            eprintln!(
+                "usage: cargo xtask <registry|completions|cli-docs|rules-docs|man|config-schema>"
+            );
             std::process::exit(2);
         }
     }
+}
+
+fn config_schema() -> anyhow::Result<()> {
+    let path = repo_root()
+        .join("site")
+        .join("public")
+        .join("schema")
+        .join("v1")
+        .join("ayame-spell.json");
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(&path, ayame_spell_core::config::CONFIG_SCHEMA)?;
+    println!("wrote {}", path.display());
+    Ok(())
 }
 
 fn repo_root() -> PathBuf {
@@ -406,6 +424,8 @@ Exit status and machine-readable fields are documented in
 | `--limit <N>` | `words triage` | Review at most N words after filtering. |
 | `--no-baseline` | default, `check`, `fix` | Report every finding without baseline suppression. |
 | `--prune` | `baseline` | Remove entries whose finding no longer exists. |
+| `--schema` | `config` | Print the versioned configuration JSON Schema. |
+| `--validate [PATH]` | `config` | Validate a discovered or explicit configuration file. |
 | `<WORDS>...` | `words add` | One or more words to add. |
 | `--global` | `words add` | Add user words instead of project words. |
 | `<NAMES>...` | `dict add` | One or more registry names to fetch. |
@@ -515,6 +535,8 @@ const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 | `--limit <N>` | `words triage` | 絞り込み後の確認件数を最大 N 語に制限。 |
 | `--no-baseline` | 既定、`check`、`fix` | ベースラインで抑制せず全指摘を表示。 |
 | `--prune` | `baseline` | 現在は存在しない指摘のエントリーを除去。 |
+| `--schema` | `config` | バージョン固定の設定 JSON Schema を出力。 |
+| `--validate [PATH]` | `config` | 検出または指定した設定ファイルを検証。 |
 | `<WORDS>...` | `words add` | 追加する一つ以上の単語。 |
 | `--global` | `words add` | プロジェクト単語ではなくユーザー単語へ追加。 |
 | `<NAMES>...` | `dict add` | 取得する一つ以上のレジストリ名。 |

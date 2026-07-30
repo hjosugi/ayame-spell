@@ -43,6 +43,10 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   full-audit and stale-entry pruning workflows.
 - Searchable, paged, per-word triage with finding filters, bulk occurrence
   fixes, non-interactive safeguards, and exact changed-file summaries.
+- A versioned configuration JSON Schema plus `config --schema` and
+  suggestion-aware `config --validate` editor workflows.
+- A composite GitHub Action with annotations and optional SARIF upload,
+  pre-commit check/fix hooks, and portable GitLab and CircleCI recipes.
 
 ### Changed
 

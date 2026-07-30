@@ -1,0 +1,73 @@
+name: ayame-spell
+description: Check English and Japanese spelling with GitHub annotations or SARIF.
+author: hjosugi
+
+branding:
+  icon: check-circle
+  color: purple
+
+inputs:
+  version:
+    description: Exact ayame-spell crates.io version to install.
+    required: false
+    default: "1.0.0"
+  paths:
+    description: Space-separated files or directories to check.
+    required: false
+    default: "."
+  extra_args:
+    description: Additional ayame-spell check arguments.
+    required: false
+    default: ""
+  sarif:
+    description: Generate and upload SARIF instead of workflow annotations.
+    required: false
+    default: "false"
+  sarif_file:
+    description: SARIF output path.
+    required: false
+    default: "ayame-spell.sarif"
+
+runs:
+  using: composite
+  steps:
+    - name: Install pinned ayame-spell
+      shell: bash
+      env:
+        AYAME_SPELL_ACTION_VERSION: ${{ inputs.version }}
+      run: cargo install --locked ayame-spell --version "=${AYAME_SPELL_ACTION_VERSION}"
+
+    - name: Check spelling
+      id: check
+      shell: bash
+      env:
+        AYAME_SPELL_ACTION_PATHS: ${{ inputs.paths }}
+        AYAME_SPELL_ACTION_EXTRA_ARGS: ${{ inputs.extra_args }}
+        AYAME_SPELL_ACTION_SARIF: ${{ inputs.sarif }}
+        AYAME_SPELL_ACTION_SARIF_FILE: ${{ inputs.sarif_file }}
+      run: |
+        set +e
+        if [[ "${AYAME_SPELL_ACTION_SARIF}" == "true" ]]; then
+          ayame-spell check ${AYAME_SPELL_ACTION_PATHS} \
+            --format sarif ${AYAME_SPELL_ACTION_EXTRA_ARGS} \
+            > "${AYAME_SPELL_ACTION_SARIF_FILE}"
+        else
+          ayame-spell check ${AYAME_SPELL_ACTION_PATHS} \
+            --format github ${AYAME_SPELL_ACTION_EXTRA_ARGS}
+        fi
+        status=$?
+        echo "status=${status}" >> "${GITHUB_OUTPUT}"
+        exit 0
+
+    - name: Upload spelling SARIF
+      if: ${{ inputs.sarif == 'true' && always() }}
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: ${{ inputs.sarif_file }}
+
+    - name: Propagate ayame-spell status
+      if: ${{ always() }}
+      shell: bash
+      env:
+        AYAME_SPELL_ACTION_STATUS: ${{ steps.check.outputs.status }}
+      run: exit "${AYAME_SPELL_ACTION_STATUS:-2}"

@@ -125,6 +125,7 @@ dependencies = [
  "globset",
  "memchr",
  "serde",
+ "serde_json",
  "tempfile",
  "toml",
  "typos-dict",

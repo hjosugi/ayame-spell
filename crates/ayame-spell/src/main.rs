@@ -190,8 +190,19 @@ enum Cmd {
         #[arg(long)]
         yes: bool,
     },
-    /// Print the effective merged configuration.
-    Config,
+    /// Print, validate, or describe the configuration.
+    Config {
+        /// Print the versioned JSON Schema.
+        #[arg(long, conflicts_with = "validate")]
+        schema: bool,
+        /// Validate a configuration file (discovers the project file when
+        /// PATH is omitted).
+        #[arg(long)]
+        validate: bool,
+        /// Configuration file to validate.
+        #[arg(value_name = "PATH", requires = "validate")]
+        path: Option<PathBuf>,
+    },
     /// Record current findings so only new findings fail later checks.
     Baseline {
         #[command(flatten)]
@@ -300,7 +311,11 @@ fn main() {
                 interactive,
                 yes,
             }) => init(force, interactive, yes),
-            Some(Cmd::Config) => print_config(),
+            Some(Cmd::Config {
+                schema,
+                validate,
+                path,
+            }) => config_command(schema, validate, path.as_deref()),
             Some(Cmd::Baseline { scan, prune }) => run_baseline(scan, prune),
             Some(Cmd::Explain { code, lang }) => explain_rule(&code, output_language(lang)),
             Some(Cmd::Rules { lang }) => print_rules(output_language(lang)),
@@ -863,6 +878,31 @@ fn print_config() -> anyhow::Result<i32> {
     }
     print!("{}", toml_edit::ser::to_string_pretty(&loaded.config)?);
     Ok(0)
+}
+
+fn config_command(schema: bool, validate: bool, path: Option<&Path>) -> anyhow::Result<i32> {
+    if schema {
+        print!("{}", ayame_spell_core::config::CONFIG_SCHEMA);
+        return Ok(0);
+    }
+    if validate {
+        let path = if let Some(path) = path {
+            path.to_path_buf()
+        } else {
+            ayame_spell_core::config::discover(&std::env::current_dir()?)?
+                .project_file
+                .context(
+                    "no project configuration found; pass a path to `config --validate PATH`",
+                )?
+        };
+        let text = std::fs::read_to_string(&path)
+            .with_context(|| format!("cannot read {}", path.display()))?;
+        ayame_spell_core::config::validate_config(&text)
+            .with_context(|| format!("invalid configuration {}", path.display()))?;
+        println!("valid: {}", path.display());
+        return Ok(0);
+    }
+    print_config()
 }
 
 #[cfg(test)]

@@ -27,6 +27,23 @@ replacing equal global keys. `[[overrides]]` entries are also appended.
 Run `ayame-spell config` to print the effective merged configuration and the
 files from which it was loaded.
 
+The versioned JSON Schema is published at
+[`schema/v1/ayame-spell.json`](https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json).
+Print the same schema offline with `ayame-spell config --schema`, or validate a
+discovered or explicit file with:
+
+```sh
+ayame-spell config --validate
+ayame-spell config --validate config/strict.toml
+```
+
+Unknown keys are rejected with a nearby-key suggestion. Editors with TOML
+schema comments can opt in without waiting for catalog discovery:
+
+```toml
+#:schema https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json
+```
+
 For isolated automation and portable installations, these environment
 variables replace the corresponding platform locations:
 

@@ -1,0 +1,9 @@
+{
+  "name": "ayame-spell configuration",
+  "description": "Configuration for the ayame-spell English and Japanese spell checker",
+  "fileMatch": [
+    "ayame-spell.toml",
+    ".ayame-spell.toml"
+  ],
+  "url": "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json"
+}
