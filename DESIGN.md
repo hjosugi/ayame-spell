@@ -1,5 +1,7 @@
 # ayame-spell design notes
 
+[日本語](DESIGN.ja.md) · [README](README.md)
+
 ## The gap in the market
 
 Competitive research (2026-07) across typos, cSpell, Harper, codespell,

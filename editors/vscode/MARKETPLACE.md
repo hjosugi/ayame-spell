@@ -59,10 +59,10 @@ packages because the Marketplace rejects user-provided SVG content.
 
 ## Release announcement copy
 
-> ayame-spell 0.3.0 adds complete English and Japanese documentation, including
-> configuration, rule, CLI, registry, CI, migration, and editor setup
-> references. Platform-matched packages continue to bundle the Rust language
-> server for Windows x64, Linux x64/ARM64, and macOS Intel/Apple silicon.
+> ayame-spell 0.3.1 completes the Japanese design notes and adds CI safeguards
+> that keep English and Japanese project documentation in sync. Platform-matched
+> packages continue to bundle the Rust language server for Windows x64, Linux
+> x64/ARM64, and macOS Intel/Apple silicon.
 
 ## Listing QA
 

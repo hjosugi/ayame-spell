@@ -210,6 +210,47 @@ and `--threads` options apply to this default invocation; put options after
 Exit status and machine-readable fields are documented in
 [Exit codes and output formats](./output/).
 
+## Command overview
+
+| Command | Description |
+| --- | --- |
+| `ayame-spell [PATH]...` | Check paths, or the current directory when omitted. |
+| `check [PATH]...` | Run a check explicitly. |
+| `fix [PATH]...` | Apply safe fixes to files. |
+| `words collect [PATH]...` | Collect findings ranked by frequency. |
+| `words add <WORDS>...` | Add project or user words. |
+| `words triage [PATH]...` | Review several findings interactively. |
+| `dict list` | List registry dictionaries and installation state. |
+| `dict add <NAMES>...` | Fetch dictionaries and add them to project config. |
+| `dict remove <NAME>` | Delete a cache entry and disable it in config. |
+| `dict update` | Re-fetch cached dictionaries. |
+| `init` | Create a starter `ayame-spell.toml`. |
+| `config` | Print merged config after applying defaults. |
+| `completions <SHELL>` | Generate shell completion on standard output. |
+| `lsp` | Start the language server for editor integrations. |
+
+## Arguments and options
+
+| Argument or option | Applies to | Description |
+| --- | --- | --- |
+| `[PATH]...` | default, `check`, `fix`, `words collect`, `words triage` | Files or directories. |
+| `-w`, `--write` | default, `check` | Apply safe fixes in place. |
+| `--format <FORMAT>` | default, `check` | `human`, `brief`, or `json`; default `human`. |
+| `-j`, `--threads <THREADS>` | default, `check`, `fix` | Worker count; defaults to CPU count. |
+| `--min-count <N>` | `words collect` | Emit words seen at least N times; default 1. |
+| `--plain` | `words collect` | Emit words only, ready to append. |
+| `--json` | `words collect` | JSON Lines with `word`, `count`, `kind`, `example`. |
+| `<WORDS>...` | `words add` | One or more words to add. |
+| `--global` | `words add` | Add user words instead of project words. |
+| `<NAMES>...` | `dict add` | One or more registry names to fetch. |
+| `--cache-only` | `dict add` | Cache without changing project config. |
+| `<NAME>` | `dict remove` | Registry name to remove. |
+| `--force` | `init` | Overwrite an existing config file. |
+| `<SHELL>` | `completions` | `bash`, `elvish`, `fish`, `powershell`, or `zsh`. |
+| `--stdio` | `lsp` | Client compatibility; transport is always stdio. |
+| `-h`, `--help` | every command | Print help. |
+| `-V`, `--version` | root | Print the version. |
+
 ## Shell completions
 
 Generate a completion from the same Clap command tree:
@@ -252,7 +293,7 @@ Clap."#;
 
 const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 
-サブコマンドを省略すると、指定パスまたはカレントディレクトリをチェックします。
+サブコマンドを省略した場合、指定パスまたはカレントディレクトリをチェックします。
 `check` は同じ処理を明示するサブコマンドです。省略時には全体オプション
 `--write`、`--format`、`--threads` を使い、`check` を書く場合はその後ろへ
 オプションを置きます。

@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 rust-version = "1.80"
 license = "MIT OR Apache-2.0"
@@ -16,7 +16,7 @@ homepage = "https://hjosugi.github.io/ayame-spell/"
 authors = ["hjosugi"]
 
 [workspace.dependencies]
-ayame-spell-core = { version = "0.3.0", path = "crates/ayame-spell-core" }
+ayame-spell-core = { version = "0.3.1", path = "crates/ayame-spell-core" }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive", "wrap_help"] }

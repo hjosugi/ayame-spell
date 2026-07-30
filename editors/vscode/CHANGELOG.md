@@ -2,6 +2,14 @@
 
 All notable VS Code extension changes are documented here.
 
+## 0.3.1
+
+- Add the complete Japanese design notes and cross-link the English and Japanese
+  project documentation.
+- Enforce matching EN/JA page sets, heading structures, and changed-file pairs
+  in CI, with an explicit documented escape hatch for language-neutral edits.
+- Keep the generated English and Japanese CLI overviews structurally aligned.
+
 ## 0.3.0
 
 - Add a complete English/Japanese documentation site with search, language

@@ -1,6 +1,6 @@
 # 🌸 ayame-spell
 
-[English README](README.md) · [ドキュメント](https://hjosugi.github.io/ayame-spell/ja/) · [設計メモ](DESIGN.md)
+[English README](README.md) · [ドキュメント](https://hjosugi.github.io/ayame-spell/ja/) · [設計メモ](DESIGN.ja.md) · [コントリビューション](CONTRIBUTING.ja.md)
 
 **コードと文章のための高速・低ノイズなスペルチェッカー(英語・日本語対応)。**
 1つの設定ファイルで CLI(CI 用)・LSP サーバ・VS Code 拡張がすべて同じ結果を返します。
@@ -190,6 +190,12 @@ index.json の URL を差し替えられます。
 
 JIS Z 8301:2019 で「3音以上は長音記号を省く」規則が廃止された経緯を踏まえ、
 既定ではどちらの方向も強制しません(一貫性のみ確認)。
+
+## 終了コードと出力形式
+
+`0` 問題なし · `1` 指摘あり · `2` エラー。
+`--format human`（既定）、`--format brief`、`--format json`
+（JSON Lines）を利用できます。
 
 ## ライセンス
 

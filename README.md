@@ -1,6 +1,6 @@
 # 🌸 ayame-spell
 
-[日本語 README](README.ja.md) · [Documentation](https://hjosugi.github.io/ayame-spell/) · [Design notes](DESIGN.md)
+[日本語 README](README.ja.md) · [Documentation](https://hjosugi.github.io/ayame-spell/) · [Design notes](DESIGN.md) · [Contributing](CONTRIBUTING.md)
 
 **Fast, low-noise spell checker for code and prose — English & Japanese.**
 One config file drives the CLI (CI), the LSP server, and the VS Code
