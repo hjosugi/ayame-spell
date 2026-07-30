@@ -85,6 +85,70 @@ jobs:
       - uses: actions/checkout@v7
       - uses: EmbarkStudios/cargo-deny-action@v2
 
+  fuzz-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: fuzz
+      - run: cargo install cargo-fuzz --version 0.12.0 --locked
+      - name: Run bounded fuzz sessions
+        run: |
+          for target in fuzz_tokenizer fuzz_japanese fuzz_halfwidth fuzz_config; do
+            cargo fuzz run "$target" -- -max_total_time=5 -timeout=10
+          done
+
+  performance:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Generate the shared 35 MiB corpus
+        run: >-
+          python3 contrib/bench/generate_corpus.py
+          --output "$RUNNER_TEMP/ayame-corpus.md"
+      - name: Measure the proposed revision
+        run: |
+          cargo build --release --locked -p ayame-spell
+          python3 contrib/bench/run_benchmark.py \
+            --binary target/release/ayame-spell \
+            --corpus "$RUNNER_TEMP/ayame-corpus.md" \
+            --repeat 3 \
+            --revision "$GITHUB_SHA" \
+            --output "$RUNNER_TEMP/candidate.json"
+      - name: Measure origin/main
+        run: |
+          git worktree add "$RUNNER_TEMP/ayame-main" origin/main
+          cargo build \
+            --manifest-path "$RUNNER_TEMP/ayame-main/Cargo.toml" \
+            --target-dir "$RUNNER_TEMP/ayame-main-target" \
+            --release --locked -p ayame-spell
+          python3 contrib/bench/run_benchmark.py \
+            --binary "$RUNNER_TEMP/ayame-main-target/release/ayame-spell" \
+            --corpus "$RUNNER_TEMP/ayame-corpus.md" \
+            --repeat 3 \
+            --revision origin/main \
+            --output "$RUNNER_TEMP/main.json"
+      - name: Enforce the regression threshold
+        run: >-
+          python3 contrib/bench/compare_results.py
+          "$RUNNER_TEMP/main.json"
+          "$RUNNER_TEMP/candidate.json"
+          --max-slowdown-percent 35
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: performance-results
+          path: |
+            ${{ runner.temp }}/main.json
+            ${{ runner.temp }}/candidate.json
+
   vscode-extension:
     runs-on: ubuntu-latest
     defaults:

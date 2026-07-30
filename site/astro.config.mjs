@@ -74,6 +74,7 @@ export default defineConfig({
         },
       ],
       components: {
+        Head: "./src/components/Head.astro",
         SocialIcons: "./src/components/HeaderTools.astro",
       },
       head: [
@@ -114,6 +115,7 @@ export default defineConfig({
             { slug: "syntax" },
             { slug: "registry" },
             { slug: "migration" },
+            { slug: "benchmarks" },
           ],
         },
         {

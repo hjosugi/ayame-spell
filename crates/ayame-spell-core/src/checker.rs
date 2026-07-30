@@ -401,6 +401,7 @@ fn missing_ref(reference: &str, path: &Path) -> String {
 mod tests {
     use super::*;
     use crate::config::{defaults, RawConfig};
+    use proptest::prelude::*;
 
     fn checker_with(toml: &str) -> Checker {
         let mut loaded = defaults(Path::new("/nonexistent-root"));
@@ -493,6 +494,20 @@ mod tests {
         let issues = checker.check(markdown, Some(Path::new("guide.md")));
         assert_eq!(issues.len(), 1);
         assert_eq!(issues[0].offset, markdown.find("recieve").unwrap());
+    }
+
+    proptest! {
+        #[test]
+        fn every_reported_span_is_a_utf8_boundary(text in any::<String>()) {
+            let checker = checker_with("");
+            for issue in checker.check(&text, None) {
+                let end = issue.offset + issue.len;
+                prop_assert!(end <= text.len());
+                prop_assert!(text.is_char_boundary(issue.offset));
+                prop_assert!(text.is_char_boundary(end));
+                prop_assert_eq!(&text[issue.offset..end], issue.word.as_str());
+            }
+        }
     }
 
     #[test]

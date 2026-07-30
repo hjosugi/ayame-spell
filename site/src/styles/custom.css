@@ -78,3 +78,9 @@
 .registry-table table {
   min-width: 34rem;
 }
+
+.terminal-demo {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.8rem;
+  box-shadow: var(--sl-shadow-lg);
+}

@@ -61,6 +61,12 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   acronym-aware English tokenization.
 - Japanese compatibility-character, kanji/okurigana, number/unit, and
   punctuation consistency checks plus regex-based project rules.
+- Reproducible Criterion and end-to-end benchmarks, checked reference results,
+  and a pull-request throughput regression guard.
+- Fuzz targets for tokenization, Japanese checking, width conversion, and
+  configuration parsing plus UTF-8 and fix-idempotence property tests.
+- A branded favicon and social preview card, localized Open Graph/Twitter
+  metadata, and a reproducible terminal demo of triage and fix workflows.
 
 ### Changed
 

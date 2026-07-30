@@ -1,0 +1,43 @@
+[package]
+name = "ayame-spell-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+ayame-spell-core = { path = "../crates/ayame-spell-core", default-features = false }
+
+[[bin]]
+name = "fuzz_tokenizer"
+path = "fuzz_targets/fuzz_tokenizer.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_japanese"
+path = "fuzz_targets/fuzz_japanese.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_halfwidth"
+path = "fuzz_targets/fuzz_halfwidth.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_config"
+path = "fuzz_targets/fuzz_config.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]

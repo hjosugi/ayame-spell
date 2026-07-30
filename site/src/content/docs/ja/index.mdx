@@ -86,6 +86,21 @@ ayame-spell words triage
 修正表モードは設定なしで動きます。未知語も検出したい場所では `en-base` を
 追加し、対象パスを辞書モードへ切り替えます。
 
+<h2 id="demo">振り分け・プレビュー・修正</h2>
+
+<img
+  class="terminal-demo"
+  src="/ayame-spell/terminal-demo.gif"
+  width="1200"
+  height="720"
+  alt="スペルミスを振り分け、修正差分を確認し、適用後の正常終了を検証するターミナル録画"
+  loading="lazy"
+/>
+
+録画はリポジトリ内の
+[`terminal-demo.tape`](https://github.com/hjosugi/ayame-spell/blob/main/contrib/demo/terminal-demo.tape)
+と fixture から生成しているため、表示したすべてのコマンドを再実行できます。
+
 <h2 id="registry">辞書レジストリ</h2>
 
 レジストリから取得したファイルは SHA-256 で検証し、ローカルにキャッシュします。

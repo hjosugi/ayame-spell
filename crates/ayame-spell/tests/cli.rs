@@ -577,6 +577,30 @@ fn incremental_cache_reuses_identical_results_and_invalidates_on_config() {
     assert_eq!(first.stdout, second.stdout);
     assert!(String::from_utf8_lossy(&second.stderr).contains("cache hits: 1"));
 
+    let cache_entry = fs::read_dir(&cache)
+        .unwrap()
+        .find_map(|entry| {
+            let path = entry.ok()?.path();
+            (path.extension().and_then(|extension| extension.to_str()) == Some("json"))
+                .then_some(path)
+        })
+        .expect("scan cache entry");
+    let mut malicious: Value = serde_json::from_slice(&fs::read(&cache_entry).unwrap()).unwrap();
+    malicious["issues"][0]["offset"] = json!(usize::MAX);
+    fs::write(&cache_entry, serde_json::to_vec(&malicious).unwrap()).unwrap();
+    let recovered = project.run(&[
+        "check",
+        "--format",
+        "json",
+        "--verbose",
+        "--cache-dir",
+        &cache,
+        "input.rs",
+    ]);
+    assert_code(&recovered, 1);
+    assert_eq!(first.stdout, recovered.stdout);
+    assert!(String::from_utf8_lossy(&recovered.stderr).contains("cache hits: 0"));
+
     project.write(
         "ayame-spell.toml",
         "[check]\nprofile = \"auto\"\n\n[words]\nignore = [\"recieve\"]\n",
@@ -1449,4 +1473,24 @@ fn crlf_and_paths_with_spaces_are_reported_portably() {
     assert_eq!(issues[0]["column"], 1);
     assert_eq!(issues[1]["line"], 2);
     assert_eq!(issues[1]["column"], 4);
+}
+
+#[test]
+fn malformed_and_extreme_inputs_never_crash_the_scan() {
+    let project = Project::new();
+    project.write("binary.dat", b"header\0binary");
+    project.write(
+        "mixed-encoding.md",
+        b"Reliable text \x82\xa0 with invalid bytes and no trailing newline",
+    );
+    project.write("bom-crlf.md", b"\xef\xbb\xbfReliable documentation.\r\n");
+    project.write("long-line.md", "a".repeat(100_000));
+
+    let output = project.run(&["check", "--format", "json", "--no-cache", "."]);
+    assert_code(&output, 0);
+    let records = json_records(&output);
+    assert!(records.iter().all(|record| record["type"] != "issue"));
+    let summary = records.last().unwrap();
+    assert_eq!(summary["skipped_binary"], 1);
+    assert_eq!(summary["files_checked"], 3);
 }

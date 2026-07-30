@@ -47,7 +47,9 @@ in a single fast Rust binary.
   reports when one document mixes two spellings of the same katakana word
   (サーバ vs サーバー). Plus fullwidth-alphanumeric, halfwidth-katakana,
   and fullwidth-space checks.
-- **Fast** — 35 MB / 400k lines checked in ~1.3 s with 56 MB peak RSS.
+- **Measured** — the reproducible 35 MiB / 400k-line benchmark currently runs
+  in 1.39 s (25.14 MiB/s); see the
+  [full environment, memory, and comparison results](https://hjosugi.github.io/ayame-spell/benchmarks/).
   No silent truncation, ever: skipped files are counted and reported.
 
 [typos-dict]: https://github.com/crate-ci/typos

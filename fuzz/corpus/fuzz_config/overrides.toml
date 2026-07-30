@@ -1,0 +1,7 @@
+[check]
+mode = "corrections"
+profile = "auto"
+
+[[overrides]]
+paths = ["docs/**"]
+profile = "prose"

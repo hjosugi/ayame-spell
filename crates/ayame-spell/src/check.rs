@@ -142,17 +142,22 @@ impl ScanCache {
         size: u64,
         modified: Option<SystemTime>,
         content_sha256: &str,
+        text: &str,
     ) -> Option<Vec<Issue>> {
         let entry: ScanCacheEntry =
             serde_json::from_slice(&std::fs::read(self.entry_path(path)).ok()?).ok()?;
-        (entry.version == SCAN_CACHE_VERSION
+        let valid = entry.version == SCAN_CACHE_VERSION
             && entry.binary_version == env!("CARGO_PKG_VERSION")
             && entry.path == path.to_string_lossy()
             && entry.size == size
             && entry.modified_ns == system_time_ns(modified)
             && entry.content_sha256 == content_sha256
-            && entry.config_sha256 == self.config_sha256)
-            .then_some(entry.issues)
+            && entry.config_sha256 == self.config_sha256
+            && entry
+                .issues
+                .iter()
+                .all(|issue| issue_span_is_valid(text, issue));
+        valid.then_some(entry.issues)
     }
 
     fn save(
@@ -352,7 +357,7 @@ pub fn scan(
                 .as_ref()
                 .and_then(|cache| {
                     cache
-                        .load(path, size, modified, &content_sha256)
+                        .load(path, size, modified, &content_sha256, &text)
                         .inspect(|_| {
                             cached.fetch_add(1, Ordering::Relaxed);
                         })
@@ -666,9 +671,11 @@ fn apply_fixes(text: &str, issues: &[Issue]) -> (String, usize, Vec<Issue>) {
     let mut last = 0;
     let mut applied = 0;
     let mut remaining = Vec::new();
-    for issue in issues {
+    let mut ordered: Vec<&Issue> = issues.iter().collect();
+    ordered.sort_by_key(|issue| issue.offset);
+    for issue in ordered {
         match issue.safe_fix() {
-            Some(fix) if issue.offset >= last => {
+            Some(fix) if issue.offset >= last && issue_span_is_valid(text, issue) => {
                 out.push_str(&text[last..issue.offset]);
                 out.push_str(fix);
                 last = issue.offset + issue.len;
@@ -679,6 +686,15 @@ fn apply_fixes(text: &str, issues: &[Issue]) -> (String, usize, Vec<Issue>) {
     }
     out.push_str(&text[last..]);
     (out, applied, remaining)
+}
+
+fn issue_span_is_valid(text: &str, issue: &Issue) -> bool {
+    issue.offset.checked_add(issue.len).is_some_and(|end| {
+        end <= text.len()
+            && text.is_char_boundary(issue.offset)
+            && text.is_char_boundary(end)
+            && text[issue.offset..end] == issue.word
+    })
 }
 
 fn dry_run(reports: &[FileReport], quiet: bool) -> anyhow::Result<i32> {
@@ -1386,6 +1402,7 @@ fn sarif_report(reports: &[FileReport]) -> serde_json::Value {
 mod tests {
     use super::*;
     use ayame_spell_core::IssueKind;
+    use proptest::prelude::*;
     use serde_json::json;
 
     #[test]
@@ -1519,5 +1536,20 @@ mod tests {
 
         std::fs::write(&path, "the\n").unwrap();
         assert!(!file_is_unchanged(&path, b"teh\n", modified));
+    }
+
+    proptest! {
+        #[test]
+        fn fixes_preserve_utf8_and_are_idempotent(text in any::<String>()) {
+            let loaded = ayame_spell_core::config::defaults(Path::new("/fuzz-project"));
+            let checker = Checker::new(&loaded).0;
+            let issues = checker.check(&text, None);
+            let (fixed, _, _) = apply_fixes(&text, &issues);
+            prop_assert!(std::str::from_utf8(fixed.as_bytes()).is_ok());
+
+            let remaining = checker.check(&fixed, None);
+            let (fixed_again, _, _) = apply_fixes(&fixed, &remaining);
+            prop_assert_eq!(fixed_again, fixed);
+        }
     }
 }

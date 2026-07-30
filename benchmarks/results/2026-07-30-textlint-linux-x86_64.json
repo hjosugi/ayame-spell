@@ -1,0 +1,36 @@
+{
+  "command": [
+    "/tmp/ayame-bench-tools.XKuSDD/node/node_modules/.bin/textlint",
+    "--config",
+    "contrib/bench/textlint.config.json",
+    "/tmp/ayame-benchmark-corpus.md"
+  ],
+  "corpus": {
+    "bytes": 36700160,
+    "lines": 400000,
+    "path": "/tmp/ayame-benchmark-corpus.md",
+    "sha256": "d16dd8ec158f415c54d1b857fdf4f0cf620f50a8c905a8621c85defe3f7c640b"
+  },
+  "exit_codes": [],
+  "machine": {
+    "architecture": "x86_64",
+    "platform": "Linux-7.1.4-1-cachyos-x86_64-with-glibc2.42",
+    "processor": "unknown",
+    "python": "3.14.6"
+  },
+  "peak_rss_mib": 1003.16796875,
+  "repeat": 3,
+  "schema": 1,
+  "throughput_mib_per_second": null,
+  "throughput_upper_bound_mib_per_second": 0.5833333333333334,
+  "timed_out": true,
+  "timeout_seconds": 60.0,
+  "tool": "textlint+spellcheck-tech-word",
+  "version": "15.7.1+5.0.0",
+  "wall_seconds": {
+    "lower_bound": 60.0,
+    "median": null,
+    "minimum": null,
+    "samples": []
+  }
+}

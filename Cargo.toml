@@ -24,6 +24,7 @@ anyhow = "1"
 clap = { version = "=4.5.40", features = ["derive", "wrap_help"] }
 clap_complete = "=4.5.58"
 crossbeam-channel = "0.5"
+criterion = "=0.5.1"
 dialoguer = { version = "0.11", features = ["fuzzy-select"] }
 dictgen = "=0.5.0"
 dirs = "6"
@@ -33,6 +34,7 @@ ignore = "=0.4.23"
 lsp-server = "=0.7.8"
 lsp-types = "0.95"
 memchr = "2"
+proptest = "=1.5.0"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

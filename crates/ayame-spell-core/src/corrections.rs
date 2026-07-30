@@ -27,18 +27,23 @@ enum Entry {
 /// Words the upstream corrections data flags but that are everyday
 /// identifiers in real code (serde's `ser`, the flate2 crate, the
 /// misspelled-by-standard HTTP `Referer` header).
+#[cfg(feature = "builtin-en")]
 const BUILTIN_ALLOW: [&str; 3] = ["ser", "flate", "referer"];
 
 #[derive(Default)]
 pub struct Corrections {
     custom: HashMap<String, Entry>,
+    #[cfg(feature = "builtin-en")]
     builtin: bool,
 }
 
 impl Corrections {
     pub fn new(builtin: bool) -> Self {
+        #[cfg(not(feature = "builtin-en"))]
+        let _ = builtin;
         Self {
             custom: HashMap::new(),
+            #[cfg(feature = "builtin-en")]
             builtin,
         }
     }

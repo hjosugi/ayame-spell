@@ -1,0 +1,40 @@
+{
+  "command": [
+    "/tmp/ayame-bench-tools.XKuSDD/typos/bin/typos",
+    "--format",
+    "brief",
+    "/tmp/ayame-benchmark-corpus.md"
+  ],
+  "corpus": {
+    "bytes": 36700160,
+    "lines": 400000,
+    "path": "/tmp/ayame-benchmark-corpus.md",
+    "sha256": "d16dd8ec158f415c54d1b857fdf4f0cf620f50a8c905a8621c85defe3f7c640b"
+  },
+  "exit_codes": [
+    0,
+    0,
+    0
+  ],
+  "machine": {
+    "architecture": "x86_64",
+    "platform": "Linux-7.1.4-1-cachyos-x86_64-with-glibc2.42",
+    "processor": "unknown",
+    "python": "3.14.6"
+  },
+  "peak_rss_mib": 61.41796875,
+  "repeat": 3,
+  "schema": 1,
+  "throughput_mib_per_second": 25.969898639029736,
+  "tool": "typos",
+  "version": "1.48.0",
+  "wall_seconds": {
+    "median": 1.3477141550101805,
+    "minimum": 1.2816989199927775,
+    "samples": [
+      1.3477141550101805,
+      1.2816989199927775,
+      1.5748152900050627
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "command": [
+    "/tmp/ayame-bench-tools.XKuSDD/node/node_modules/.bin/cspell",
+    "lint",
+    "--no-progress",
+    "--no-summary",
+    "--no-color",
+    "--no-issues",
+    "--no-exit-code",
+    "--no-cache",
+    "--max-file-size",
+    "100MB",
+    "file:///tmp/ayame-benchmark-corpus.md"
+  ],
+  "corpus": {
+    "bytes": 36700160,
+    "lines": 400000,
+    "path": "/tmp/ayame-benchmark-corpus.md",
+    "sha256": "d16dd8ec158f415c54d1b857fdf4f0cf620f50a8c905a8621c85defe3f7c640b"
+  },
+  "exit_codes": [
+    0,
+    0,
+    0
+  ],
+  "machine": {
+    "architecture": "x86_64",
+    "platform": "Linux-7.1.4-1-cachyos-x86_64-with-glibc2.42",
+    "processor": "unknown",
+    "python": "3.14.6"
+  },
+  "peak_rss_mib": 527.78515625,
+  "repeat": 3,
+  "schema": 1,
+  "throughput_mib_per_second": 4.586972196448214,
+  "throughput_upper_bound_mib_per_second": null,
+  "timed_out": false,
+  "timeout_seconds": 60.0,
+  "tool": "cspell",
+  "version": "10.0.1",
+  "wall_seconds": {
+    "lower_bound": null,
+    "median": 7.630305679005687,
+    "minimum": 7.499782504994073,
+    "samples": [
+      7.499782504994073,
+      7.630305679005687,
+      7.931234479998238
+    ]
+  }
+}
