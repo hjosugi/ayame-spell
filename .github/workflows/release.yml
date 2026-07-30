@@ -412,7 +412,7 @@ jobs:
           version="$RELEASE_TAG"
           test "$("$binary" --version)" = \
             "ayame-spell ${version#v}"
-          printf 'This is teh release fixture.\n' \
+          printf 'This is an accomodate release fixture.\n' \
             > artifact-smoke/input.md
           set +e
           "$binary" --format json artifact-smoke/input.md \
@@ -421,7 +421,7 @@ jobs:
           set -e
           test "$status" -eq 1
           grep -F '"type":"issue"' artifact-smoke/output.jsonl
-          grep -F '"word":"teh"' artifact-smoke/output.jsonl
+          grep -F '"word":"accomodate"' artifact-smoke/output.jsonl
           grep -F '"type":"summary"' artifact-smoke/output.jsonl
       - uses: softprops/action-gh-release@v2
         with:
