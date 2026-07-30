@@ -18,9 +18,15 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+      - name: Extract release notes from CHANGELOG
+        run: |
+          bash .github/scripts/extract-release-notes.sh \
+            "$GITHUB_REF_NAME" > release-notes.md
+          grep -q '[^[:space:]]' release-notes.md
       - uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          body_path: release-notes.md
 
   build:
     if: github.event_name == 'push'
@@ -51,7 +57,10 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build --release --target ${{ matrix.target }} -p ayame-spell
+      - run: >-
+          cargo build --release --locked
+          --target ${{ matrix.target }}
+          -p ayame-spell
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -76,6 +85,7 @@ jobs:
           fi
           cp LICENSE-MIT LICENSE-APACHE NOTICE.md "$name/"
           cp -R contrib/completions "$name/"
+          cp -R contrib/man "$name/"
           if [[ "${{ matrix.os }}" == windows-latest ]]; then
             7z a "$name.zip" "$name"
           else
@@ -88,6 +98,32 @@ jobs:
               --target "${{ matrix.vscode_target }}" \
               --out "../../ayame-spell-${GITHUB_REF_NAME}-${{ matrix.vscode_target }}.vsix"
           )
+      - name: Smoke-test packaged CLI
+        shell: bash
+        run: |
+          name="ayame-spell-${GITHUB_REF_NAME}-${{ matrix.target }}"
+          mkdir artifact-smoke
+          if [[ "${{ matrix.os }}" == windows-latest ]]; then
+            7z x "$name.zip" -oartifact-smoke
+            binary="artifact-smoke/$name/ayame-spell.exe"
+          else
+            tar xzf "$name.tar.gz" -C artifact-smoke
+            binary="artifact-smoke/$name/ayame-spell"
+          fi
+
+          test "$("$binary" --version)" = \
+            "ayame-spell ${GITHUB_REF_NAME#v}"
+          printf 'This is teh release fixture.\n' \
+            > artifact-smoke/input.md
+          set +e
+          "$binary" --format json artifact-smoke/input.md \
+            > artifact-smoke/output.jsonl
+          status=$?
+          set -e
+          test "$status" -eq 1
+          grep -F '"type":"issue"' artifact-smoke/output.jsonl
+          grep -F '"word":"teh"' artifact-smoke/output.jsonl
+          grep -F '"type":"summary"' artifact-smoke/output.jsonl
       - uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -174,6 +210,8 @@ jobs:
   repair-intel-macos:
     if: github.event_name == 'workflow_dispatch'
     runs-on: macos-15-intel
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -182,7 +220,10 @@ jobs:
         with:
           targets: x86_64-apple-darwin
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build --release --target x86_64-apple-darwin -p ayame-spell
+      - run: >-
+          cargo build --release --locked
+          --target x86_64-apple-darwin
+          -p ayame-spell
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -193,11 +234,12 @@ jobs:
       - name: Package CLI and VS Code extension
         shell: bash
         run: |
-          name="ayame-spell-${{ inputs.tag }}-x86_64-apple-darwin"
+          name="ayame-spell-${RELEASE_TAG}-x86_64-apple-darwin"
           mkdir "$name"
           cp target/x86_64-apple-darwin/release/ayame-spell "$name/"
           cp LICENSE-MIT LICENSE-APACHE NOTICE.md "$name/"
           cp -R contrib/completions "$name/"
+          cp -R contrib/man "$name/"
           tar czf "$name.tar.gz" "$name"
           mkdir -p editors/vscode/server/darwin-x64
           cp target/x86_64-apple-darwin/release/ayame-spell \
@@ -209,6 +251,28 @@ jobs:
               --target darwin-x64 \
               --out "../../ayame-spell-${{ inputs.tag }}-darwin-x64.vsix"
           )
+      - name: Smoke-test packaged CLI
+        shell: bash
+        run: |
+          name="ayame-spell-${RELEASE_TAG}-x86_64-apple-darwin"
+          mkdir artifact-smoke
+          tar xzf "$name.tar.gz" -C artifact-smoke
+          binary="artifact-smoke/$name/ayame-spell"
+
+          version="$RELEASE_TAG"
+          test "$("$binary" --version)" = \
+            "ayame-spell ${version#v}"
+          printf 'This is teh release fixture.\n' \
+            > artifact-smoke/input.md
+          set +e
+          "$binary" --format json artifact-smoke/input.md \
+            > artifact-smoke/output.jsonl
+          status=$?
+          set -e
+          test "$status" -eq 1
+          grep -F '"type":"issue"' artifact-smoke/output.jsonl
+          grep -F '"word":"teh"' artifact-smoke/output.jsonl
+          grep -F '"type":"summary"' artifact-smoke/output.jsonl
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}

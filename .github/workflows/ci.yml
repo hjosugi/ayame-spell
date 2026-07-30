@@ -34,6 +34,10 @@ jobs:
           git diff --exit-code -- \
             site/src/content/docs/reference/cli.md \
             site/src/content/docs/ja/reference/cli.md
+      - name: manual page is up to date
+        run: |
+          cargo xtask man
+          git diff --exit-code -- contrib/man/ayame-spell.1
 
   msrv:
     runs-on: ubuntu-latest

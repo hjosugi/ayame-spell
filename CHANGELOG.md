@@ -14,11 +14,15 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Contributor, security, conduct, issue-reporting, and pull-request guidance.
 - Dependabot plus CI checks for Rust 1.80, rustdoc warnings, dependency
   advisories, source provenance, and licenses.
+- A generated manual page in release archives and packaged-binary smoke tests
+  on every release target.
 
 ### Changed
 
 - Pinned dependencies that had raised their compiler requirement so the
   declared Rust 1.80 MSRV remains buildable.
+- Release builds now use `Cargo.lock`, and GitHub Release notes come from the
+  matching version section in this changelog.
 
 ## [0.3.1] - 2026-07-30
 

@@ -2,6 +2,7 @@
 //! - `cargo xtask registry` regenerates the dictionary registry index.
 //! - `cargo xtask completions` regenerates checked-in shell completions.
 //! - `cargo xtask cli-docs` regenerates the EN/JA CLI reference from Clap.
+//! - `cargo xtask man` regenerates the checked-in manual page from Clap.
 
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -52,8 +53,9 @@ fn main() -> anyhow::Result<()> {
         "registry" => registry(),
         "completions" => completions(),
         "cli-docs" => cli_docs(),
+        "man" => man_page(),
         _ => {
-            eprintln!("usage: cargo xtask <registry|completions|cli-docs>");
+            eprintln!("usage: cargo xtask <registry|completions|cli-docs|man>");
             std::process::exit(2);
         }
     }
@@ -198,6 +200,79 @@ fn cli_docs() -> anyhow::Result<()> {
         println!("wrote {}", path.display());
     }
     Ok(())
+}
+
+fn man_page() -> anyhow::Result<()> {
+    let mut sections = Vec::new();
+    collect_cli_help(&[], &mut sections)?;
+
+    let mut man = format!(
+        ".TH AYAME-SPELL 1 \"\" \"ayame-spell {}\" \"User Commands\"\n\
+         .SH NAME\n\
+         ayame-spell \\- fast, low-noise spell checker for code and prose\n\
+         .SH SYNOPSIS\n\
+         .B ayame-spell\n\
+         .RI [ OPTIONS ]\\ [ PATH ...]\n\
+         .br\n\
+         .B ayame-spell\n\
+         .I COMMAND\n\
+         .RI [ ARGS ]\n\
+         .SH DESCRIPTION\n\
+         ayame-spell checks English and Japanese text in source trees and prose.\n\
+         With no command it checks the supplied paths, or the current directory.\n\
+         .SH COMMAND HELP\n",
+        env!("CARGO_PKG_VERSION")
+    );
+
+    for (command, help) in sections {
+        man.push_str(".SS ");
+        man.push_str(&roff_literal(&command));
+        man.push('\n');
+        man.push_str(".nf\n");
+        man.push_str(&roff_literal(help.trim_end()));
+        man.push_str("\n.fi\n");
+    }
+
+    man.push_str(
+        ".SH FILES\n\
+         .TP\n\
+         .I ayame-spell.toml\n\
+         Project configuration.\n\
+         .TP\n\
+         .I ayame-words.txt\n\
+         Project word list used by the default configuration.\n\
+         .SH EXIT STATUS\n\
+         0 means no findings, 1 means findings were reported, and 2 means an error occurred.\n\
+         .SH DOCUMENTATION\n\
+         https://hjosugi.github.io/ayame-spell/\n\
+         .SH AUTHORS\n\
+         The ayame-spell contributors.\n",
+    );
+
+    let path = repo_root()
+        .join("contrib")
+        .join("man")
+        .join("ayame-spell.1");
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(&path, man)?;
+    println!("wrote {}", path.display());
+    Ok(())
+}
+
+fn roff_literal(text: &str) -> String {
+    text.lines()
+        .map(|line| {
+            let escaped = line.replace('\\', "\\e");
+            if escaped.starts_with('.') || escaped.starts_with('\'') {
+                format!("\\&{escaped}")
+            } else {
+                escaped
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 const EN_CLI_PREAMBLE: &str = r#"## Invocation
@@ -481,6 +556,14 @@ mod tests {
         assert_eq!(
             normalize_help("Usage: tool  \n  path  \n"),
             "Usage: tool\n  path\n"
+        );
+    }
+
+    #[test]
+    fn roff_literal_escapes_control_lines_and_backslashes() {
+        assert_eq!(
+            roff_literal(".control\n'control\nC:\\path"),
+            "\\&.control\n\\&'control\nC:\\epath"
         );
     }
 }

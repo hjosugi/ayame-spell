@@ -1,0 +1,255 @@
+.TH AYAME-SPELL 1 "" "ayame-spell 0.3.1" "User Commands"
+.SH NAME
+ayame-spell \- fast, low-noise spell checker for code and prose
+.SH SYNOPSIS
+.B ayame-spell
+.RI [ OPTIONS ]\ [ PATH ...]
+.br
+.B ayame-spell
+.I COMMAND
+.RI [ ARGS ]
+.SH DESCRIPTION
+ayame-spell checks English and Japanese text in source trees and prose.
+With no command it checks the supplied paths, or the current directory.
+.SH COMMAND HELP
+.SS ayame-spell
+.nf
+Fast, low-noise spell checker for code and prose — English & Japanese.
+Running with no subcommand checks the given paths (default: current directory).
+
+Usage: ayame-spell [OPTIONS] [PATH]... [COMMAND]
+
+Commands:
+  check        Check files and report issues (the default)
+  fix          Apply all safe fixes in place (single-candidate corrections and mechanical notation
+               conversions)
+  words        Word management: bulk collection, triage, and dictionary additions
+  dict         Shared dictionaries from the ayame-spell registry
+  init         Write a starter ayame-spell.toml in the current directory
+  config       Print the effective merged configuration
+  completions  Generate a shell completion script on standard output
+  lsp          Run the LSP server (used by editor integrations)
+  help         Print this message or the help of the given subcommand(s)
+
+Arguments:
+  [PATH]...
+          Files or directories to check
+
+Options:
+  -w, --write
+          Apply safe fixes in place (shorthand for `fix`)
+
+      --format <FORMAT>
+          Output format
+
+          [default: human]
+          [possible values: human, brief, json]
+
+  -j, --threads <THREADS>
+          Worker threads (default: number of CPUs)
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
+.fi
+.SS ayame-spell check
+.nf
+Check files and report issues (the default)
+
+Usage: ayame-spell check [OPTIONS] [PATH]...
+
+Arguments:
+  [PATH]...
+
+Options:
+  -w, --write              Apply safe fixes in place
+      --format <FORMAT>    [default: human] [possible values: human, brief, json]
+  -j, --threads <THREADS>
+  -h, --help               Print help
+.fi
+.SS ayame-spell fix
+.nf
+Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)
+
+Usage: ayame-spell fix [OPTIONS] [PATH]...
+
+Arguments:
+  [PATH]...
+
+Options:
+  -j, --threads <THREADS>
+  -h, --help               Print help
+.fi
+.SS ayame-spell words
+.nf
+Word management: bulk collection, triage, and dictionary additions
+
+Usage: ayame-spell words <COMMAND>
+
+Commands:
+  collect  Collect flagged words across files, ranked by frequency
+  add      Add words to the project (default) or global word file
+  triage   Interactive bulk triage of flagged words: multi-select what goes to the project
+           dictionary, the global dictionary, or the ignore list
+  help     Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell words collect
+.nf
+Collect flagged words across files, ranked by frequency
+
+Usage: ayame-spell words collect [OPTIONS] [PATH]...
+
+Arguments:
+  [PATH]...
+
+Options:
+      --min-count <MIN_COUNT>  Only include words flagged at least this many times [default: 1]
+      --plain                  Print bare words only (ready to append to a word file)
+      --json
+  -h, --help                   Print help
+.fi
+.SS ayame-spell words add
+.nf
+Add words to the project (default) or global word file
+
+Usage: ayame-spell words add [OPTIONS] <WORDS>...
+
+Arguments:
+  <WORDS>...
+
+Options:
+      --global
+  -h, --help    Print help
+.fi
+.SS ayame-spell words triage
+.nf
+Interactive bulk triage of flagged words: multi-select what goes to the project dictionary, the
+global dictionary, or the ignore list
+
+Usage: ayame-spell words triage [PATH]...
+
+Arguments:
+  [PATH]...
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell dict
+.nf
+Shared dictionaries from the ayame-spell registry
+
+Usage: ayame-spell dict <COMMAND>
+
+Commands:
+  list    List available dictionaries and their install status
+  add     Download dictionaries and enable them in the project config
+  remove  Delete a cached dictionary and disable it in the project config
+  update  Re-download every cached dictionary from the registry
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell dict list
+.nf
+List available dictionaries and their install status
+
+Usage: ayame-spell dict list
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell dict add
+.nf
+Download dictionaries and enable them in the project config
+
+Usage: ayame-spell dict add [OPTIONS] <NAMES>...
+
+Arguments:
+  <NAMES>...
+
+Options:
+      --cache-only  Download to the cache only; leave the project config untouched
+  -h, --help        Print help
+.fi
+.SS ayame-spell dict remove
+.nf
+Delete a cached dictionary and disable it in the project config
+
+Usage: ayame-spell dict remove <NAME>
+
+Arguments:
+  <NAME>
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell dict update
+.nf
+Re-download every cached dictionary from the registry
+
+Usage: ayame-spell dict update
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell init
+.nf
+Write a starter ayame-spell.toml in the current directory
+
+Usage: ayame-spell init [OPTIONS]
+
+Options:
+      --force  Overwrite an existing config file
+  -h, --help   Print help
+.fi
+.SS ayame-spell config
+.nf
+Print the effective merged configuration
+
+Usage: ayame-spell config
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell completions
+.nf
+Generate a shell completion script on standard output
+
+Usage: ayame-spell completions <SHELL>
+
+Arguments:
+  <SHELL>  [possible values: bash, elvish, fish, powershell, zsh]
+
+Options:
+  -h, --help  Print help
+.fi
+.SS ayame-spell lsp
+.nf
+Run the LSP server (used by editor integrations)
+
+Usage: ayame-spell lsp [OPTIONS]
+
+Options:
+      --stdio  Use standard input/output transport. Accepted for client compatibility; stdio is
+               always the transport
+  -h, --help   Print help
+.fi
+.SH FILES
+.TP
+.I ayame-spell.toml
+Project configuration.
+.TP
+.I ayame-words.txt
+Project word list used by the default configuration.
+.SH EXIT STATUS
+0 means no findings, 1 means findings were reported, and 2 means an error occurred.
+.SH DOCUMENTATION
+https://hjosugi.github.io/ayame-spell/
+.SH AUTHORS
+The ayame-spell contributors.
