@@ -1,0 +1,180 @@
+---
+source: crates/ayame-spell/tests/cli.rs
+expression: "normalized(&project, &output)"
+---
+status: 1
+stdout:
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "input.md"
+                },
+                "region": {
+                  "endColumn": 12,
+                  "endLine": 1,
+                  "startColumn": 9,
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "`teh` should be `the`"
+          },
+          "properties": {
+            "suggestions": [
+              "the"
+            ],
+            "word": "teh"
+          },
+          "ruleId": "typo"
+        }
+      ],
+      "tool": {
+        "driver": {
+          "informationUri": "https://hjosugi.github.io/ayame-spell/",
+          "name": "ayame-spell",
+          "rules": [
+            {
+              "fullDescription": {
+                "text": "The correction table recognized the token as a known misspelling. One candidate is safe to apply automatically; several candidates require a choice."
+              },
+              "help": {
+                "text": "The correction table recognized the token as a known misspelling. One candidate is safe to apply automatically; several candidates require a choice. Configuration: [corrections].builtin, [corrections].extra, [corrections.words] How to silence: Add the word to [words].ignore, add an identity correction, or use an inline ayame-spell ignore directive. Example: teh → the"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#typo",
+              "id": "typo",
+              "name": "Known misspelling",
+              "properties": {
+                "configKey": "[corrections].builtin, [corrections].extra, [corrections.words]",
+                "tags": [
+                  "spelling",
+                  "typo"
+                ]
+              },
+              "shortDescription": {
+                "text": "A token matches a built-in, configured, or inline correction."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "This rule only runs in dictionary mode. Suggestions are edit-distance matches and are never applied without review."
+              },
+              "help": {
+                "text": "This rule only runs in dictionary mode. Suggestions are edit-distance matches and are never applied without review. Configuration: [check].mode, [words].project, [words].dictionaries, [words].ignore How to silence: Add the intended word with `words add`, include a dictionary, or add it to [words].ignore. Example: recieve → receive"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#unknown-word",
+              "id": "unknown-word",
+              "name": "Unknown dictionary word",
+              "properties": {
+                "configKey": "[check].mode, [words].project, [words].dictionaries, [words].ignore",
+                "tags": [
+                  "spelling",
+                  "unknown-word"
+                ]
+              },
+              "shortDescription": {
+                "text": "Dictionary mode found a word in no active word list."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "The checker found both forms of a known pair, a form that conflicts with the configured long-vowel style, or a configured custom variant."
+              },
+              "help": {
+                "text": "The checker found both forms of a known pair, a form that conflicts with the configured long-vowel style, or a configured custom variant. Configuration: [japanese].katakana-style, [japanese.variants], [japanese].variant-files How to silence: Use consistency mode, choose long or short style, remove the custom variant, or use an inline ignore directive. Example: サーバ → サーバー"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-variant",
+              "id": "ja-variant",
+              "name": "Japanese notation variant",
+              "properties": {
+                "configKey": "[japanese].katakana-style, [japanese.variants], [japanese].variant-files",
+                "tags": [
+                  "spelling",
+                  "ja-variant"
+                ]
+              },
+              "shortDescription": {
+                "text": "Katakana spelling is inconsistent with the selected or majority style."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "Characters in the fullwidth ASCII letter and digit ranges were found. The suggested halfwidth form is a safe fix."
+              },
+              "help": {
+                "text": "Characters in the fullwidth ASCII letter and digit ranges were found. The suggested halfwidth form is a safe fix. Configuration: [japanese].enabled How to silence: Disable Japanese checks for the applicable file or use an inline ignore directive. Example: ＡＢＣ１２３ → ABC123"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#fullwidth-alnum",
+              "id": "fullwidth-alnum",
+              "name": "Fullwidth alphanumeric",
+              "properties": {
+                "configKey": "[japanese].enabled",
+                "tags": [
+                  "spelling",
+                  "fullwidth-alnum"
+                ]
+              },
+              "shortDescription": {
+                "text": "Fullwidth ASCII letters or digits can be converted mechanically."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "A halfwidth katakana run was found. Dakuten and handakuten are combined in the suggested fullwidth form."
+              },
+              "help": {
+                "text": "A halfwidth katakana run was found. Dakuten and handakuten are combined in the suggested fullwidth form. Configuration: [japanese].enabled How to silence: Disable Japanese checks for the applicable file or use an inline ignore directive. Example: ｶﾀｶﾅ → カタカナ"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#halfwidth-kana",
+              "id": "halfwidth-kana",
+              "name": "Halfwidth katakana",
+              "properties": {
+                "configKey": "[japanese].enabled",
+                "tags": [
+                  "spelling",
+                  "halfwidth-kana"
+                ]
+              },
+              "shortDescription": {
+                "text": "Halfwidth katakana can be normalized to fullwidth katakana."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "The fullwidth-space policy applies to prose by default and suggests a normal ASCII space as a safe mechanical fix."
+              },
+              "help": {
+                "text": "The fullwidth-space policy applies to prose by default and suggests a normal ASCII space as a safe mechanical fix. Configuration: [japanese].fullwidth-space How to silence: Set the fullwidth-space policy to off or restrict it with a file override. Example: 前　後 → 前 後"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#fullwidth-space",
+              "id": "fullwidth-space",
+              "name": "Fullwidth space",
+              "properties": {
+                "configKey": "[japanese].fullwidth-space",
+                "tags": [
+                  "spelling",
+                  "fullwidth-space"
+                ]
+              },
+              "shortDescription": {
+                "text": "A U+3000 space appears where the configured policy forbids it."
+              }
+            }
+          ],
+          "version": "0.3.1"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}
+stderr:

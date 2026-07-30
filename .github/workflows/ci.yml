@@ -34,6 +34,12 @@ jobs:
           git diff --exit-code -- \
             site/src/content/docs/reference/cli.md \
             site/src/content/docs/ja/reference/cli.md
+      - name: rule documentation is up to date
+        run: |
+          cargo xtask rules-docs
+          git diff --exit-code -- \
+            site/src/content/docs/reference/rules.md \
+            site/src/content/docs/ja/reference/rules.md
       - name: manual page is up to date
         run: |
           cargo xtask man

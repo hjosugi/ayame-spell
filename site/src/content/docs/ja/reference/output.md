@@ -1,6 +1,6 @@
 ---
 title: 終了コードと出力形式
-description: ayame-spell の終了状態、人向け、簡潔、JSON Lines 出力を連携に利用します。
+description: ayame-spell の終了状態、人向け、簡潔、JSON Lines、GitHub 注釈、SARIF 出力を連携に利用します。
 ---
 
 ## 終了コード
@@ -92,6 +92,30 @@ docs/guide.md:4:3: recieve -> receive
 
 指摘がなくても概要を出すため、コマンドが実行されなかった空ストリームと区別
 できます。一行ずつ読み込んでください。出力全体は JSON 配列ではありません。
+
+## GitHub 注釈形式
+
+`--format github` は指摘ごとに Workflow command を1件出力します。
+
+```text
+::warning file=docs/guide.md,line=4,col=3,title=ayame-spell [typo]::`recieve` should be `receive`
+```
+
+GitHub は Pull Request の正確な行へ注釈として表示します。
+`GITHUB_ACTIONS=true` で `--format` を省略すると自動的にこの形式を選び、
+明示した形式は常に優先されます。
+
+## SARIF 2.1.0 形式
+
+`--format sarif` は全安定[ルール](./rules/)のメタデータと各指摘の result を
+含む、1個の SARIF 2.1.0 JSON 文書を出力します。
+
+```sh
+ayame-spell check . --format sarif > ayame-spell.sarif
+```
+
+`github/codeql-action/upload-sarif` でアップロードできます。行・文字列の桁は
+1始まりで、result properties には元の語と順序付き候補を含みます。
 
 ## 単語収集の出力
 

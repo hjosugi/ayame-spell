@@ -1,6 +1,6 @@
 ---
 title: Exit codes and output formats
-description: Integrate ayame-spell exit status, human, brief, and JSON Lines output.
+description: Integrate ayame-spell exit status, human, brief, JSON Lines, GitHub annotations, and SARIF output.
 ---
 
 ## Exit codes
@@ -94,6 +94,31 @@ Summary fields:
 The summary is emitted even when there are no findings, so a successful empty
 stream is distinguishable from a command that did not run. Read the output
 line by line; the overall stream is not a JSON array.
+
+## GitHub annotation format
+
+`--format github` emits one workflow command per finding:
+
+```text
+::warning file=docs/guide.md,line=4,col=3,title=ayame-spell [typo]::`recieve` should be `receive`
+```
+
+GitHub renders these records as annotations on the exact pull-request lines.
+When `GITHUB_ACTIONS=true`, an omitted `--format` automatically selects this
+format. An explicit format always wins.
+
+## SARIF 2.1.0 format
+
+`--format sarif` writes one SARIF 2.1.0 JSON document with metadata for every
+stable [rule](./rules/) and one result for each finding:
+
+```sh
+ayame-spell check . --format sarif > ayame-spell.sarif
+```
+
+Upload the file with `github/codeql-action/upload-sarif`. The document uses
+one-based lines and character columns and includes the original word and
+ordered suggestions in result properties.
 
 ## Word collection output
 

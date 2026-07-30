@@ -73,6 +73,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'Output format')
+            [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Language for `--list-rules` (defaults from LANG)')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
             [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
             [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
@@ -82,6 +83,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('-w', '-w', [CompletionResultType]::ParameterName, 'Apply safe fixes in place (shorthand for `fix`)')
             [CompletionResult]::new('--write', '--write', [CompletionResultType]::ParameterName, 'Apply safe fixes in place (shorthand for `fix`)')
+            [CompletionResult]::new('--list-rules', '--list-rules', [CompletionResultType]::ParameterName, 'List every stable issue code')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')
@@ -92,6 +94,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
+            [CompletionResult]::new('explain', 'explain', [CompletionResultType]::ParameterValue, 'Explain a stable issue code and how to configure or silence it')
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'List every stable issue code')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate a shell completion script on standard output')
             [CompletionResult]::new('completion-candidates', 'completion-candidates', [CompletionResultType]::ParameterValue, 'Internal, non-network completion candidate provider')
             [CompletionResult]::new('lsp', 'lsp', [CompletionResultType]::ParameterValue, 'Run the LSP server (used by editor integrations)')
@@ -286,6 +290,18 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
+        'ayame-spell;explain' {
+            [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Explanation language (defaults from LANG)')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'ayame-spell;rules' {
+            [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Description language (defaults from LANG)')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
         'ayame-spell;completions' {
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
@@ -309,6 +325,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
+            [CompletionResult]::new('explain', 'explain', [CompletionResultType]::ParameterValue, 'Explain a stable issue code and how to configure or silence it')
+            [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'List every stable issue code')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate a shell completion script on standard output')
             [CompletionResult]::new('completion-candidates', 'completion-candidates', [CompletionResultType]::ParameterValue, 'Internal, non-network completion candidate provider')
             [CompletionResult]::new('lsp', 'lsp', [CompletionResultType]::ParameterValue, 'Run the LSP server (used by editor integrations)')
@@ -367,6 +385,12 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;help;config' {
+            break
+        }
+        'ayame-spell;help;explain' {
+            break
+        }
+        'ayame-spell;help;rules' {
             break
         }
         'ayame-spell;help;completions' {

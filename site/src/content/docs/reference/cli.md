@@ -33,6 +33,8 @@ Exit status and machine-readable fields are documented in
 | `dict update` | Re-fetch cached dictionaries. |
 | `init` | Create a starter `ayame-spell.toml`. |
 | `config` | Print merged config after applying defaults. |
+| `explain <CODE>` | Explain a rule and how to configure or silence it. |
+| `rules` | List every stable issue code. |
 | `completions <SHELL>` | Generate shell completion on standard output. |
 | `lsp` | Start the language server for editor integrations. |
 
@@ -44,7 +46,9 @@ Exit status and machine-readable fields are documented in
 | `-w`, `--write` | default, `check` | Apply safe fixes in place. |
 | `--dry-run` | `fix` | Print the exact unified diff without writing. |
 | `--interactive` | `fix` | Review each finding before writing. |
-| `--format <FORMAT>` | default, `check` | `human`, `brief`, or `json`; default `human`. |
+| `--format <FORMAT>` | default, `check` | `human`, `brief`, `json`, `github`, or `sarif`; defaults to `github` in GitHub Actions and `human` elsewhere. |
+| `--list-rules` | root | List every stable issue code. |
+| `--lang <LANG>` | `--list-rules`, `rules`, `explain` | `en` or `ja`; defaults from `LANG`. |
 | `-j`, `--threads <THREADS>` | default, `check`, `fix` | Worker count; defaults to CPU count. |
 | `--min-count <N>` | `words collect` | Emit words seen at least N times; default 1. |
 | `--plain` | `words collect` | Emit words only, ready to append. |
@@ -123,6 +127,8 @@ Commands:
   dict         Shared dictionaries from the ayame-spell registry
   init         Write a starter ayame-spell.toml in the current directory
   config       Print the effective merged configuration
+  explain      Explain a stable issue code and how to configure or silence it
+  rules        List every stable issue code
   completions  Generate a shell completion script on standard output
   lsp          Run the LSP server (used by editor integrations)
   help         Print this message or the help of the given subcommand(s)
@@ -179,8 +185,15 @@ Options:
       --format <FORMAT>
           Output format
 
-          [default: human]
-          [possible values: human, brief, json]
+          [possible values: human, brief, json, github, sarif]
+
+      --list-rules
+          List every stable issue code
+
+      --lang <RULE_LANG>
+          Language for `--list-rules` (defaults from LANG)
+
+          [possible values: en, ja]
 
   -h, --help
           Print help (see a summary with '-h')
@@ -217,7 +230,7 @@ Options:
                                `[files].max-file-size`)
   -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
   -w, --write                  Apply safe fixes in place
-      --format <FORMAT>        [default: human] [possible values: human, brief, json]
+      --format <FORMAT>        [possible values: human, brief, json, github, sarif]
   -h, --help                   Print help
 ```
 
@@ -463,6 +476,35 @@ Usage: ayame-spell config
 
 Options:
   -h, --help  Print help
+```
+
+## `ayame-spell explain`
+
+```text
+$ ayame-spell explain --help
+Explain a stable issue code and how to configure or silence it
+
+Usage: ayame-spell explain [OPTIONS] <CODE>
+
+Arguments:
+  <CODE>  Issue code, for example `ja-variant`
+
+Options:
+      --lang <LANG>  Explanation language (defaults from LANG) [possible values: en, ja]
+  -h, --help         Print help
+```
+
+## `ayame-spell rules`
+
+```text
+$ ayame-spell rules --help
+List every stable issue code
+
+Usage: ayame-spell rules [OPTIONS]
+
+Options:
+      --lang <LANG>  Description language (defaults from LANG) [possible values: en, ja]
+  -h, --help         Print help
 ```
 
 ## `ayame-spell completions`

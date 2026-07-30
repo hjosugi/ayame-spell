@@ -25,7 +25,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo install --locked ayame-spell
-      - run: ayame-spell check . --format brief
+      - run: ayame-spell check . --format github
 ```
 
 ビルド時間を短縮する場合は、コンパイルの代わりにバージョンを固定したリリース
@@ -45,18 +45,22 @@ spell:
     - ayame-spell check . --format brief
 ```
 
-## 注釈用の JSON Lines
+## GitHub 注釈と SARIF
 
 ```sh
-ayame-spell check . --format json > ayame-spell.jsonl
+ayame-spell check . --format github
 ```
 
-出力の各行は独立した JSON オブジェクトです。`type` が `issue` のレコードを
-抽出し、`path`、`line`、`column`、`message`、`kind` をネイティブ注釈へ
-変換します。最後の `summary` レコードには走査の集計が入ります。
+GitHub 形式はネイティブな Workflow command を出力し、`GITHUB_ACTIONS=true`
+なら自動的に選ばれます。Code scanning には SARIF を生成してアップロードします。
 
-```sh
-jq -c 'select(.type == "issue")' ayame-spell.jsonl
+```yaml
+      - name: スペルチェック SARIF を生成
+        run: ayame-spell check . --format sarif > ayame-spell.sarif
+        continue-on-error: true
+      - uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ayame-spell.sarif
 ```
 
 人向け形式は解析せず、コンパイラー風のログには `brief`、自動処理には `json` を

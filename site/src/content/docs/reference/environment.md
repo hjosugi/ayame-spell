@@ -20,7 +20,9 @@ ayame-spell does not currently read a variable for the project config path.
 Choose the project root by placing `ayame-spell.toml` or
 `.ayame-spell.toml`. LSP clients determine the discovery start through their
 workspace root; editor initialization options can override `mode`,
-`japaneseEnabled`, and `diagnosticSeverity`, but not the config path.
+`japaneseEnabled`, `diagnosticSeverity`, `debounceMs` (default 150), and
+`locale`, but not the config path. The locale selects English or Japanese rule
+explanations in hovers.
 
 ## Project files
 

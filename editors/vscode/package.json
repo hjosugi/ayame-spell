@@ -113,6 +113,14 @@
           "scope": "resource",
           "description": "%configuration.severity%"
         },
+        "ayame-spell.debounceMs": {
+          "type": "number",
+          "default": 150,
+          "minimum": 0,
+          "maximum": 5000,
+          "scope": "resource",
+          "description": "%configuration.debounce%"
+        },
         "ayame-spell.fixOnSave": {
           "type": "boolean",
           "default": false,

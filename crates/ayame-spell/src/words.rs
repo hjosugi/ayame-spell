@@ -362,6 +362,36 @@ pub fn add_to_string_array(
     Ok(path)
 }
 
+/// Add or replace one entry in `[corrections.words]`.
+pub fn set_correction(
+    loaded: &LoadedConfig,
+    word: &str,
+    replacement: &str,
+) -> anyhow::Result<PathBuf> {
+    let path = loaded
+        .project_file
+        .clone()
+        .unwrap_or_else(|| loaded.root.join("ayame-spell.toml"));
+    let text = std::fs::read_to_string(&path).unwrap_or_default();
+    let mut doc: toml_edit::DocumentMut = text
+        .parse()
+        .with_context(|| format!("cannot parse {}", path.display()))?;
+    let corrections = doc
+        .entry("corrections")
+        .or_insert(toml_edit::Item::Table(toml_edit::Table::new()))
+        .as_table_mut()
+        .with_context(|| format!("[corrections] in {} is not a table", path.display()))?;
+    let words = corrections
+        .entry("words")
+        .or_insert(toml_edit::Item::Table(toml_edit::Table::new()))
+        .as_table_mut()
+        .with_context(|| format!("[corrections.words] in {} is not a table", path.display()))?;
+    words.insert(word, toml_edit::value(replacement));
+    std::fs::write(&path, doc.to_string())
+        .with_context(|| format!("cannot write {}", path.display()))?;
+    Ok(path)
+}
+
 /// Remove a value from a `[table].key` string array in the project config.
 pub fn remove_from_string_array(
     loaded: &LoadedConfig,

@@ -20,7 +20,8 @@ ayame-spell dict list
 `ayame-spell.toml` または `.ayame-spell.toml` を置いてプロジェクトルートを
 決めます。LSP クライアントではワークスペースルートが検出開始位置です。
 エディター初期化オプションで `mode`、`japaneseEnabled`、
-`diagnosticSeverity` は上書きできますが、設定パスは変更できません。
+`diagnosticSeverity`、`debounceMs`（既定 150）、`locale` は上書きできますが、
+設定パスは変更できません。locale は hover のルール説明言語を選びます。
 
 ## プロジェクトファイル
 

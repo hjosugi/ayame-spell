@@ -204,8 +204,17 @@ JIS Z 8301:2019 で「3音以上は長音記号を省く」規則が廃止され
 ## 終了コードと出力形式
 
 `0` 問題なし · `1` 指摘あり · `2` エラー。
-`--format human`（既定）、`--format brief`、`--format json`
-（JSON Lines）を利用できます。
+`--format human`（既定）、`brief`、`json`（JSON Lines）、`github`
+（Workflow 注釈）、`sarif`（SARIF 2.1.0）を利用できます。GitHub Actions
+では形式を省略すると自動的に `github` になり、`--format human` で上書きできます。
+
+```sh
+ayame-spell check . --format github
+ayame-spell check . --format sarif > ayame-spell.sarif
+```
+
+ルールの理由と設定は `ayame-spell explain typo`、安定コードの一覧は
+`ayame-spell rules` で確認できます。
 
 ## ライセンス
 

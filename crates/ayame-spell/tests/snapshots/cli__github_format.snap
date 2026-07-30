@@ -4,7 +4,6 @@ expression: "normalized(&project, &output)"
 ---
 status: 1
 stdout:
-input.md:1:9: teh → the [typo]
+::warning file=input.md,line=1,col=9,title=ayame-spell [typo]::`teh` should be `the`
 stderr:
-hint: run `ayame-spell explain typo` for rule details
 1 issue(s) in 1 file(s) — 1 file(s) checked

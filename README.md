@@ -226,7 +226,18 @@ you ask for one.
 ## Exit codes & output formats
 
 `0` clean · `1` issues found · `2` error.
-`--format human` (default), `--format brief`, `--format json` (JSON lines).
+`--format human` (default), `brief`, `json` (JSON Lines), `github` (workflow
+annotations), and `sarif` (SARIF 2.1.0) are available. In GitHub Actions the
+unspecified format automatically becomes `github`; pass `--format human` to
+override it.
+
+```sh
+ayame-spell check . --format github
+ayame-spell check . --format sarif > ayame-spell.sarif
+```
+
+Use `ayame-spell explain typo` for a rule's rationale and configuration, or
+`ayame-spell rules` to list every stable code.
 
 ## License
 

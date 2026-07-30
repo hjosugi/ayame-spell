@@ -52,6 +52,7 @@ impl Project {
             .env("AYAME_SPELL_CONFIG_DIR", &self.config_dir)
             .env("AYAME_SPELL_CACHE_DIR", &self.cache_dir)
             .env_remove("AYAME_SPELL_REGISTRY")
+            .env_remove("GITHUB_ACTIONS")
             .env("NO_COLOR", "1")
             .env("CLICOLOR_FORCE", "0");
         command
@@ -131,11 +132,77 @@ fn human_brief_and_json_formats_are_snapshotted() {
     let project = Project::new();
     project.write("input.md", "This is teh fixture.\n");
 
-    for format in ["human", "brief", "json"] {
+    for format in ["human", "brief", "json", "github", "sarif"] {
         let output = project.run(&["check", "--format", format, "input.md"]);
         assert_code(&output, 1);
         insta::assert_snapshot!(format!("{format}_format"), normalized(&project, &output));
     }
+
+    let sarif = project.run(&["check", "--format", "sarif", "input.md"]);
+    let document: Value = serde_json::from_slice(&sarif.stdout).unwrap();
+    assert_eq!(
+        document["$schema"],
+        "https://json.schemastore.org/sarif-2.1.0.json"
+    );
+    assert_eq!(document["version"], "2.1.0");
+    assert_eq!(document["runs"][0]["results"][0]["ruleId"], "typo");
+    assert_eq!(
+        document["runs"][0]["tool"]["driver"]["rules"]
+            .as_array()
+            .unwrap()
+            .len(),
+        6
+    );
+
+    let mut automatic = project.command();
+    let automatic = automatic
+        .env("GITHUB_ACTIONS", "true")
+        .args(["check", "input.md"])
+        .output()
+        .unwrap();
+    assert_code(&automatic, 1);
+    assert!(String::from_utf8_lossy(&automatic.stdout).starts_with("::warning "));
+
+    let mut explicit = project.command();
+    let explicit = explicit
+        .env("GITHUB_ACTIONS", "true")
+        .args(["check", "--format", "human", "input.md"])
+        .output()
+        .unwrap();
+    assert_code(&explicit, 1);
+    assert!(String::from_utf8_lossy(&explicit.stdout).contains("[typo]"));
+}
+
+#[test]
+fn explain_and_rules_cover_every_code_in_both_languages() {
+    let project = Project::new();
+    let rules = project.run(&["rules", "--lang", "en"]);
+    assert_code(&rules, 0);
+    let rules = String::from_utf8_lossy(&rules.stdout);
+
+    for code in [
+        "typo",
+        "unknown-word",
+        "ja-variant",
+        "fullwidth-alnum",
+        "halfwidth-kana",
+        "fullwidth-space",
+    ] {
+        assert!(rules.contains(code));
+        for language in ["en", "ja"] {
+            let explanation = project.run(&["explain", code, "--lang", language]);
+            assert_code(&explanation, 0);
+            assert!(String::from_utf8_lossy(&explanation.stdout).contains(code));
+        }
+    }
+
+    let alias = project.run(&["--list-rules", "--lang", "ja"]);
+    assert_code(&alias, 0);
+    assert!(String::from_utf8_lossy(&alias.stdout).contains("カタカナ"));
+
+    let unknown = project.run(&["explain", "not-a-rule"]);
+    assert_code(&unknown, 2);
+    assert!(String::from_utf8_lossy(&unknown.stderr).contains("unknown issue code"));
 }
 
 #[test]
@@ -654,6 +721,32 @@ fn lsp_frame(value: Value) -> Vec<u8> {
     format!("Content-Length: {}\r\n\r\n{body}", body.len()).into_bytes()
 }
 
+fn lsp_messages(bytes: &[u8]) -> Vec<Value> {
+    let mut messages = Vec::new();
+    let mut offset = 0;
+    while offset < bytes.len() {
+        let header_end = bytes[offset..]
+            .windows(4)
+            .position(|window| window == b"\r\n\r\n")
+            .map(|position| offset + position)
+            .expect("LSP header");
+        let headers = String::from_utf8_lossy(&bytes[offset..header_end]);
+        let length: usize = headers
+            .lines()
+            .find_map(|line| {
+                line.strip_prefix("Content-Length:")
+                    .map(str::trim)
+                    .and_then(|value| value.parse().ok())
+            })
+            .expect("Content-Length");
+        let body_start = header_end + 4;
+        let body_end = body_start + length;
+        messages.push(serde_json::from_slice(&bytes[body_start..body_end]).expect("LSP JSON"));
+        offset = body_end;
+    }
+    messages
+}
+
 #[test]
 fn lsp_completes_initialize_and_shutdown() {
     let project = Project::new();
@@ -704,6 +797,288 @@ fn lsp_completes_initialize_and_shutdown() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("\"serverInfo\""));
     assert!(stdout.contains("\"id\":2"));
+}
+
+#[test]
+fn lsp_full_lifecycle_pull_hover_actions_commands_and_incremental_sync() {
+    let project = Project::new();
+    let document = project.write("input.md", "This is teh.\n");
+    let uri = lsp_types::Url::from_file_path(&document)
+        .unwrap()
+        .to_string();
+    let root_uri = lsp_types::Url::from_directory_path(&project.root)
+        .unwrap()
+        .to_string();
+    let mut input = Vec::new();
+    for message in [
+        json!({
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {
+                "capabilities": {},
+                "rootUri": root_uri,
+                "initializationOptions": { "locale": "ja-JP", "debounceMs": 0 }
+            }
+        }),
+        json!({"jsonrpc": "2.0", "method": "initialized", "params": {}}),
+        json!({
+            "jsonrpc": "2.0", "method": "textDocument/didOpen",
+            "params": {
+                "textDocument": {
+                    "uri": uri, "languageId": "markdown", "version": 1,
+                    "text": "This is teh.\n"
+                }
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 10, "method": "textDocument/hover",
+            "params": {"textDocument": {"uri": uri}, "position": {"line": 0, "character": 9}}
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 11, "method": "textDocument/codeAction",
+            "params": {
+                "textDocument": {"uri": uri},
+                "range": {
+                    "start": {"line": 0, "character": 8},
+                    "end": {"line": 0, "character": 11}
+                },
+                "context": {"diagnostics": []}
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 12, "method": "textDocument/diagnostic",
+            "params": {
+                "textDocument": {"uri": uri},
+                "identifier": null,
+                "previousResultId": null
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 13, "method": "workspace/diagnostic",
+            "params": {"identifier": null, "previousResultIds": []}
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 14, "method": "workspace/executeCommand",
+            "params": {
+                "command": "ayame-spell.addWords",
+                "arguments": [{"words": ["ProjectTerm"], "scope": "project"}]
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 15, "method": "workspace/executeCommand",
+            "params": {
+                "command": "ayame-spell.addWords",
+                "arguments": [{"words": ["GlobalTerm"], "scope": "global"}]
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 16, "method": "workspace/executeCommand",
+            "params": {
+                "command": "ayame-spell.addCorrection",
+                "arguments": [{"word": "mistkae", "replacement": "mistake"}]
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 17, "method": "workspace/executeCommand",
+            "params": {"command": "ayame-spell.unknown", "arguments": []}
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 18, "method": "workspace/executeCommand",
+            "params": {
+                "command": "ayame-spell.server.fixAll",
+                "arguments": [{"uri": uri}]
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "method": "textDocument/didChange",
+            "params": {
+                "textDocument": {"uri": uri, "version": 2},
+                "contentChanges": [{
+                    "range": {
+                        "start": {"line": 0, "character": 8},
+                        "end": {"line": 0, "character": 11}
+                    },
+                    "rangeLength": 3,
+                    "text": "the"
+                }]
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 19, "method": "textDocument/diagnostic",
+            "params": {
+                "textDocument": {"uri": uri},
+                "identifier": null,
+                "previousResultId": null
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "method": "$/cancelRequest",
+            "params": {"id": 20}
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 20, "method": "textDocument/diagnostic",
+            "params": {
+                "textDocument": {"uri": uri},
+                "identifier": null,
+                "previousResultId": null
+            }
+        }),
+    ] {
+        input.extend(lsp_frame(message));
+    }
+
+    let large = "a".repeat(4 * 1024 * 1024 + 1);
+    input.extend(lsp_frame(json!({
+        "jsonrpc": "2.0", "method": "textDocument/didChange",
+        "params": {
+            "textDocument": {"uri": uri, "version": 3},
+            "contentChanges": [{"text": large}]
+        }
+    })));
+    input.extend(lsp_frame(json!({
+        "jsonrpc": "2.0", "id": 21, "method": "textDocument/diagnostic",
+        "params": {
+            "textDocument": {"uri": uri},
+            "identifier": null,
+            "previousResultId": null
+        }
+    })));
+    input.extend(lsp_frame(json!({
+        "jsonrpc": "2.0", "id": 99, "method": "shutdown", "params": null
+    })));
+    input.extend(lsp_frame(json!({
+        "jsonrpc": "2.0", "method": "exit", "params": null
+    })));
+
+    let output = project.run_with_stdin(&["lsp", "--stdio"], &input);
+    assert_code(&output, 0);
+    let messages = lsp_messages(&output.stdout);
+    let response = |id: i64| {
+        messages
+            .iter()
+            .find(|message| message["id"] == id)
+            .unwrap_or_else(|| panic!("missing LSP response {id}"))
+    };
+
+    assert_eq!(
+        response(1)["result"]["capabilities"]["textDocumentSync"]["change"],
+        2
+    );
+    assert_eq!(
+        response(1)["result"]["capabilities"]["diagnosticProvider"]["workspaceDiagnostics"],
+        true
+    );
+    assert_eq!(response(1)["result"]["capabilities"]["hoverProvider"], true);
+    assert!(response(10)["result"]["contents"]["value"]
+        .as_str()
+        .unwrap()
+        .contains("既知のスペルミス"));
+    let actions = response(11)["result"].as_array().unwrap();
+    for title in [
+        "Add \"teh\" to global words",
+        "Ignore findings in this file",
+        "Ignore this line",
+        "Add correction \"teh\"",
+        "fix all safe issues",
+    ] {
+        assert!(
+            actions
+                .iter()
+                .any(|action| action["title"].as_str().unwrap_or("").contains(title)),
+            "missing code action {title}"
+        );
+    }
+    assert_eq!(response(12)["result"]["kind"], "full");
+    assert_eq!(response(12)["result"]["items"][0]["code"], "typo");
+    assert_eq!(response(13)["result"]["items"][0]["kind"], "full");
+    assert_eq!(response(17)["error"]["code"], -32602);
+    assert_eq!(response(19)["result"]["items"].as_array().unwrap().len(), 0);
+    assert_eq!(response(20)["error"]["code"], -32800);
+    assert_eq!(response(21)["result"]["items"].as_array().unwrap().len(), 0);
+    assert!(messages.iter().any(|message| {
+        message["method"] == "window/showMessage"
+            && message["params"]["message"]
+                .as_str()
+                .is_some_and(|value| value.contains("skipped"))
+    }));
+    assert!(messages.iter().any(|message| {
+        message["method"] == "workspace/applyEdit"
+            && message["params"]["edit"]["changes"][&uri][0]["newText"] == "the"
+    }));
+    assert!(fs::read_to_string(project.root.join("ayame-words.txt"))
+        .unwrap()
+        .contains("ProjectTerm"));
+    assert!(fs::read_to_string(project.config_dir.join("words.txt"))
+        .unwrap()
+        .contains("GlobalTerm"));
+    assert!(fs::read_to_string(project.root.join("ayame-spell.toml"))
+        .unwrap()
+        .contains("mistkae = \"mistake\""));
+}
+
+#[test]
+fn lsp_normalises_every_japanese_variant_occurrence() {
+    let project = Project::new();
+    project.write(
+        "ayame-spell.toml",
+        "[japanese]\nkatakana-style = \"long\"\n",
+    );
+    let document = project.write("input.md", "サーバ と サーバ\n");
+    let uri = lsp_types::Url::from_file_path(document)
+        .unwrap()
+        .to_string();
+    let root_uri = lsp_types::Url::from_directory_path(&project.root)
+        .unwrap()
+        .to_string();
+    let mut input = Vec::new();
+    for message in [
+        json!({
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"capabilities": {}, "rootUri": root_uri}
+        }),
+        json!({"jsonrpc": "2.0", "method": "initialized", "params": {}}),
+        json!({
+            "jsonrpc": "2.0", "method": "textDocument/didOpen",
+            "params": {
+                "textDocument": {
+                    "uri": uri, "languageId": "markdown", "version": 1,
+                    "text": "サーバ と サーバ\n"
+                }
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0", "id": 2, "method": "textDocument/codeAction",
+            "params": {
+                "textDocument": {"uri": uri},
+                "range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 0, "character": 3}
+                },
+                "context": {"diagnostics": []}
+            }
+        }),
+        json!({"jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": null}),
+        json!({"jsonrpc": "2.0", "method": "exit", "params": null}),
+    ] {
+        input.extend(lsp_frame(message));
+    }
+
+    let output = project.run_with_stdin(&["lsp"], &input);
+    assert_code(&output, 0);
+    let messages = lsp_messages(&output.stdout);
+    let actions = messages.iter().find(|message| message["id"] == 2).unwrap()["result"]
+        .as_array()
+        .unwrap();
+    let normalise = actions
+        .iter()
+        .find(|action| {
+            action["title"]
+                .as_str()
+                .is_some_and(|title| title.starts_with("Normalise every"))
+        })
+        .expect("document-wide Japanese normalisation action");
+    let edits = normalise["edit"]["changes"][&uri].as_array().unwrap();
+    assert_eq!(edits.len(), 2);
+    assert!(edits.iter().all(|edit| edit["newText"] == "サーバー"));
 }
 
 #[test]

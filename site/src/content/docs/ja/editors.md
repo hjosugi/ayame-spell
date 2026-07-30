@@ -209,6 +209,9 @@ JetBrains 標準の LSP API は IDE プラグイン開発者向けです。Intel
 
 ## クライアントごとの機能差
 
+サーバーは push / pull 診断、差分同期、ローカライズしたルール hover、
+quick fix、`source.fixAll.ayame-spell` に対応します。変更後は既定で 150 ms
+debounce し、大きすぎる文書はエディターを止めずに警告します。
 診断と置換コードアクションは標準 LSP メソッドを使います。
 `workspace/executeCommand` を通知しないクライアントでも、診断と直接置換は
 利用できます。コマンドが必要な辞書操作は表示されない場合があるため、その場合は

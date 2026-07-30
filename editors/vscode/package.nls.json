@@ -12,6 +12,7 @@
   "configuration.mode.off": "Disable checking while keeping the extension available.",
   "configuration.japanese": "Enable Japanese notation and character-width checks.",
   "configuration.severity": "Severity shown for ayame-spell diagnostics.",
+  "configuration.debounce": "Milliseconds to wait after typing before diagnostics are refreshed.",
   "configuration.fixOnSave": "Apply every safe ayame-spell fix before saving.",
   "configuration.trace": "Trace communication with the ayame-spell language server.",
   "command.fixAll": "ayame-spell: Fix All Safe Issues in File",

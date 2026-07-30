@@ -1,6 +1,6 @@
 //! Parallel file walking, checking, reporting, and in-place fixing.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::{IsTerminal, Read};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -665,10 +665,20 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
         return Ok(code);
     }
 
+    if options.format == Format::Sarif {
+        let issue_count: usize = reports.iter().map(|report| report.items.len()).sum();
+        println!("{}", serde_json::to_string_pretty(&sarif_report(&reports))?);
+        if options.verbose > 0 {
+            eprintln!("elapsed: {:.3}s", started.elapsed().as_secs_f64());
+        }
+        return Ok(if issue_count > 0 { 1 } else { 0 });
+    }
+
     let color = color_enabled(options.color, options.format);
     let mut issue_count = 0usize;
     let mut fixed_count = 0usize;
     let mut files_with_issues = 0usize;
+    let mut hinted = HashSet::new();
     let location_width = reports
         .iter()
         .flat_map(|report| {
@@ -690,6 +700,12 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
         for item in &report.items {
             issue_count += 1;
             print_item(&report.path, item, options.format, color, location_width);
+            if options.format == Format::Human && !options.quiet && hinted.insert(item.issue.kind) {
+                eprintln!(
+                    "hint: run `ayame-spell explain {}` for rule details",
+                    item.issue.kind.code()
+                );
+            }
         }
         if report.fixed > 0 && options.format != Format::Json && !options.quiet {
             eprintln!(
@@ -808,6 +824,16 @@ fn print_item(path: &Path, item: &Item, format: Format, color: bool, location_wi
                 issue.suggestions.join(",")
             );
         }
+        Format::Github => {
+            println!(
+                "::warning file={},line={},col={},title={}::{}",
+                github_escape(&path.to_string_lossy(), true),
+                issue.line,
+                column,
+                github_escape(&format!("ayame-spell [{}]", issue.kind.code()), true),
+                github_escape(&issue.message(), false)
+            );
+        }
         Format::Human => {
             let (red, green, dim, reset) = if color {
                 ("\x1b[31m", "\x1b[32m", "\x1b[2m", "\x1b[0m")
@@ -829,7 +855,93 @@ fn print_item(path: &Path, item: &Item, format: Format, color: bool, location_wi
                 issue.kind.code(),
             );
         }
+        Format::Sarif => unreachable!("SARIF is rendered as one document"),
     }
+}
+
+fn github_escape(value: &str, property: bool) -> String {
+    let mut escaped = value
+        .replace('%', "%25")
+        .replace('\r', "%0D")
+        .replace('\n', "%0A");
+    if property {
+        escaped = escaped.replace(':', "%3A").replace(',', "%2C");
+    }
+    escaped
+}
+
+fn sarif_report(reports: &[FileReport]) -> serde_json::Value {
+    let rules: Vec<serde_json::Value> = ayame_spell_core::IssueKind::ALL
+        .into_iter()
+        .map(|kind| {
+            let info = kind.info(false);
+            serde_json::json!({
+                "id": kind.code(),
+                "name": info.title,
+                "shortDescription": { "text": info.summary },
+                "fullDescription": { "text": info.explanation },
+                "help": {
+                    "text": format!(
+                        "{} Configuration: {} How to silence: {} Example: {}",
+                        info.explanation, info.config_key, info.silence, info.example
+                    )
+                },
+                "helpUri": format!(
+                    "https://hjosugi.github.io/ayame-spell/reference/rules/#{}",
+                    kind.code()
+                ),
+                "properties": {
+                    "configKey": info.config_key,
+                    "tags": ["spelling", kind.code()]
+                }
+            })
+        })
+        .collect();
+    let results: Vec<serde_json::Value> = reports
+        .iter()
+        .flat_map(|report| {
+            report.items.iter().map(move |item| {
+                let issue = &item.issue;
+                let column = display_column(item);
+                let uri = report.path.to_string_lossy().replace('\\', "/");
+                serde_json::json!({
+                    "ruleId": issue.kind.code(),
+                    "level": "warning",
+                    "message": { "text": issue.message() },
+                    "locations": [{
+                        "physicalLocation": {
+                            "artifactLocation": { "uri": uri },
+                            "region": {
+                                "startLine": issue.line,
+                                "startColumn": column,
+                                "endLine": issue.line,
+                                "endColumn": column + issue.word.chars().count()
+                            }
+                        }
+                    }],
+                    "properties": {
+                        "word": issue.word,
+                        "suggestions": issue.suggestions
+                    }
+                })
+            })
+        })
+        .collect();
+    serde_json::json!({
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [{
+            "tool": {
+                "driver": {
+                    "name": "ayame-spell",
+                    "informationUri": "https://hjosugi.github.io/ayame-spell/",
+                    "version": env!("CARGO_PKG_VERSION"),
+                    "rules": rules
+                }
+            },
+            "results": results
+        }]
+    })
 }
 
 #[cfg(test)]

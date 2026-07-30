@@ -206,7 +206,11 @@ generic user-facing route across IntelliJ-based products.
 
 ## Client feature differences
 
-Diagnostics and replacement code actions use standard LSP methods. Clients
+The server supports push and pull diagnostics, incremental synchronization,
+localized rule hovers, quick fixes, and `source.fixAll.ayame-spell`. Changes
+are debounced for 150 ms by default, and oversized documents produce a visible
+warning instead of blocking the editor. Diagnostics and replacement code
+actions use standard LSP methods. Clients
 that do not advertise `workspace/executeCommand` still receive diagnostics and
 direct replacement edits; dictionary-management actions that require a
 command may be unavailable. Run `ayame-spell words add` or `words triage` from

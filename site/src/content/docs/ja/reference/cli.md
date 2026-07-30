@@ -33,6 +33,8 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `dict update` | キャッシュ済み辞書を再取得。 |
 | `init` | 初期設定 `ayame-spell.toml` を作成。 |
 | `config` | マージ・既定値適用後の最終設定を表示。 |
+| `explain <CODE>` | ルールの理由、設定、無視する方法を説明。 |
+| `rules` | 安定した全指摘コードを一覧表示。 |
 | `completions <SHELL>` | シェル補完を標準出力へ生成。 |
 | `lsp` | エディター連携用 LSP サーバーを起動。 |
 
@@ -44,7 +46,9 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `-w`, `--write` | 既定、`check` | 安全な修正をその場で適用。 |
 | `--dry-run` | `fix` | 書き込まず、適用予定と一致する unified diff を表示。 |
 | `--interactive` | `fix` | 書き込み前に指摘を1件ずつ確認。 |
-| `--format <FORMAT>` | 既定、`check` | `human`、`brief`、`json`。既定は `human`。 |
+| `--format <FORMAT>` | 既定、`check` | `human`、`brief`、`json`、`github`、`sarif`。GitHub Actions では `github`、その他では `human` が既定。 |
+| `--list-rules` | ルート | 安定した全指摘コードを一覧表示。 |
+| `--lang <LANG>` | `--list-rules`、`rules`、`explain` | `en` または `ja`。省略時は `LANG` から選択。 |
 | `-j`, `--threads <THREADS>` | 既定、`check`、`fix` | ワーカースレッド数。省略時は CPU 数。 |
 | `--min-count <N>` | `words collect` | N 回以上現れた語だけを出力。既定は 1。 |
 | `--plain` | `words collect` | 追記しやすいよう、語だけを出力。 |
@@ -122,6 +126,8 @@ Commands:
   dict         Shared dictionaries from the ayame-spell registry
   init         Write a starter ayame-spell.toml in the current directory
   config       Print the effective merged configuration
+  explain      Explain a stable issue code and how to configure or silence it
+  rules        List every stable issue code
   completions  Generate a shell completion script on standard output
   lsp          Run the LSP server (used by editor integrations)
   help         Print this message or the help of the given subcommand(s)
@@ -178,8 +184,15 @@ Options:
       --format <FORMAT>
           Output format
 
-          [default: human]
-          [possible values: human, brief, json]
+          [possible values: human, brief, json, github, sarif]
+
+      --list-rules
+          List every stable issue code
+
+      --lang <RULE_LANG>
+          Language for `--list-rules` (defaults from LANG)
+
+          [possible values: en, ja]
 
   -h, --help
           Print help (see a summary with '-h')
@@ -216,7 +229,7 @@ Options:
                                `[files].max-file-size`)
   -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
   -w, --write                  Apply safe fixes in place
-      --format <FORMAT>        [default: human] [possible values: human, brief, json]
+      --format <FORMAT>        [possible values: human, brief, json, github, sarif]
   -h, --help                   Print help
 ```
 
@@ -462,6 +475,35 @@ Usage: ayame-spell config
 
 Options:
   -h, --help  Print help
+```
+
+## `ayame-spell explain`
+
+```text
+$ ayame-spell explain --help
+Explain a stable issue code and how to configure or silence it
+
+Usage: ayame-spell explain [OPTIONS] <CODE>
+
+Arguments:
+  <CODE>  Issue code, for example `ja-variant`
+
+Options:
+      --lang <LANG>  Explanation language (defaults from LANG) [possible values: en, ja]
+  -h, --help         Print help
+```
+
+## `ayame-spell rules`
+
+```text
+$ ayame-spell rules --help
+List every stable issue code
+
+Usage: ayame-spell rules [OPTIONS]
+
+Options:
+      --lang <LANG>  Description language (defaults from LANG) [possible values: en, ja]
+  -h, --help         Print help
 ```
 
 ## `ayame-spell completions`

@@ -12,6 +12,7 @@
   "configuration.mode.off": "拡張機能を利用可能なままチェックを停止します。",
   "configuration.japanese": "日本語の表記・文字幅チェックを有効にします。",
   "configuration.severity": "ayame-spell 診断に表示する重大度。",
+  "configuration.debounce": "入力後に診断を更新するまで待つミリ秒数。",
   "configuration.fixOnSave": "保存前に安全な ayame-spell 修正をすべて適用します。",
   "configuration.trace": "ayame-spell 言語サーバーとの通信をトレースします。",
   "command.fixAll": "ayame-spell: ファイル内の安全な問題をすべて修正",

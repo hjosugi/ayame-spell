@@ -27,6 +27,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand -j 'Worker threads (overrides the detected CPU count)'
             cand --threads 'Worker threads (overrides the detected CPU count)'
             cand --format 'Output format'
+            cand --lang 'Language for `--list-rules` (defaults from LANG)'
             cand --no-config 'Ignore project and global configuration files'
             cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
             cand --hidden 'Include hidden files and directories'
@@ -36,6 +37,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --verbose 'Report configuration sources, skipped files, and elapsed time'
             cand -w 'Apply safe fixes in place (shorthand for `fix`)'
             cand --write 'Apply safe fixes in place (shorthand for `fix`)'
+            cand --list-rules 'List every stable issue code'
             cand -h 'Print help (see more with ''--help'')'
             cand --help 'Print help (see more with ''--help'')'
             cand -V 'Print version'
@@ -46,6 +48,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand dict 'Shared dictionaries from the ayame-spell registry'
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print the effective merged configuration'
+            cand explain 'Explain a stable issue code and how to configure or silence it'
+            cand rules 'List every stable issue code'
             cand completions 'Generate a shell completion script on standard output'
             cand completion-candidates 'Internal, non-network completion candidate provider'
             cand lsp 'Run the LSP server (used by editor integrations)'
@@ -211,6 +215,16 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand -h 'Print help'
             cand --help 'Print help'
         }
+        &'ayame-spell;explain'= {
+            cand --lang 'Explanation language (defaults from LANG)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'ayame-spell;rules'= {
+            cand --lang 'Description language (defaults from LANG)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
         &'ayame-spell;completions'= {
             cand -h 'Print help'
             cand --help 'Print help'
@@ -231,6 +245,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand dict 'Shared dictionaries from the ayame-spell registry'
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print the effective merged configuration'
+            cand explain 'Explain a stable issue code and how to configure or silence it'
+            cand rules 'List every stable issue code'
             cand completions 'Generate a shell completion script on standard output'
             cand completion-candidates 'Internal, non-network completion candidate provider'
             cand lsp 'Run the LSP server (used by editor integrations)'
@@ -274,6 +290,10 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;help;init'= {
         }
         &'ayame-spell;help;config'= {
+        }
+        &'ayame-spell;help;explain'= {
+        }
+        &'ayame-spell;help;rules'= {
         }
         &'ayame-spell;help;completions'= {
         }

@@ -23,7 +23,8 @@ _ayame-spell() {
 '--max-file-size=[Skip files larger than this many bytes (overrides \`\[files\].max-file-size\`)]:BYTES:_default' \
 '-j+[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
 '--threads=[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
-'--format=[Output format]:FORMAT:(human brief json)' \
+'--format=[Output format]:FORMAT:(human brief json github sarif)' \
+'--lang=[Language for \`--list-rules\` (defaults from LANG)]:RULE_LANG:(en ja)' \
 '--no-config[Ignore project and global configuration files]' \
 '--no-ignore[Do not honour \`.gitignore\`, \`.ignore\`, or Git exclude files]' \
 '--hidden[Include hidden files and directories]' \
@@ -33,6 +34,7 @@ _ayame-spell() {
 '*--verbose[Report configuration sources, skipped files, and elapsed time]' \
 '-w[Apply safe fixes in place (shorthand for \`fix\`)]' \
 '--write[Apply safe fixes in place (shorthand for \`fix\`)]' \
+'--list-rules[List every stable issue code]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -57,7 +59,7 @@ _arguments "${_arguments_options[@]}" : \
 '--max-file-size=[Skip files larger than this many bytes (overrides \`\[files\].max-file-size\`)]:BYTES:_default' \
 '-j+[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
 '--threads=[Worker threads (overrides the detected CPU count)]:THREADS:_default' \
-'--format=[]:FORMAT:(human brief json)' \
+'--format=[]:FORMAT:(human brief json github sarif)' \
 '--no-config[Ignore project and global configuration files]' \
 '--no-ignore[Do not honour \`.gitignore\`, \`.ignore\`, or Git exclude files]' \
 '--hidden[Include hidden files and directories]' \
@@ -298,6 +300,21 @@ _arguments "${_arguments_options[@]}" : \
 '--help[Print help]' \
 && ret=0
 ;;
+(explain)
+_arguments "${_arguments_options[@]}" : \
+'--lang=[Explanation language (defaults from LANG)]:LANG:(en ja)' \
+'-h[Print help]' \
+'--help[Print help]' \
+':code -- Issue code, for example `ja-variant`:_default' \
+&& ret=0
+;;
+(rules)
+_arguments "${_arguments_options[@]}" : \
+'--lang=[Description language (defaults from LANG)]:LANG:(en ja)' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
 (completions)
 _arguments "${_arguments_options[@]}" : \
 '-h[Print help]' \
@@ -416,6 +433,14 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(explain)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(rules)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (completions)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -450,6 +475,8 @@ _ayame-spell_commands() {
 'dict:Shared dictionaries from the ayame-spell registry' \
 'init:Write a starter ayame-spell.toml in the current directory' \
 'config:Print the effective merged configuration' \
+'explain:Explain a stable issue code and how to configure or silence it' \
+'rules:List every stable issue code' \
 'completions:Generate a shell completion script on standard output' \
 'completion-candidates:Internal, non-network completion candidate provider' \
 'lsp:Run the LSP server (used by editor integrations)' \
@@ -568,6 +595,11 @@ _ayame-spell__dict__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict update commands' commands "$@"
 }
+(( $+functions[_ayame-spell__explain_commands] )) ||
+_ayame-spell__explain_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell explain commands' commands "$@"
+}
 (( $+functions[_ayame-spell__fix_commands] )) ||
 _ayame-spell__fix_commands() {
     local commands; commands=()
@@ -582,6 +614,8 @@ _ayame-spell__help_commands() {
 'dict:Shared dictionaries from the ayame-spell registry' \
 'init:Write a starter ayame-spell.toml in the current directory' \
 'config:Print the effective merged configuration' \
+'explain:Explain a stable issue code and how to configure or silence it' \
+'rules:List every stable issue code' \
 'completions:Generate a shell completion script on standard output' \
 'completion-candidates:Internal, non-network completion candidate provider' \
 'lsp:Run the LSP server (used by editor integrations)' \
@@ -651,6 +685,11 @@ _ayame-spell__help__dict__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict update commands' commands "$@"
 }
+(( $+functions[_ayame-spell__help__explain_commands] )) ||
+_ayame-spell__help__explain_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help explain commands' commands "$@"
+}
 (( $+functions[_ayame-spell__help__fix_commands] )) ||
 _ayame-spell__help__fix_commands() {
     local commands; commands=()
@@ -670,6 +709,11 @@ _ayame-spell__help__init_commands() {
 _ayame-spell__help__lsp_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help lsp commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__rules_commands] )) ||
+_ayame-spell__help__rules_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help rules commands' commands "$@"
 }
 (( $+functions[_ayame-spell__help__words_commands] )) ||
 _ayame-spell__help__words_commands() {
@@ -704,6 +748,11 @@ _ayame-spell__init_commands() {
 _ayame-spell__lsp_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell lsp commands' commands "$@"
+}
+(( $+functions[_ayame-spell__rules_commands] )) ||
+_ayame-spell__rules_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell rules commands' commands "$@"
 }
 (( $+functions[_ayame-spell__words_commands] )) ||
 _ayame-spell__words_commands() {

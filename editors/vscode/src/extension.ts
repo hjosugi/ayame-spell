@@ -90,6 +90,8 @@ function initializationOptions(): Record<string, unknown> {
       "diagnosticSeverity",
       "warning",
     ),
+    debounceMs: configuration().get<number>("debounceMs", 150),
+    locale: vscode.env.language,
   };
 }
 
@@ -249,6 +251,7 @@ export async function activate(
           "mode",
           "japanese.enabled",
           "diagnosticSeverity",
+          "debounceMs",
           "trace.server",
         ].some((setting) =>
           event.affectsConfiguration(`${CONFIG_SECTION}.${setting}`),

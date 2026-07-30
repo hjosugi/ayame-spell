@@ -33,8 +33,16 @@ struct Cli {
     write: bool,
 
     /// Output format.
-    #[arg(long, value_enum, default_value_t = Format::Human)]
-    format: Format,
+    #[arg(long, value_enum)]
+    format: Option<Format>,
+
+    /// List every stable issue code.
+    #[arg(long)]
+    list_rules: bool,
+
+    /// Language for `--list-rules` (defaults from LANG).
+    #[arg(long = "lang", value_enum, requires = "list_rules")]
+    rule_lang: Option<OutputLanguage>,
 }
 
 #[derive(Args, Clone)]
@@ -122,6 +130,14 @@ pub enum Format {
     Human,
     Brief,
     Json,
+    Github,
+    Sarif,
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum OutputLanguage {
+    En,
+    Ja,
 }
 
 #[derive(Subcommand)]
@@ -133,8 +149,8 @@ enum Cmd {
         /// Apply safe fixes in place.
         #[arg(short, long)]
         write: bool,
-        #[arg(long, value_enum, default_value_t = Format::Human)]
-        format: Format,
+        #[arg(long, value_enum)]
+        format: Option<Format>,
     },
     /// Apply all safe fixes in place (single-candidate corrections and
     /// mechanical notation conversions).
@@ -172,6 +188,20 @@ enum Cmd {
     },
     /// Print the effective merged configuration.
     Config,
+    /// Explain a stable issue code and how to configure or silence it.
+    Explain {
+        /// Issue code, for example `ja-variant`.
+        code: String,
+        /// Explanation language (defaults from LANG).
+        #[arg(long, value_enum)]
+        lang: Option<OutputLanguage>,
+    },
+    /// List every stable issue code.
+    Rules {
+        /// Description language (defaults from LANG).
+        #[arg(long, value_enum)]
+        lang: Option<OutputLanguage>,
+    },
     /// Generate a shell completion script on standard output.
     Completions {
         #[arg(value_enum)]
@@ -210,57 +240,63 @@ fn main() {
         libc::signal(libc::SIGPIPE, libc::SIG_DFL);
     }
     let cli = Cli::parse();
-    let result = match cli.cmd {
-        None => run_scan(
-            cli.scan,
-            if cli.write {
-                check::FixMode::Apply
-            } else {
-                check::FixMode::None
-            },
-            cli.format,
-        ),
-        Some(Cmd::Check {
-            scan,
-            write,
-            format,
-        }) => run_scan(
-            scan,
-            if write {
-                check::FixMode::Apply
-            } else {
-                check::FixMode::None
-            },
-            format,
-        ),
-        Some(Cmd::Fix {
-            scan,
-            dry_run,
-            interactive,
-        }) => run_scan(
-            scan,
-            if dry_run {
-                check::FixMode::DryRun
-            } else if interactive {
-                check::FixMode::Interactive
-            } else {
-                check::FixMode::Apply
-            },
-            Format::Human,
-        ),
-        Some(Cmd::Words { cmd }) => words::run(cmd),
-        Some(Cmd::Dict { cmd }) => dict::run(cmd),
-        Some(Cmd::Init {
-            force,
-            interactive,
-            yes,
-        }) => init(force, interactive, yes),
-        Some(Cmd::Config) => print_config(),
-        Some(Cmd::Completions { shell }) => print_completions(shell),
-        Some(Cmd::Complete { kind, prefix }) => {
-            complete(kind, prefix.as_deref().unwrap_or_default())
+    let result = if cli.list_rules {
+        print_rules(output_language(cli.rule_lang))
+    } else {
+        match cli.cmd {
+            None => run_scan(
+                cli.scan,
+                if cli.write {
+                    check::FixMode::Apply
+                } else {
+                    check::FixMode::None
+                },
+                resolve_format(cli.format),
+            ),
+            Some(Cmd::Check {
+                scan,
+                write,
+                format,
+            }) => run_scan(
+                scan,
+                if write {
+                    check::FixMode::Apply
+                } else {
+                    check::FixMode::None
+                },
+                resolve_format(format),
+            ),
+            Some(Cmd::Fix {
+                scan,
+                dry_run,
+                interactive,
+            }) => run_scan(
+                scan,
+                if dry_run {
+                    check::FixMode::DryRun
+                } else if interactive {
+                    check::FixMode::Interactive
+                } else {
+                    check::FixMode::Apply
+                },
+                Format::Human,
+            ),
+            Some(Cmd::Words { cmd }) => words::run(cmd),
+            Some(Cmd::Dict { cmd }) => dict::run(cmd),
+            Some(Cmd::Init {
+                force,
+                interactive,
+                yes,
+            }) => init(force, interactive, yes),
+            Some(Cmd::Config) => print_config(),
+            Some(Cmd::Explain { code, lang }) => explain_rule(&code, output_language(lang)),
+            Some(Cmd::Rules { lang }) => print_rules(output_language(lang)),
+            Some(Cmd::Completions { shell }) => print_completions(shell),
+            Some(Cmd::Complete { kind, prefix }) => {
+                complete(kind, prefix.as_deref().unwrap_or_default())
+            }
+            Some(Cmd::Lsp { stdio: _ }) => lsp::run(),
         }
-        Some(Cmd::Lsp { stdio: _ }) => lsp::run(),
     };
     match result {
         Ok(code) => std::process::exit(code),
@@ -269,6 +305,62 @@ fn main() {
             std::process::exit(2);
         }
     }
+}
+
+fn resolve_format(format: Option<Format>) -> Format {
+    format.unwrap_or_else(|| {
+        if std::env::var("GITHUB_ACTIONS").is_ok_and(|value| value == "true") {
+            Format::Github
+        } else {
+            Format::Human
+        }
+    })
+}
+
+fn output_language(language: Option<OutputLanguage>) -> bool {
+    match language {
+        Some(OutputLanguage::Ja) => true,
+        Some(OutputLanguage::En) => false,
+        None => std::env::var("LANG")
+            .map(|value| value.to_ascii_lowercase().starts_with("ja"))
+            .unwrap_or(false),
+    }
+}
+
+fn explain_rule(code: &str, japanese: bool) -> anyhow::Result<i32> {
+    let kind = ayame_spell_core::IssueKind::from_code(code)
+        .with_context(|| format!("unknown issue code `{code}`; run `ayame-spell rules`"))?;
+    let info = kind.info(japanese);
+    if japanese {
+        println!(
+            "{} — {}\n\n{}\n\n設定: {}\n例: {}\n無視する方法: {}",
+            kind.code(),
+            info.title,
+            info.explanation,
+            info.config_key,
+            info.example,
+            info.silence
+        );
+    } else {
+        println!(
+            "{} — {}\n\n{}\n\nConfiguration: {}\nExample: {}\nHow to silence: {}",
+            kind.code(),
+            info.title,
+            info.explanation,
+            info.config_key,
+            info.example,
+            info.silence
+        );
+    }
+    Ok(0)
+}
+
+fn print_rules(japanese: bool) -> anyhow::Result<i32> {
+    for kind in ayame_spell_core::IssueKind::ALL {
+        let info = kind.info(japanese);
+        println!("{:<20} {} ({})", kind.code(), info.summary, info.config_key);
+    }
+    Ok(0)
 }
 
 fn complete(kind: CompletionKind, prefix: &str) -> anyhow::Result<i32> {

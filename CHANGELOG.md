@@ -30,6 +30,15 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and word-list paths in Bash, Zsh, Fish, PowerShell, and Elvish.
 - `fix --dry-run` unified-diff previews and `fix --interactive` per-finding
   review, including multi-candidate selection and dictionary additions.
+- Native GitHub workflow annotations, SARIF 2.1.0 output with rule metadata,
+  and automatic GitHub Actions format selection.
+- Bilingual `explain` and `rules` commands backed by the same rule metadata as
+  generated documentation and machine-readable reports.
+- LSP pull and workspace diagnostics, incremental document sync, configurable
+  debouncing, cancellation, and a visible large-document guard.
+- Localized rule hovers plus quick fixes for global/project words, inline
+  ignores, configured corrections, document-wide Japanese normalization, and
+  `source.fixAll.ayame-spell`.
 
 ### Changed
 

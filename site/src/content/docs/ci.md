@@ -25,7 +25,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo install --locked ayame-spell
-      - run: ayame-spell check . --format brief
+      - run: ayame-spell check . --format github
 ```
 
 For faster builds, download a pinned release archive instead of compiling it.
@@ -45,18 +45,22 @@ spell:
     - ayame-spell check . --format brief
 ```
 
-## JSON Lines for annotations
+## GitHub annotations and SARIF
 
 ```sh
-ayame-spell check . --format json > ayame-spell.jsonl
+ayame-spell check . --format github
 ```
 
-Each output line is an independent JSON object. Filter records whose `type` is
-`issue`, then map `path`, `line`, `column`, `message`, and `kind` to native
-annotations. The final `summary` record reports scan totals:
+The GitHub format emits native workflow commands and is selected automatically
+when `GITHUB_ACTIONS=true`. For code scanning, generate and upload SARIF:
 
-```sh
-jq -c 'select(.type == "issue")' ayame-spell.jsonl
+```yaml
+      - name: Generate spelling SARIF
+        run: ayame-spell check . --format sarif > ayame-spell.sarif
+        continue-on-error: true
+      - uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ayame-spell.sarif
 ```
 
 Do not parse the human format; use `brief` for compiler-style logs or `json`
