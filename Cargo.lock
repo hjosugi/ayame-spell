@@ -125,6 +125,7 @@ dependencies = [
  "globset",
  "memchr",
  "serde",
+ "tempfile",
  "toml",
  "typos-dict",
  "unicase",

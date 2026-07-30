@@ -60,6 +60,24 @@ impl Project {
     fn run(&self, args: &[&str]) -> Output {
         self.command().args(args).output().expect("run ayame-spell")
     }
+
+    fn run_with_stdin(&self, args: &[&str], input: &[u8]) -> Output {
+        let mut child = self
+            .command()
+            .args(args)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("run ayame-spell with stdin");
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(input)
+            .expect("write stdin");
+        child.wait_with_output().expect("stdin command output")
+    }
 }
 
 fn assert_code(output: &Output, expected: i32) {
@@ -286,6 +304,124 @@ fn overrides_and_inline_directives_take_precedence() {
 }
 
 #[test]
+fn core_flags_override_config_and_file_walking() {
+    let project = Project::new();
+    project.write("ayame-spell.toml", "[check]\nmode = \"off\"\n");
+    project.write("custom.toml", "[check]\nmode = \"corrections\"\n");
+    project.write("input.md", "teh\n");
+
+    assert_code(&project.run(&["check", "input.md"]), 0);
+    assert_code(
+        &project.run(&["check", "--mode", "corrections", "input.md"]),
+        1,
+    );
+    assert_code(
+        &project.run(&["check", "--config", "custom.toml", "input.md"]),
+        1,
+    );
+    assert_code(
+        &project.run(&["check", "--no-config", "--mode", "off", "input.md"]),
+        0,
+    );
+    assert_code(
+        &project.run(&[
+            "check",
+            "--mode",
+            "corrections",
+            "--exclude",
+            "input.md",
+            ".",
+        ]),
+        0,
+    );
+
+    project.write(".gitignore", "ignored.md\n");
+    project.write("ignored.md", "teh\n");
+    project.write(".hidden.md", "teh\n");
+    let walked = project.run(&[
+        "check",
+        "--mode",
+        "corrections",
+        "--no-ignore",
+        "--hidden",
+        "--threads",
+        "1",
+        ".",
+    ]);
+    assert_code(&walked, 1);
+    let stdout = String::from_utf8_lossy(&walked.stdout);
+    assert!(stdout.contains("ignored.md"));
+    assert!(stdout.contains(".hidden.md"));
+
+    assert_code(
+        &project.run(&[
+            "check",
+            "--mode",
+            "corrections",
+            "--max-file-size",
+            "2",
+            "input.md",
+        ]),
+        0,
+    );
+}
+
+#[test]
+fn quiet_verbose_color_and_stdin_flags_are_end_to_end() {
+    let project = Project::new();
+    project.write(
+        "ayame-spell.toml",
+        "[check]\nmode = \"corrections\"\n\
+         [[overrides]]\npaths = [\"docs/**\"]\nmode = \"off\"\n",
+    );
+    project.write("input.md", "teh\n");
+
+    let quiet = project.run(&["check", "--quiet", "input.md"]);
+    assert_code(&quiet, 1);
+    assert!(quiet.stderr.is_empty());
+    assert!(String::from_utf8_lossy(&quiet.stdout).contains("teh"));
+
+    let verbose = project.run(&["check", "--verbose", "input.md"]);
+    assert_code(&verbose, 1);
+    let stderr = String::from_utf8_lossy(&verbose.stderr);
+    assert!(stderr.contains("config root:"));
+    assert!(stderr.contains("elapsed:"));
+
+    let always = project.run(&["check", "--color", "always", "input.md"]);
+    assert_code(&always, 1);
+    assert!(always.stdout.windows(2).any(|bytes| bytes == b"\x1b["));
+    let never = project.run(&["check", "--color", "never", "input.md"]);
+    assert_code(&never, 1);
+    assert!(!never.stdout.windows(2).any(|bytes| bytes == b"\x1b["));
+
+    let mut forced = project.command();
+    let forced = forced
+        .env_remove("NO_COLOR")
+        .env("CLICOLOR_FORCE", "1")
+        .args(["check", "input.md"])
+        .output()
+        .unwrap();
+    assert_code(&forced, 1);
+    assert!(forced.stdout.windows(2).any(|bytes| bytes == b"\x1b["));
+
+    let stdin = project.run_with_stdin(
+        &[
+            "check",
+            "--format",
+            "json",
+            "--stdin-filename",
+            "docs/input.md",
+            "-",
+        ],
+        b"teh\n",
+    );
+    assert_code(&stdin, 0);
+    assert!(json_records(&stdin)
+        .iter()
+        .all(|record| record["type"] != "issue"));
+}
+
+#[test]
 fn words_commands_cover_collect_add_and_noninteractive_triage() {
     let project = Project::new();
     project.write("input.md", "teh teh\n");
@@ -327,7 +463,8 @@ impl RegistryServer {
                 "description": "Fixture dictionary",
                 "file": "fixture.txt",
                 "sha256": digest,
-                "entries": 1
+                "entries": 1,
+                "license": "MIT OR Apache-2.0"
             }]
         })
         .to_string()
@@ -411,6 +548,22 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
     assert_code(&list, 0);
     assert!(String::from_utf8_lossy(&list.stdout).contains("fixture"));
 
+    let list_json = run(&[
+        "dict", "list", "--lang", "en", "--kind", "wordlist", "--json",
+    ]);
+    assert_code(&list_json, 0);
+    let records: Value = serde_json::from_slice(&list_json.stdout).unwrap();
+    assert_eq!(records[0]["name"], "fixture");
+    assert_eq!(records[0]["installed"], false);
+
+    let search = run(&["dict", "search", "dictionary"]);
+    assert_code(&search, 0);
+    assert!(String::from_utf8_lossy(&search.stdout).contains("fixture"));
+
+    let noninteractive = run(&["dict", "add"]);
+    assert_code(&noninteractive, 2);
+    assert!(String::from_utf8_lossy(&noninteractive.stderr).contains("use `ayame-spell dict list`"));
+
     let add = run(&["dict", "add", "fixture"]);
     assert_code(&add, 0);
     let cached = project.cache_dir.join("dicts/fixture.txt");
@@ -418,6 +571,17 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
     assert!(fs::read_to_string(project.root.join("ayame-spell.toml"))
         .unwrap()
         .contains("registry:fixture"));
+
+    let info = run(&["dict", "info", "fixture", "--json"]);
+    assert_code(&info, 0);
+    let info: Value = serde_json::from_slice(&info.stdout).unwrap();
+    assert_eq!(info["installed"], true);
+    assert_eq!(info["enabled"], true);
+    assert_eq!(info["license"], "MIT OR Apache-2.0");
+    assert!(info["source_url"]
+        .as_str()
+        .unwrap()
+        .ends_with("/fixture.txt"));
 
     let update = run(&["dict", "update"]);
     assert_code(&update, 0);
@@ -435,7 +599,7 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
 fn init_config_and_completions_subcommands_work() {
     let project = Project::new();
 
-    let init = project.run(&["init"]);
+    let init = project.run(&["init", "--yes"]);
     assert_code(&init, 0);
     assert!(project.root.join("ayame-spell.toml").is_file());
 

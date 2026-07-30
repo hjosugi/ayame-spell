@@ -52,7 +52,7 @@ fn collect_words(paths: &[PathBuf]) -> anyhow::Result<(LoadedConfig, Vec<Collect
     let cwd = std::env::current_dir()?;
     let (loaded, checker) =
         check::load_context(paths.first().map_or(cwd.as_path(), |p| p.as_path()))?;
-    let (reports, _stats) = check::scan(&loaded, &checker, paths, None, false)?;
+    let (reports, _stats) = check::scan(&loaded, &checker, paths, None, false, false)?;
 
     let mut map: BTreeMap<String, Collected> = BTreeMap::new();
     for report in reports {

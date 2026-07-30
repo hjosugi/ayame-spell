@@ -437,6 +437,56 @@ pub fn discover(start: &Path) -> anyhow::Result<LoadedConfig> {
     })
 }
 
+/// Load one explicit configuration file without merging project or global
+/// configuration. This is used by the CLI's reproducible `--config` mode.
+pub fn load_explicit(path: &Path) -> anyhow::Result<LoadedConfig> {
+    let path = path
+        .canonicalize()
+        .map_err(|e| anyhow::anyhow!("cannot open {}: {e}", path.display()))?;
+    anyhow::ensure!(path.is_file(), "config is not a file: {}", path.display());
+    let text = std::fs::read_to_string(&path)?;
+    let raw = RawConfig::parse(&text).map_err(|e| anyhow::anyhow!("in {}: {e}", path.display()))?;
+    let root = path
+        .parent()
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| PathBuf::from("."));
+    Ok(LoadedConfig {
+        config: raw.finalize(),
+        root,
+        project_file: Some(path),
+        global_file: None,
+    })
+}
+
+/// Load configuration according to explicit CLI selection.
+///
+/// `explicit` loads exactly that file. `no_config` ignores both project and
+/// global files. Otherwise this is equivalent to [`discover`].
+pub fn discover_selected(
+    start: &Path,
+    explicit: Option<&Path>,
+    no_config: bool,
+) -> anyhow::Result<LoadedConfig> {
+    if let Some(path) = explicit {
+        anyhow::ensure!(
+            !no_config,
+            "--config and --no-config cannot be used together"
+        );
+        load_explicit(path)
+    } else if no_config {
+        let root = if start.is_file() {
+            start.parent().unwrap_or(start)
+        } else {
+            start
+        };
+        Ok(defaults(
+            &root.canonicalize().unwrap_or_else(|_| root.to_path_buf()),
+        ))
+    } else {
+        discover(start)
+    }
+}
+
 /// Defaults with no config files at all, rooted at `root`.
 pub fn defaults(root: &Path) -> LoadedConfig {
     LoadedConfig {
@@ -503,5 +553,18 @@ mod tests {
     #[test]
     fn unknown_keys_are_rejected() {
         assert!(RawConfig::parse("[check]\ntypo-key = 1\n").is_err());
+    }
+
+    #[test]
+    fn explicit_config_does_not_merge_global_or_project_files() {
+        let temp = tempfile::tempdir().unwrap();
+        let explicit = temp.path().join("custom.toml");
+        std::fs::write(&explicit, "[check]\nmode = \"off\"\n").unwrap();
+
+        let loaded = load_explicit(&explicit).unwrap();
+
+        assert_eq!(loaded.config.check.mode, Mode::Off);
+        assert_eq!(loaded.project_file.as_deref(), Some(explicit.as_path()));
+        assert!(loaded.global_file.is_none());
     }
 }

@@ -49,11 +49,17 @@ _ayame-spell() {
             ayame__spell__dict,help)
                 cmd="ayame__spell__dict__help"
                 ;;
+            ayame__spell__dict,info)
+                cmd="ayame__spell__dict__info"
+                ;;
             ayame__spell__dict,list)
                 cmd="ayame__spell__dict__list"
                 ;;
             ayame__spell__dict,remove)
                 cmd="ayame__spell__dict__remove"
+                ;;
+            ayame__spell__dict,search)
+                cmd="ayame__spell__dict__search"
                 ;;
             ayame__spell__dict,update)
                 cmd="ayame__spell__dict__update"
@@ -64,11 +70,17 @@ _ayame-spell() {
             ayame__spell__dict__help,help)
                 cmd="ayame__spell__dict__help__help"
                 ;;
+            ayame__spell__dict__help,info)
+                cmd="ayame__spell__dict__help__info"
+                ;;
             ayame__spell__dict__help,list)
                 cmd="ayame__spell__dict__help__list"
                 ;;
             ayame__spell__dict__help,remove)
                 cmd="ayame__spell__dict__help__remove"
+                ;;
+            ayame__spell__dict__help,search)
+                cmd="ayame__spell__dict__help__search"
                 ;;
             ayame__spell__dict__help,update)
                 cmd="ayame__spell__dict__help__update"
@@ -103,11 +115,17 @@ _ayame-spell() {
             ayame__spell__help__dict,add)
                 cmd="ayame__spell__help__dict__add"
                 ;;
+            ayame__spell__help__dict,info)
+                cmd="ayame__spell__help__dict__info"
+                ;;
             ayame__spell__help__dict,list)
                 cmd="ayame__spell__help__dict__list"
                 ;;
             ayame__spell__help__dict,remove)
                 cmd="ayame__spell__help__dict__remove"
+                ;;
+            ayame__spell__help__dict,search)
+                cmd="ayame__spell__help__dict__search"
                 ;;
             ayame__spell__help__dict,update)
                 cmd="ayame__spell__help__dict__update"
@@ -152,14 +170,34 @@ _ayame-spell() {
 
     case "${cmd}" in
         ayame__spell)
-            opts="-w -j -h -V --write --format --threads --help --version [PATH]... check fix words dict init config completions lsp help"
+            opts="-q -v -j -w -h -V --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --help --version [PATH]... check fix words dict init config completions lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                --format)
-                    COMPREPLY=($(compgen -W "human brief json" -- "${cur}"))
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --mode)
+                    COMPREPLY=($(compgen -W "corrections dictionary off" -- "${cur}"))
+                    return 0
+                    ;;
+                --exclude)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --color)
+                    COMPREPLY=($(compgen -W "auto always never" -- "${cur}"))
+                    return 0
+                    ;;
+                --stdin-filename)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --max-file-size)
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --threads)
@@ -168,6 +206,10 @@ _ayame-spell() {
                     ;;
                 -j)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --format)
+                    COMPREPLY=($(compgen -W "human brief json" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -178,14 +220,34 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__check)
-            opts="-w -j -h --write --format --threads --help [PATH]..."
+            opts="-q -v -j -w -h --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                --format)
-                    COMPREPLY=($(compgen -W "human brief json" -- "${cur}"))
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --mode)
+                    COMPREPLY=($(compgen -W "corrections dictionary off" -- "${cur}"))
+                    return 0
+                    ;;
+                --exclude)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --color)
+                    COMPREPLY=($(compgen -W "auto always never" -- "${cur}"))
+                    return 0
+                    ;;
+                --stdin-filename)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --max-file-size)
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --threads)
@@ -194,6 +256,10 @@ _ayame-spell() {
                     ;;
                 -j)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --format)
+                    COMPREPLY=($(compgen -W "human brief json" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -232,7 +298,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__dict)
-            opts="-h --help list add remove update help"
+            opts="-h --help list add search info remove update help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -246,12 +312,20 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__dict__add)
-            opts="-h --cache-only --help <NAMES>..."
+            opts="-h --cache-only --lang --kind --help [NAMES]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --lang)
+                    COMPREPLY=($(compgen -W "en ja" -- "${cur}"))
+                    return 0
+                    ;;
+                --kind)
+                    COMPREPLY=($(compgen -W "wordlist corrections variants" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -260,7 +334,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__dict__help)
-            opts="list add remove update help"
+            opts="list add search info remove update help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -288,6 +362,20 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__dict__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__dict__help__info)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -329,6 +417,20 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        ayame__spell__dict__help__search)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         ayame__spell__dict__help__update)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
@@ -343,13 +445,35 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__list)
-            opts="-h --help"
+        ayame__spell__dict__info)
+            opts="-h --json --help <NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__dict__list)
+            opts="-h --json --lang --kind --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --lang)
+                    COMPREPLY=($(compgen -W "en ja" -- "${cur}"))
+                    return 0
+                    ;;
+                --kind)
+                    COMPREPLY=($(compgen -W "wordlist corrections variants" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -364,6 +488,28 @@ _ayame-spell() {
                 return 0
             fi
             case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__dict__search)
+            opts="-h --lang --kind --json --help <QUERY>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --lang)
+                    COMPREPLY=($(compgen -W "en ja" -- "${cur}"))
+                    return 0
+                    ;;
+                --kind)
+                    COMPREPLY=($(compgen -W "wordlist corrections variants" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -386,12 +532,36 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__fix)
-            opts="-j -h --threads --help [PATH]..."
+            opts="-q -v -j -h --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --config)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --mode)
+                    COMPREPLY=($(compgen -W "corrections dictionary off" -- "${cur}"))
+                    return 0
+                    ;;
+                --exclude)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --color)
+                    COMPREPLY=($(compgen -W "auto always never" -- "${cur}"))
+                    return 0
+                    ;;
+                --stdin-filename)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --max-file-size)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --threads)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -464,7 +634,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__help__dict)
-            opts="list add remove update"
+            opts="list add search info remove update"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -478,6 +648,20 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__help__dict__add)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__help__dict__info)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -506,6 +690,20 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__help__dict__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__help__dict__search)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -646,7 +844,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__init)
-            opts="-h --force --help"
+            opts="-h --force --interactive --yes --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

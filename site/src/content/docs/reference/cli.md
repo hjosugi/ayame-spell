@@ -121,9 +121,50 @@ Commands:
 
 Arguments:
   [PATH]...
-          Files or directories to check
+          Files or directories to check (`-` reads standard input)
 
 Options:
+      --config <PATH>
+          Load exactly this configuration file
+
+      --no-config
+          Ignore project and global configuration files
+
+      --mode <MODE>
+          Override `[check].mode`
+
+          [possible values: corrections, dictionary, off]
+
+      --exclude <GLOB>
+          Exclude an additional glob (repeatable)
+
+      --no-ignore
+          Do not honour `.gitignore`, `.ignore`, or Git exclude files
+
+      --hidden
+          Include hidden files and directories
+
+      --color <COLOR>
+          Colour policy for human output
+
+          [default: auto]
+          [possible values: auto, always, never]
+
+  -q, --quiet
+          Print findings only, without summaries
+
+  -v, --verbose...
+          Report configuration sources, skipped files, and elapsed time
+
+      --stdin-filename <PATH>
+          Display name used for standard input (also selects overrides)
+
+      --max-file-size <BYTES>
+          Skip files larger than this many bytes (overrides `[files].max-file-size`)
+
+  -j, --threads <THREADS>
+          Worker threads (overrides the detected CPU count)
+
   -w, --write
           Apply safe fixes in place (shorthand for `fix`)
 
@@ -132,9 +173,6 @@ Options:
 
           [default: human]
           [possible values: human, brief, json]
-
-  -j, --threads <THREADS>
-          Worker threads (default: number of CPUs)
 
   -h, --help
           Print help (see a summary with '-h')
@@ -152,13 +190,27 @@ Check files and report issues (the default)
 Usage: ayame-spell check [OPTIONS] [PATH]...
 
 Arguments:
-  [PATH]...
+  [PATH]...  Files or directories to check (`-` reads standard input)
 
 Options:
-  -w, --write              Apply safe fixes in place
-      --format <FORMAT>    [default: human] [possible values: human, brief, json]
-  -j, --threads <THREADS>
-  -h, --help               Print help
+      --config <PATH>          Load exactly this configuration file
+      --no-config              Ignore project and global configuration files
+      --mode <MODE>            Override `[check].mode` [possible values: corrections, dictionary,
+                               off]
+      --exclude <GLOB>         Exclude an additional glob (repeatable)
+      --no-ignore              Do not honour `.gitignore`, `.ignore`, or Git exclude files
+      --hidden                 Include hidden files and directories
+      --color <COLOR>          Colour policy for human output [default: auto] [possible values:
+                               auto, always, never]
+  -q, --quiet                  Print findings only, without summaries
+  -v, --verbose...             Report configuration sources, skipped files, and elapsed time
+      --stdin-filename <PATH>  Display name used for standard input (also selects overrides)
+      --max-file-size <BYTES>  Skip files larger than this many bytes (overrides
+                               `[files].max-file-size`)
+  -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
+  -w, --write                  Apply safe fixes in place
+      --format <FORMAT>        [default: human] [possible values: human, brief, json]
+  -h, --help                   Print help
 ```
 
 ## `ayame-spell fix`
@@ -170,11 +222,25 @@ Apply all safe fixes in place (single-candidate corrections and mechanical notat
 Usage: ayame-spell fix [OPTIONS] [PATH]...
 
 Arguments:
-  [PATH]...
+  [PATH]...  Files or directories to check (`-` reads standard input)
 
 Options:
-  -j, --threads <THREADS>
-  -h, --help               Print help
+      --config <PATH>          Load exactly this configuration file
+      --no-config              Ignore project and global configuration files
+      --mode <MODE>            Override `[check].mode` [possible values: corrections, dictionary,
+                               off]
+      --exclude <GLOB>         Exclude an additional glob (repeatable)
+      --no-ignore              Do not honour `.gitignore`, `.ignore`, or Git exclude files
+      --hidden                 Include hidden files and directories
+      --color <COLOR>          Colour policy for human output [default: auto] [possible values:
+                               auto, always, never]
+  -q, --quiet                  Print findings only, without summaries
+  -v, --verbose...             Report configuration sources, skipped files, and elapsed time
+      --stdin-filename <PATH>  Display name used for standard input (also selects overrides)
+      --max-file-size <BYTES>  Skip files larger than this many bytes (overrides
+                               `[files].max-file-size`)
+  -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
+  -h, --help                   Print help
 ```
 
 ## `ayame-spell words`
@@ -257,6 +323,8 @@ Usage: ayame-spell dict <COMMAND>
 Commands:
   list    List available dictionaries and their install status
   add     Download dictionaries and enable them in the project config
+  search  Search registry names and descriptions
+  info    Show metadata and project status for one dictionary
   remove  Delete a cached dictionary and disable it in the project config
   update  Re-download every cached dictionary from the registry
   help    Print this message or the help of the given subcommand(s)
@@ -271,10 +339,13 @@ Options:
 $ ayame-spell dict list --help
 List available dictionaries and their install status
 
-Usage: ayame-spell dict list
+Usage: ayame-spell dict list [OPTIONS]
 
 Options:
-  -h, --help  Print help
+      --json         Emit one JSON array for scripting
+      --lang <LANG>  Filter by language [possible values: en, ja]
+      --kind <KIND>  Filter by dictionary kind [possible values: wordlist, corrections, variants]
+  -h, --help         Print help
 ```
 
 ## `ayame-spell dict add`
@@ -283,14 +354,51 @@ Options:
 $ ayame-spell dict add --help
 Download dictionaries and enable them in the project config
 
-Usage: ayame-spell dict add [OPTIONS] <NAMES>...
+Usage: ayame-spell dict add [OPTIONS] [NAMES]...
 
 Arguments:
-  <NAMES>...
+  [NAMES]...
 
 Options:
-      --cache-only  Download to the cache only; leave the project config untouched
-  -h, --help        Print help
+      --cache-only   Download to the cache only; leave the project config untouched
+      --lang <LANG>  Filter the interactive picker by language [possible values: en, ja]
+      --kind <KIND>  Filter the interactive picker by dictionary kind [possible values: wordlist,
+                     corrections, variants]
+  -h, --help         Print help
+```
+
+## `ayame-spell dict search`
+
+```text
+$ ayame-spell dict search --help
+Search registry names and descriptions
+
+Usage: ayame-spell dict search [OPTIONS] <QUERY>
+
+Arguments:
+  <QUERY>
+
+Options:
+      --lang <LANG>  [possible values: en, ja]
+      --kind <KIND>  [possible values: wordlist, corrections, variants]
+      --json
+  -h, --help         Print help
+```
+
+## `ayame-spell dict info`
+
+```text
+$ ayame-spell dict info --help
+Show metadata and project status for one dictionary
+
+Usage: ayame-spell dict info [OPTIONS] <NAME>
+
+Arguments:
+  <NAME>
+
+Options:
+      --json
+  -h, --help  Print help
 ```
 
 ## `ayame-spell dict remove`
@@ -329,8 +437,10 @@ Write a starter ayame-spell.toml in the current directory
 Usage: ayame-spell init [OPTIONS]
 
 Options:
-      --force  Overwrite an existing config file
-  -h, --help   Print help
+      --force        Overwrite an existing config file
+      --interactive  Run the guided setup wizard
+      --yes          Use the non-interactive starter configuration
+  -h, --help         Print help
 ```
 
 ## `ayame-spell config`

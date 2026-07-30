@@ -18,9 +18,22 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
     }
     var completions = [
         &'ayame-spell'= {
+            cand --config 'Load exactly this configuration file'
+            cand --mode 'Override `[check].mode`'
+            cand --exclude 'Exclude an additional glob (repeatable)'
+            cand --color 'Colour policy for human output'
+            cand --stdin-filename 'Display name used for standard input (also selects overrides)'
+            cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
+            cand -j 'Worker threads (overrides the detected CPU count)'
+            cand --threads 'Worker threads (overrides the detected CPU count)'
             cand --format 'Output format'
-            cand -j 'Worker threads (default: number of CPUs)'
-            cand --threads 'Worker threads (default: number of CPUs)'
+            cand --no-config 'Ignore project and global configuration files'
+            cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
+            cand --hidden 'Include hidden files and directories'
+            cand -q 'Print findings only, without summaries'
+            cand --quiet 'Print findings only, without summaries'
+            cand -v 'Report configuration sources, skipped files, and elapsed time'
+            cand --verbose 'Report configuration sources, skipped files, and elapsed time'
             cand -w 'Apply safe fixes in place (shorthand for `fix`)'
             cand --write 'Apply safe fixes in place (shorthand for `fix`)'
             cand -h 'Print help (see more with ''--help'')'
@@ -38,17 +51,43 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'ayame-spell;check'= {
+            cand --config 'Load exactly this configuration file'
+            cand --mode 'Override `[check].mode`'
+            cand --exclude 'Exclude an additional glob (repeatable)'
+            cand --color 'Colour policy for human output'
+            cand --stdin-filename 'Display name used for standard input (also selects overrides)'
+            cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
+            cand -j 'Worker threads (overrides the detected CPU count)'
+            cand --threads 'Worker threads (overrides the detected CPU count)'
             cand --format 'format'
-            cand -j 'j'
-            cand --threads 'threads'
+            cand --no-config 'Ignore project and global configuration files'
+            cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
+            cand --hidden 'Include hidden files and directories'
+            cand -q 'Print findings only, without summaries'
+            cand --quiet 'Print findings only, without summaries'
+            cand -v 'Report configuration sources, skipped files, and elapsed time'
+            cand --verbose 'Report configuration sources, skipped files, and elapsed time'
             cand -w 'Apply safe fixes in place'
             cand --write 'Apply safe fixes in place'
             cand -h 'Print help'
             cand --help 'Print help'
         }
         &'ayame-spell;fix'= {
-            cand -j 'j'
-            cand --threads 'threads'
+            cand --config 'Load exactly this configuration file'
+            cand --mode 'Override `[check].mode`'
+            cand --exclude 'Exclude an additional glob (repeatable)'
+            cand --color 'Colour policy for human output'
+            cand --stdin-filename 'Display name used for standard input (also selects overrides)'
+            cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
+            cand -j 'Worker threads (overrides the detected CPU count)'
+            cand --threads 'Worker threads (overrides the detected CPU count)'
+            cand --no-config 'Ignore project and global configuration files'
+            cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
+            cand --hidden 'Include hidden files and directories'
+            cand -q 'Print findings only, without summaries'
+            cand --quiet 'Print findings only, without summaries'
+            cand -v 'Report configuration sources, skipped files, and elapsed time'
+            cand --verbose 'Report configuration sources, skipped files, and elapsed time'
             cand -h 'Print help'
             cand --help 'Print help'
         }
@@ -95,16 +134,35 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --help 'Print help'
             cand list 'List available dictionaries and their install status'
             cand add 'Download dictionaries and enable them in the project config'
+            cand search 'Search registry names and descriptions'
+            cand info 'Show metadata and project status for one dictionary'
             cand remove 'Delete a cached dictionary and disable it in the project config'
             cand update 'Re-download every cached dictionary from the registry'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'ayame-spell;dict;list'= {
+            cand --lang 'Filter by language'
+            cand --kind 'Filter by dictionary kind'
+            cand --json 'Emit one JSON array for scripting'
             cand -h 'Print help'
             cand --help 'Print help'
         }
         &'ayame-spell;dict;add'= {
+            cand --lang 'Filter the interactive picker by language'
+            cand --kind 'Filter the interactive picker by dictionary kind'
             cand --cache-only 'Download to the cache only; leave the project config untouched'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'ayame-spell;dict;search'= {
+            cand --lang 'lang'
+            cand --kind 'kind'
+            cand --json 'json'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'ayame-spell;dict;info'= {
+            cand --json 'json'
             cand -h 'Print help'
             cand --help 'Print help'
         }
@@ -119,6 +177,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;dict;help'= {
             cand list 'List available dictionaries and their install status'
             cand add 'Download dictionaries and enable them in the project config'
+            cand search 'Search registry names and descriptions'
+            cand info 'Show metadata and project status for one dictionary'
             cand remove 'Delete a cached dictionary and disable it in the project config'
             cand update 'Re-download every cached dictionary from the registry'
             cand help 'Print this message or the help of the given subcommand(s)'
@@ -126,6 +186,10 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;dict;help;list'= {
         }
         &'ayame-spell;dict;help;add'= {
+        }
+        &'ayame-spell;dict;help;search'= {
+        }
+        &'ayame-spell;dict;help;info'= {
         }
         &'ayame-spell;dict;help;remove'= {
         }
@@ -135,6 +199,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         }
         &'ayame-spell;init'= {
             cand --force 'Overwrite an existing config file'
+            cand --interactive 'Run the guided setup wizard'
+            cand --yes 'Use the non-interactive starter configuration'
             cand -h 'Print help'
             cand --help 'Print help'
         }
@@ -180,12 +246,18 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;help;dict'= {
             cand list 'List available dictionaries and their install status'
             cand add 'Download dictionaries and enable them in the project config'
+            cand search 'Search registry names and descriptions'
+            cand info 'Show metadata and project status for one dictionary'
             cand remove 'Delete a cached dictionary and disable it in the project config'
             cand update 'Re-download every cached dictionary from the registry'
         }
         &'ayame-spell;help;dict;list'= {
         }
         &'ayame-spell;help;dict;add'= {
+        }
+        &'ayame-spell;help;dict;search'= {
+        }
+        &'ayame-spell;help;dict;info'= {
         }
         &'ayame-spell;help;dict;remove'= {
         }

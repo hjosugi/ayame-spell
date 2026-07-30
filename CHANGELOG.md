@@ -19,6 +19,13 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Cross-platform CLI integration tests covering every command, stable output,
   configuration discovery, fixes, directives, and an offline dictionary
   registry.
+- Interactive dictionary discovery with filtered selection, `dict search`,
+  `dict info`, and JSON registry listings.
+- A guided `init --interactive` wizard with project detection, configuration
+  preview, dictionary setup, and a ready-to-copy CI snippet.
+- Reproducible per-run CLI overrides for configuration, mode, excludes,
+  ignore handling, hidden files, colour, verbosity, standard input, file size,
+  and worker threads.
 
 ### Changed
 

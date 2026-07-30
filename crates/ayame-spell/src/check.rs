@@ -1,17 +1,18 @@
 //! Parallel file walking, checking, reporting, and in-place fixing.
 
-use std::io::IsTerminal;
+use std::io::{IsTerminal, Read};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Instant;
 
 use anyhow::Context;
 use ayame_spell_core::config::LoadedConfig;
-use ayame_spell_core::{Checker, Issue};
+use ayame_spell_core::{Checker, Issue, Mode};
 use ignore::overrides::OverrideBuilder;
 use ignore::{WalkBuilder, WalkState};
 use serde::Serialize;
 
-use crate::Format;
+use crate::{ColorChoice, Format};
 
 const JSON_OUTPUT_VERSION: u8 = 1;
 
@@ -35,9 +36,31 @@ pub struct Stats {
     pub skipped_large: usize,
 }
 
+pub struct RunOptions {
+    pub paths: Vec<PathBuf>,
+    pub fix: bool,
+    pub format: Format,
+    pub threads: Option<usize>,
+    pub config: Option<PathBuf>,
+    pub no_config: bool,
+    pub mode: Option<Mode>,
+    pub exclude: Vec<String>,
+    pub no_ignore: bool,
+    pub hidden: bool,
+    pub color: ColorChoice,
+    pub quiet: bool,
+    pub verbose: u8,
+    pub stdin_filename: Option<PathBuf>,
+    pub max_file_size: Option<u64>,
+}
+
 /// Load configuration and build a checker, printing warnings to stderr.
 pub fn load_context(start: &Path) -> anyhow::Result<(LoadedConfig, Checker)> {
     let loaded = ayame_spell_core::config::discover(start)?;
+    build_checker(loaded)
+}
+
+fn build_checker(loaded: LoadedConfig) -> anyhow::Result<(LoadedConfig, Checker)> {
     let (checker, warnings) = Checker::new(&loaded);
     for w in warnings {
         eprintln!("warning: {w}");
@@ -53,6 +76,7 @@ pub fn scan(
     paths: &[PathBuf],
     threads: Option<usize>,
     fix: bool,
+    no_ignore: bool,
 ) -> anyhow::Result<(Vec<FileReport>, Stats)> {
     let paths: Vec<PathBuf> = if paths.is_empty() {
         vec![std::env::current_dir()?]
@@ -70,6 +94,10 @@ pub fn scan(
     let cfg = &loaded.config;
     builder
         .hidden(!cfg.files.include_hidden)
+        .ignore(!no_ignore)
+        .git_ignore(!no_ignore)
+        .git_global(!no_ignore)
+        .git_exclude(!no_ignore)
         .follow_links(false)
         .threads(
             threads.unwrap_or_else(|| std::thread::available_parallelism().map_or(4, usize::from)),
@@ -180,6 +208,52 @@ pub fn scan(
     ))
 }
 
+fn scan_stdin(
+    checker: &Checker,
+    display_path: PathBuf,
+) -> anyhow::Result<(Vec<FileReport>, Stats)> {
+    let mut bytes = Vec::new();
+    std::io::stdin().read_to_end(&mut bytes)?;
+    if bytes[..bytes.len().min(8192)].contains(&0) {
+        return Ok((
+            Vec::new(),
+            Stats {
+                skipped_binary: 1,
+                ..Stats::default()
+            },
+        ));
+    }
+    let text = String::from_utf8_lossy(&bytes);
+    let issues = checker.check(&text, Some(&display_path));
+    let lines: Vec<&str> = text.split('\n').collect();
+    let items: Vec<Item> = issues
+        .into_iter()
+        .map(|issue| {
+            let line_text = lines
+                .get(issue.line as usize - 1)
+                .map(|line| line.trim_end_matches('\r').to_string())
+                .unwrap_or_default();
+            Item { issue, line_text }
+        })
+        .collect();
+    let reports = if items.is_empty() {
+        Vec::new()
+    } else {
+        vec![FileReport {
+            path: display_path,
+            items,
+            fixed: 0,
+        }]
+    };
+    Ok((
+        reports,
+        Stats {
+            checked: 1,
+            ..Stats::default()
+        },
+    ))
+}
+
 /// Apply all safe fixes; returns the new text, the number of fixes applied,
 /// and the issues that still need human attention (positions unadjusted —
 /// only for counting/collection, not display against the new text).
@@ -246,20 +320,102 @@ struct JsonSummary {
     skipped_large: usize,
 }
 
-pub fn run(
-    paths: Vec<PathBuf>,
-    fix: bool,
-    format: Format,
-    threads: Option<usize>,
-) -> anyhow::Result<i32> {
+pub fn run(options: RunOptions) -> anyhow::Result<i32> {
     let cwd = std::env::current_dir()?;
-    let (loaded, checker) = load_context(paths.first().map_or(cwd.as_path(), |p| p.as_path()))?;
-    let (reports, stats) = scan(&loaded, &checker, &paths, threads, fix)?;
+    let uses_stdin = options.paths.iter().any(|path| path == Path::new("-"));
+    if uses_stdin {
+        anyhow::ensure!(
+            options.paths.len() == 1,
+            "standard input (`-`) cannot be combined with file paths"
+        );
+        anyhow::ensure!(
+            !options.fix,
+            "standard input cannot be used with --write or `fix`"
+        );
+    } else {
+        anyhow::ensure!(
+            options.stdin_filename.is_none(),
+            "--stdin-filename requires `-` as the input path"
+        );
+    }
 
-    let color = std::io::stdout().is_terminal() && format == Format::Human;
+    let start = options
+        .paths
+        .first()
+        .filter(|path| path.as_path() != Path::new("-"))
+        .map_or(cwd.as_path(), PathBuf::as_path);
+    let mut loaded = ayame_spell_core::config::discover_selected(
+        start,
+        options.config.as_deref(),
+        options.no_config,
+    )?;
+    if let Some(mode) = options.mode {
+        loaded.config.check.mode = mode;
+    }
+    loaded.config.files.exclude.extend(options.exclude.clone());
+    if options.hidden {
+        loaded.config.files.include_hidden = true;
+    }
+    if let Some(max_file_size) = options.max_file_size {
+        loaded.config.files.max_file_size = max_file_size;
+    }
+    let (loaded, checker) = build_checker(loaded)?;
+
+    if options.verbose > 0 {
+        eprintln!("config root: {}", loaded.root.display());
+        eprintln!(
+            "project config: {}",
+            loaded
+                .project_file
+                .as_deref()
+                .map_or_else(|| "none".to_string(), |path| path.display().to_string())
+        );
+        eprintln!(
+            "global config: {}",
+            loaded
+                .global_file
+                .as_deref()
+                .map_or_else(|| "none".to_string(), |path| path.display().to_string())
+        );
+        eprintln!("mode: {:?}", loaded.config.check.mode);
+    }
+
+    let started = Instant::now();
+    let (reports, stats) = if uses_stdin {
+        scan_stdin(
+            &checker,
+            options
+                .stdin_filename
+                .clone()
+                .unwrap_or_else(|| PathBuf::from("<stdin>")),
+        )?
+    } else {
+        scan(
+            &loaded,
+            &checker,
+            &options.paths,
+            options.threads,
+            options.fix,
+            options.no_ignore,
+        )?
+    };
+
+    let color = color_enabled(options.color, options.format);
     let mut issue_count = 0usize;
     let mut fixed_count = 0usize;
     let mut files_with_issues = 0usize;
+    let location_width = reports
+        .iter()
+        .flat_map(|report| {
+            report.items.iter().map(|item| {
+                let column = display_column(item);
+                format!("{}:{}:{column}", report.path.display(), item.issue.line)
+                    .chars()
+                    .count()
+            })
+        })
+        .max()
+        .unwrap_or(0);
 
     for report in &reports {
         fixed_count += report.fixed;
@@ -268,9 +424,9 @@ pub fn run(
         }
         for item in &report.items {
             issue_count += 1;
-            print_item(&report.path, item, format, color);
+            print_item(&report.path, item, options.format, color, location_width);
         }
-        if report.fixed > 0 && format != Format::Json {
+        if report.fixed > 0 && options.format != Format::Json && !options.quiet {
             eprintln!(
                 "fixed {} issue(s) in {}",
                 report.fixed,
@@ -279,24 +435,26 @@ pub fn run(
         }
     }
 
-    if format == Format::Json {
-        let summary = JsonSummary {
-            version: JSON_OUTPUT_VERSION,
-            record_type: "summary",
-            issues: issue_count,
-            files_with_issues,
-            files_checked: stats.checked,
-            fixed: fixed_count,
-            skipped_binary: stats.skipped_binary,
-            skipped_large: stats.skipped_large,
-        };
-        println!("{}", serde_json::to_string(&summary).unwrap());
-    } else {
+    if options.format == Format::Json {
+        if !options.quiet {
+            let summary = JsonSummary {
+                version: JSON_OUTPUT_VERSION,
+                record_type: "summary",
+                issues: issue_count,
+                files_with_issues,
+                files_checked: stats.checked,
+                fixed: fixed_count,
+                skipped_binary: stats.skipped_binary,
+                skipped_large: stats.skipped_large,
+            };
+            println!("{}", serde_json::to_string(&summary).unwrap());
+        }
+    } else if !options.quiet {
         let mut summary = format!(
             "{} issue(s) in {} file(s) — {} file(s) checked",
             issue_count, files_with_issues, stats.checked
         );
-        if fix {
+        if options.fix {
             summary.push_str(&format!(", {fixed_count} fixed"));
         }
         if stats.skipped_binary > 0 {
@@ -314,16 +472,49 @@ pub fn run(
         eprintln!("{summary}");
     }
 
+    if options.verbose > 0 {
+        eprintln!(
+            "elapsed: {:.3}s; skipped: {} binary, {} over max-file-size",
+            started.elapsed().as_secs_f64(),
+            stats.skipped_binary,
+            stats.skipped_large
+        );
+    }
+
     Ok(if issue_count > 0 { 1 } else { 0 })
 }
 
-fn print_item(path: &Path, item: &Item, format: Format, color: bool) {
+fn color_enabled(choice: ColorChoice, format: Format) -> bool {
+    if format != Format::Human {
+        return false;
+    }
+    match choice {
+        ColorChoice::Always => true,
+        ColorChoice::Never => false,
+        ColorChoice::Auto => {
+            if std::env::var_os("NO_COLOR").is_some() {
+                false
+            } else if std::env::var_os("CLICOLOR_FORCE")
+                .is_some_and(|value| !value.is_empty() && value != "0")
+            {
+                true
+            } else {
+                std::io::stdout().is_terminal()
+            }
+        }
+    }
+}
+
+fn display_column(item: &Item) -> usize {
+    item.line_text
+        .get(..item.issue.col)
+        .map_or(item.issue.col, |text| text.chars().count())
+        + 1
+}
+
+fn print_item(path: &Path, item: &Item, format: Format, color: bool, location_width: usize) {
     let issue = &item.issue;
-    let column = item
-        .line_text
-        .get(..issue.col)
-        .map_or(issue.col, |s| s.chars().count())
-        + 1;
+    let column = display_column(item);
     match format {
         Format::Json => {
             let j = JsonIssue {
@@ -366,11 +557,9 @@ fn print_item(path: &Path, item: &Item, format: Format, color: bool) {
                     issue.suggestions.join(&format!("{reset}, {green}"))
                 )
             };
+            let location = format!("{}:{}:{column}", path.display(), issue.line);
             println!(
-                "{}:{}:{}: {red}{}{reset}{suggestion} {dim}[{}]{reset}",
-                path.display(),
-                issue.line,
-                column,
+                "{dim}{location:<location_width$}{reset}: {red}{}{reset}{suggestion} {dim}[{}]{reset}",
                 issue.word,
                 issue.kind.code(),
             );

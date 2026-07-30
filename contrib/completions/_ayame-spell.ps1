@@ -43,9 +43,22 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
 
     $completions = @(switch ($command) {
         'ayame-spell' {
+            [CompletionResult]::new('--config', '--config', [CompletionResultType]::ParameterName, 'Load exactly this configuration file')
+            [CompletionResult]::new('--mode', '--mode', [CompletionResultType]::ParameterName, 'Override `[check].mode`')
+            [CompletionResult]::new('--exclude', '--exclude', [CompletionResultType]::ParameterName, 'Exclude an additional glob (repeatable)')
+            [CompletionResult]::new('--color', '--color', [CompletionResultType]::ParameterName, 'Colour policy for human output')
+            [CompletionResult]::new('--stdin-filename', '--stdin-filename', [CompletionResultType]::ParameterName, 'Display name used for standard input (also selects overrides)')
+            [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
+            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'Output format')
-            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (default: number of CPUs)')
-            [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (default: number of CPUs)')
+            [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
+            [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
+            [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
+            [CompletionResult]::new('-q', '-q', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('-w', '-w', [CompletionResultType]::ParameterName, 'Apply safe fixes in place (shorthand for `fix`)')
             [CompletionResult]::new('--write', '--write', [CompletionResultType]::ParameterName, 'Apply safe fixes in place (shorthand for `fix`)')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
@@ -64,9 +77,22 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;check' {
+            [CompletionResult]::new('--config', '--config', [CompletionResultType]::ParameterName, 'Load exactly this configuration file')
+            [CompletionResult]::new('--mode', '--mode', [CompletionResultType]::ParameterName, 'Override `[check].mode`')
+            [CompletionResult]::new('--exclude', '--exclude', [CompletionResultType]::ParameterName, 'Exclude an additional glob (repeatable)')
+            [CompletionResult]::new('--color', '--color', [CompletionResultType]::ParameterName, 'Colour policy for human output')
+            [CompletionResult]::new('--stdin-filename', '--stdin-filename', [CompletionResultType]::ParameterName, 'Display name used for standard input (also selects overrides)')
+            [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
+            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'format')
-            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'j')
-            [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'threads')
+            [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
+            [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
+            [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
+            [CompletionResult]::new('-q', '-q', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('-w', '-w', [CompletionResultType]::ParameterName, 'Apply safe fixes in place')
             [CompletionResult]::new('--write', '--write', [CompletionResultType]::ParameterName, 'Apply safe fixes in place')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
@@ -74,8 +100,21 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;fix' {
-            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'j')
-            [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'threads')
+            [CompletionResult]::new('--config', '--config', [CompletionResultType]::ParameterName, 'Load exactly this configuration file')
+            [CompletionResult]::new('--mode', '--mode', [CompletionResultType]::ParameterName, 'Override `[check].mode`')
+            [CompletionResult]::new('--exclude', '--exclude', [CompletionResultType]::ParameterName, 'Exclude an additional glob (repeatable)')
+            [CompletionResult]::new('--color', '--color', [CompletionResultType]::ParameterName, 'Colour policy for human output')
+            [CompletionResult]::new('--stdin-filename', '--stdin-filename', [CompletionResultType]::ParameterName, 'Display name used for standard input (also selects overrides)')
+            [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
+            [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
+            [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
+            [CompletionResult]::new('--hidden', '--hidden', [CompletionResultType]::ParameterName, 'Include hidden files and directories')
+            [CompletionResult]::new('-q', '-q', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
+            [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
@@ -132,18 +171,39 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available dictionaries and their install status')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Download dictionaries and enable them in the project config')
+            [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, 'Search registry names and descriptions')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show metadata and project status for one dictionary')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Delete a cached dictionary and disable it in the project config')
             [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Re-download every cached dictionary from the registry')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
         'ayame-spell;dict;list' {
+            [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Filter by language')
+            [CompletionResult]::new('--kind', '--kind', [CompletionResultType]::ParameterName, 'Filter by dictionary kind')
+            [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'Emit one JSON array for scripting')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'ayame-spell;dict;add' {
+            [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Filter the interactive picker by language')
+            [CompletionResult]::new('--kind', '--kind', [CompletionResultType]::ParameterName, 'Filter the interactive picker by dictionary kind')
             [CompletionResult]::new('--cache-only', '--cache-only', [CompletionResultType]::ParameterName, 'Download to the cache only; leave the project config untouched')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'ayame-spell;dict;search' {
+            [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'lang')
+            [CompletionResult]::new('--kind', '--kind', [CompletionResultType]::ParameterName, 'kind')
+            [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'json')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'ayame-spell;dict;info' {
+            [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'json')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
@@ -161,6 +221,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         'ayame-spell;dict;help' {
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available dictionaries and their install status')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Download dictionaries and enable them in the project config')
+            [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, 'Search registry names and descriptions')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show metadata and project status for one dictionary')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Delete a cached dictionary and disable it in the project config')
             [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Re-download every cached dictionary from the registry')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
@@ -170,6 +232,12 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;dict;help;add' {
+            break
+        }
+        'ayame-spell;dict;help;search' {
+            break
+        }
+        'ayame-spell;dict;help;info' {
             break
         }
         'ayame-spell;dict;help;remove' {
@@ -183,6 +251,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         }
         'ayame-spell;init' {
             [CompletionResult]::new('--force', '--force', [CompletionResultType]::ParameterName, 'Overwrite an existing config file')
+            [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, 'Run the guided setup wizard')
+            [CompletionResult]::new('--yes', '--yes', [CompletionResultType]::ParameterName, 'Use the non-interactive starter configuration')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
@@ -239,6 +309,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         'ayame-spell;help;dict' {
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available dictionaries and their install status')
             [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, 'Download dictionaries and enable them in the project config')
+            [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, 'Search registry names and descriptions')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show metadata and project status for one dictionary')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Delete a cached dictionary and disable it in the project config')
             [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Re-download every cached dictionary from the registry')
             break
@@ -247,6 +319,12 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;help;dict;add' {
+            break
+        }
+        'ayame-spell;help;dict;search' {
+            break
+        }
+        'ayame-spell;help;dict;info' {
             break
         }
         'ayame-spell;help;dict;remove' {
