@@ -9,17 +9,17 @@ local wordlists used by the configuration.
 
 ## GitHub Actions
 
-The repository includes a composite Action. Pin its major release and the
-checker version:
+The repository includes a composite Action. Pin the release and checker
+version:
 
 ```yaml
       - uses: actions/checkout@v6
-      - uses: hjosugi/ayame-spell@v1
+      - uses: hjosugi/ayame-spell@v0.4.0
         with:
-          version: 1.0.0
+          version: 0.4.0
 ```
 
-It installs the exact requested crates.io version and emits native GitHub
+It downloads the exact checksum-verified GitHub Release and emits native GitHub
 annotations. Set `sarif: true` to upload a SARIF result instead; the calling
 workflow must grant `security-events: write`.
 
@@ -92,7 +92,7 @@ The repository exports both checking and manual fixing hooks:
 ```yaml
 repos:
   - repo: https://github.com/hjosugi/ayame-spell
-    rev: v1.0.0
+    rev: v0.4.0
     hooks:
       - id: ayame-spell
 ```

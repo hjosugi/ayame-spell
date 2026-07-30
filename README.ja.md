@@ -41,8 +41,8 @@ ayame-spell はこの3つの良いところを1つの Rust バイナリに統合
 - **日本語** — 表記ゆれは既定で「文書内一貫性」方式:
   同じ文書に サーバ と サーバー が混在したときだけ少数派を指摘します。
   全角英数(１２３ＡＢＣ)・半角カナ(ｶﾀｶﾅ)・全角スペースも検出。
-- **実測可能** — 再現可能な 35 MiB / 40 万行ベンチマークは現在 1.39 秒
-  （25.14 MiB/s）。[環境・メモリ・比較結果](https://hjosugi.github.io/ayame-spell/ja/benchmarks/)
+- **実測可能** — 再現可能な 35 MiB / 40 万行ベンチマークは現在 1.60 秒
+  （21.90 MiB/s）。[環境・メモリ・比較結果](https://hjosugi.github.io/ayame-spell/ja/benchmarks/)
   を公開しています。
   スキップしたファイルは必ず件数報告します(黙って打ち切らない)。
 
@@ -50,12 +50,18 @@ ayame-spell はこの3つの良いところを1つの Rust バイナリに統合
 
 ```sh
 cargo install ayame-spell           # CLI + LSP サーバ
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
+npx https://github.com/hjosugi/ayame-spell/releases/download/v0.4.0/ayame-spell-npm-v0.4.0.tgz check .
 ```
 
 VS Code: **ayame-spell** 拡張をインストールしてください。
 [GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest) の
 プラットフォーム別 VSIX にはネイティブサーバーが同梱されるため、Rust の
 インストールは不要です。詳しくは[拡張ガイド](editors/vscode/README.md)を参照してください。
+Homebrew、Scoop、PowerShell、Docker、AUR、archive、checksum の手順は
+[インストールガイド](https://hjosugi.github.io/ayame-spell/ja/getting-started/)
+にまとめています。
 
 ### シェル補完
 

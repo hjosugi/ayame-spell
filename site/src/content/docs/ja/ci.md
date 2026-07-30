@@ -9,17 +9,17 @@ ayame-spell は指摘が残っていると終了コード `1` を返すため、
 
 ## GitHub Actions
 
-このリポジトリには composite Action が含まれます。メジャーリリースと checker
+このリポジトリには composite Action が含まれます。release と checker の
 バージョンを固定します。
 
 ```yaml
       - uses: actions/checkout@v6
-      - uses: hjosugi/ayame-spell@v1
+      - uses: hjosugi/ayame-spell@v0.4.0
         with:
-          version: 1.0.0
+          version: 0.4.0
 ```
 
-指定した crates.io バージョンを厳密に導入し、GitHub の注釈を出力します。
+指定した GitHub Release を checksum 検証して導入し、GitHub の注釈を出力します。
 `sarif: true` なら代わりに SARIF をアップロードします。この場合、呼び出し側
 workflow に `security-events: write` を付与してください。
 
@@ -92,7 +92,7 @@ ayame-spell check . --format brief
 ```yaml
 repos:
   - repo: https://github.com/hjosugi/ayame-spell
-    rev: v1.0.0
+    rev: v0.4.0
     hooks:
       - id: ayame-spell
 ```

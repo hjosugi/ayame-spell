@@ -3,7 +3,55 @@ title: はじめに
 description: ayame-spell をインストールし、最初のチェックとプロジェクト設定を行います。
 ---
 
-## インストール
+## Rust なしでインストール
+
+shell installer は GitHub Release から環境に合う archive を選び、
+`SHA256SUMS` と照合して `~/.local/bin` へ binary を配置します。
+
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
+```
+
+Windows PowerShell では次を実行します。
+
+```powershell
+irm https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.ps1 | iex
+```
+
+release ごとに version 固定の Homebrew / Scoop manifest も添付します。
+
+```sh
+brew install --formula \
+  https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.rb
+```
+
+```powershell
+scoop install https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.json
+```
+
+Node project では registry account なしで、release 添付の checksum 検証済み
+native wrapper を利用できます。
+
+```sh
+npx https://github.com/hjosugi/ayame-spell/releases/download/v0.4.0/ayame-spell-npm-v0.4.0.tgz check .
+```
+
+同じ wrapper を npm に公開後は、短い `npx ayame-spell check .` も利用できます。
+
+CI 用 container は次のとおりです。
+
+```sh
+docker run --rm -v "$PWD:/work" -w /work \
+  ghcr.io/hjosugi/ayame-spell:0.4.0 check .
+```
+
+各 release には AUR maintainer と直接の `makepkg -si` 用に
+`ayame-spell-bin` の `PKGBUILD` も添付します。再現可能な manifest generator
+は[配布用 source](https://github.com/hjosugi/ayame-spell/tree/main/packaging)
+にあります。
+
+## Rust でインストール
 
 Rust 1.80 以降を使って crates.io からインストールします。
 
@@ -12,7 +60,7 @@ cargo install ayame-spell
 ayame-spell --version
 ```
 
-または [GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest)
+また、[GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest)
 から環境に合うアーカイブを取得し、`ayame-spell`（Windows は
 `ayame-spell.exe`）を `PATH` の通った場所へ置きます。アーカイブの
 `completions/` にはシェル補完も入っています。

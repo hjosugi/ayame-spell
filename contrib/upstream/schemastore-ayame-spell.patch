@@ -1,0 +1,17 @@
+diff --git a/src/api/json/catalog.json b/src/api/json/catalog.json
+index 722437c..9e8c3e1 100644
+--- a/src/api/json/catalog.json
++++ b/src/api/json/catalog.json
+@@ -2,6 +2,12 @@
+   "$schema": "https://www.schemastore.org/schema-catalog.json",
+   "version": 1,
+   "schemas": [
++    {
++      "name": "ayame-spell configuration",
++      "description": "Configuration for the ayame-spell English and Japanese spell checker",
++      "fileMatch": ["ayame-spell.toml", ".ayame-spell.toml"],
++      "url": "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json"
++    },
+     {
+       "name": "Mermaid config",
+       "description": "Configuration for Mermaid diagrams and charts",

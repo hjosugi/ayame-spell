@@ -1,0 +1,37 @@
+{
+  "name": "ayame-spell",
+  "version": "0.4.0",
+  "description": "Fast, low-noise English and Japanese spell checker CLI",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hjosugi/ayame-spell.git",
+    "directory": "packages/npm"
+  },
+  "homepage": "https://hjosugi.github.io/ayame-spell/",
+  "bugs": "https://github.com/hjosugi/ayame-spell/issues",
+  "type": "module",
+  "bin": {
+    "ayame-spell": "bin/ayame-spell.js"
+  },
+  "files": [
+    "bin",
+    "scripts/install.js",
+    "vendor",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/install.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "spellcheck",
+    "typo",
+    "japanese",
+    "cli",
+    "lsp"
+  ]
+}

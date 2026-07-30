@@ -3,7 +3,56 @@ title: Getting started
 description: Install ayame-spell, run the first check, and add a project configuration.
 ---
 
-## Install
+## Install without Rust
+
+The shell installers select the matching GitHub Release archive, verify it
+against `SHA256SUMS`, and place the binary in `~/.local/bin`:
+
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
+```
+
+On Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.ps1 | iex
+```
+
+Release-specific Homebrew and Scoop manifests are attached to each release:
+
+```sh
+brew install --formula \
+  https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.rb
+```
+
+```powershell
+scoop install https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.json
+```
+
+Node projects can run the release-attached, checksum-verifying native wrapper
+without a registry account:
+
+```sh
+npx https://github.com/hjosugi/ayame-spell/releases/download/v0.4.0/ayame-spell-npm-v0.4.0.tgz check .
+```
+
+The shorter `npx ayame-spell check .` command will become available when the
+same wrapper is published to npm.
+
+For CI containers:
+
+```sh
+docker run --rm -v "$PWD:/work" -w /work \
+  ghcr.io/hjosugi/ayame-spell:0.4.0 check .
+```
+
+An `ayame-spell-bin` `PKGBUILD` is attached to each release for AUR
+maintainers and direct `makepkg -si` use. See the
+[distribution source](https://github.com/hjosugi/ayame-spell/tree/main/packaging)
+for the reproducible manifest generator.
+
+## Install with Rust
 
 Install from crates.io with Rust 1.80 or newer:
 
@@ -12,7 +61,7 @@ cargo install ayame-spell
 ayame-spell --version
 ```
 
-Alternatively, download the archive for your platform from
+You can also download the archive for your platform from
 [GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest),
 put `ayame-spell` (or `ayame-spell.exe`) on `PATH`, and optionally install a
 shell completion from the archive's `completions/` directory.

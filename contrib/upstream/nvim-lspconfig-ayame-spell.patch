@@ -1,0 +1,42 @@
+diff --git a/lsp/ayame_spell.lua b/lsp/ayame_spell.lua
+new file mode 100644
+index 0000000..bb8d7cb
+--- /dev/null
++++ b/lsp/ayame_spell.lua
+@@ -0,0 +1,36 @@
++---@brief
++---
++--- https://github.com/hjosugi/ayame-spell
++---
++--- Fast, low-noise English and Japanese spell checking for code and prose.
++--- Install the `ayame-spell` binary and enable the server with:
++---
++--- ```lua
++--- vim.lsp.enable('ayame_spell')
++--- ```
++
++---@type vim.lsp.Config
++return {
++  cmd = { 'ayame-spell', 'lsp', '--stdio' },
++  filetypes = {
++    'c',
++    'cpp',
++    'cs',
++    'gitcommit',
++    'go',
++    'html',
++    'java',
++    'javascript',
++    'javascriptreact',
++    'markdown',
++    'python',
++    'ruby',
++    'rust',
++    'text',
++    'toml',
++    'typescript',
++    'typescriptreact',
++    'yaml',
++  },
++  root_markers = { 'ayame-spell.toml', '.ayame-spell.toml', '.git' },
++}

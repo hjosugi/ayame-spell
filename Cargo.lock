@@ -103,7 +103,7 @@ checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
 name = "ayame-spell"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -132,7 +132,7 @@ dependencies = [
 
 [[package]]
 name = "ayame-spell-core"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "criterion",
@@ -140,6 +140,7 @@ dependencies = [
  "dirs",
  "fst",
  "globset",
+ "half",
  "memchr",
  "proptest",
  "regex",
@@ -656,13 +657,12 @@ dependencies = [
 
 [[package]]
 name = "half"
-version = "2.7.1"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ea2d84b969582b4b1864a92dc5d27cd2b77b622a8d79306834f1be5ba20d84b"
+checksum = "6dd08c532ae367adf81c312a4580bc67f1d0fe8bc9c460520283f4c0ff277888"
 dependencies = [
  "cfg-if",
  "crunchy",
- "zerocopy",
 ]
 
 [[package]]
@@ -2082,7 +2082,7 @@ checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
 
 [[package]]
 name = "xtask"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "ayame-spell-core",

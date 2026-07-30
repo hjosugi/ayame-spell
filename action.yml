@@ -8,9 +8,9 @@ branding:
 
 inputs:
   version:
-    description: Exact ayame-spell crates.io version to install.
+    description: Exact ayame-spell GitHub Release version to install.
     required: false
-    default: "1.0.0"
+    default: "0.4.0"
   paths:
     description: Space-separated files or directories to check.
     required: false
@@ -31,11 +31,16 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install pinned ayame-spell
+    - name: Install checksum-verified ayame-spell release
       shell: bash
       env:
         AYAME_SPELL_ACTION_VERSION: ${{ inputs.version }}
-      run: cargo install --locked ayame-spell --version "=${AYAME_SPELL_ACTION_VERSION}"
+        AYAME_SPELL_ACTION_PATH: ${{ runner.temp }}/ayame-spell-action/bin
+      run: |
+        "${GITHUB_ACTION_PATH}/install.sh" \
+          --version "${AYAME_SPELL_ACTION_VERSION}" \
+          --install-dir "${AYAME_SPELL_ACTION_PATH}"
+        echo "${AYAME_SPELL_ACTION_PATH}" >> "${GITHUB_PATH}"
 
     - name: Check spelling
       id: check

@@ -9,6 +9,7 @@ exclude = [
     # Intentional typo/notation fixtures and exact Marketplace mockup text.
     "editors/vscode/test-fixtures/**",
     "editors/vscode/media/source/**",
+    "fuzz/corpus/**",
 ]
 
 [words]

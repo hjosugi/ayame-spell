@@ -8,15 +8,15 @@ description: ayame-spell の処理速度、ピークメモリ、比較計測、C
 
 ## 基準結果
 
-2026-07-30 に release build した ayame-spell 0.3.1 は、cache を使わず
+2026-07-30 に release build した ayame-spell 0.4.0 は、cache を使わず
 35 MiB / 40 万行の corpus 全体を確認しました。
 
 | 指標 | 結果 |
 | --- | ---: |
-| 3 回の中央値 | 1.392 s |
-| throughput | 25.14 MiB/s |
-| 最速 | 1.342 s |
-| peak RSS | 928.3 MiB |
+| 3 回の中央値 | 1.598 s |
+| throughput | 21.90 MiB/s |
+| 最速 | 1.527 s |
+| peak RSS | 679.6 MiB |
 | 確認ファイル | 1 |
 | skip ファイル | 0 |
 
@@ -33,7 +33,7 @@ cache を無効化し、必要な tool では大きな file の上限を引き�
 
 | Tool | version / rule | 中央値 | throughput | peak RSS |
 | --- | --- | ---: | ---: | ---: |
-| ayame-spell | 0.3.1、既定の corrections + 日本語確認 | 1.392 s | 25.14 MiB/s | 928.3 MiB |
+| ayame-spell | 0.4.0、既定の corrections + 日本語確認 | 1.598 s | 21.90 MiB/s | 679.6 MiB |
 | typos | 1.48.0、既定設定 | 1.348 s | 25.97 MiB/s | 61.4 MiB |
 | cSpell | 10.0.1、既定設定 | 7.630 s | 4.59 MiB/s | 527.8 MiB |
 | textlint | 15.7.1 + spellcheck-tech-word 5.0.0 | >60 s（timeout） | <0.58 MiB/s | 停止時 1003.2 MiB |

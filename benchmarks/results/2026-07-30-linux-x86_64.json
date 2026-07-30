@@ -6,12 +6,12 @@
     "--no-cache",
     "--format",
     "json",
-    "/tmp/ayame-benchmark-corpus.md"
+    "/tmp/tmp.dEGlvYkjG0/ayame-corpus.md"
   ],
   "corpus": {
     "bytes": 36700160,
     "lines": 400000,
-    "path": "/tmp/ayame-benchmark-corpus.md",
+    "path": "/tmp/tmp.dEGlvYkjG0/ayame-corpus.md",
     "sha256": "d16dd8ec158f415c54d1b857fdf4f0cf620f50a8c905a8621c85defe3f7c640b"
   },
   "machine": {
@@ -20,9 +20,9 @@
     "processor": "unknown",
     "python": "3.14.6"
   },
-  "peak_rss_mib": 928.29296875,
+  "peak_rss_mib": 679.58203125,
   "repeat": 3,
-  "revision": "working-tree based on 8722fe7",
+  "revision": "v0.4.0 release candidate based on b0224a2",
   "schema": 1,
   "summary": {
     "files_checked": 1,
@@ -34,15 +34,15 @@
     "type": "summary",
     "version": 1
   },
-  "throughput_mib_per_second": 25.144586129760693,
-  "version": "ayame-spell 0.3.1",
+  "throughput_mib_per_second": 21.896250899997398,
+  "version": "ayame-spell 0.4.0",
   "wall_seconds": {
-    "median": 1.3919497349997982,
-    "minimum": 1.342079043010017,
+    "median": 1.5984471569972811,
+    "minimum": 1.5267461570037995,
     "samples": [
-      1.342079043010017,
-      1.3973458230029792,
-      1.3919497349997982
+      1.5984471569972811,
+      1.5267461570037995,
+      1.705222311997204
     ]
   }
 }

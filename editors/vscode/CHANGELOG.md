@@ -2,6 +2,15 @@
 
 All notable VS Code extension changes are documented here.
 
+## 0.4.0
+
+- Add pull/workspace diagnostics, incremental sync, debouncing, cancellation,
+  and a visible large-document guard.
+- Add localized rule hovers, richer quick fixes, and document-wide Japanese
+  normalization.
+- Ship the extension in lockstep with the CLI for every supported release
+  platform.
+
 ## 0.3.1
 
 - Add the complete Japanese design notes and cross-link the English and Japanese

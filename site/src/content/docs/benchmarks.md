@@ -8,15 +8,15 @@ corpus itself is not committed.
 
 ## Reference result
 
-On 2026-07-30, ayame-spell 0.3.1 built in release mode checked the complete
+On 2026-07-30, ayame-spell 0.4.0 built in release mode checked the complete
 35 MiB / 400,000-line corpus with no cache:
 
 | Metric | Result |
 | --- | ---: |
-| Median of 3 runs | 1.392 s |
-| Throughput | 25.14 MiB/s |
-| Fastest run | 1.342 s |
-| Peak RSS | 928.3 MiB |
+| Median of 3 runs | 1.598 s |
+| Throughput | 21.90 MiB/s |
+| Fastest run | 1.527 s |
+| Peak RSS | 679.6 MiB |
 | Files checked | 1 |
 | Files skipped | 0 |
 
@@ -33,7 +33,7 @@ and each completed tool ran three times.
 
 | Tool | Version / rules | Median | Throughput | Peak RSS |
 | --- | --- | ---: | ---: | ---: |
-| ayame-spell | 0.3.1, default corrections + Japanese checks | 1.392 s | 25.14 MiB/s | 928.3 MiB |
+| ayame-spell | 0.4.0, default corrections + Japanese checks | 1.598 s | 21.90 MiB/s | 679.6 MiB |
 | typos | 1.48.0, defaults | 1.348 s | 25.97 MiB/s | 61.4 MiB |
 | cSpell | 10.0.1, defaults | 7.630 s | 4.59 MiB/s | 527.8 MiB |
 | textlint | 15.7.1 + spellcheck-tech-word 5.0.0 | >60 s (timeout) | <0.58 MiB/s | 1003.2 MiB at stop |
