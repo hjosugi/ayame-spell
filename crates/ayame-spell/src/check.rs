@@ -13,6 +13,8 @@ use serde::Serialize;
 
 use crate::Format;
 
+const JSON_OUTPUT_VERSION: u8 = 1;
+
 /// One issue with enough context to display it.
 pub struct Item {
     pub issue: Issue,
@@ -216,6 +218,9 @@ fn write_in_place(path: &Path, text: &str) -> anyhow::Result<()> {
 
 #[derive(Serialize)]
 struct JsonIssue<'a> {
+    version: u8,
+    #[serde(rename = "type")]
+    record_type: &'static str,
     path: &'a Path,
     line: u32,
     column: usize,
@@ -224,7 +229,21 @@ struct JsonIssue<'a> {
     word: &'a str,
     kind: &'a str,
     suggestions: &'a [String],
+    fix: Option<&'a str>,
     message: String,
+}
+
+#[derive(Serialize)]
+struct JsonSummary {
+    version: u8,
+    #[serde(rename = "type")]
+    record_type: &'static str,
+    issues: usize,
+    files_with_issues: usize,
+    files_checked: usize,
+    fixed: usize,
+    skipped_binary: usize,
+    skipped_large: usize,
 }
 
 pub fn run(
@@ -260,7 +279,19 @@ pub fn run(
         }
     }
 
-    if format != Format::Json {
+    if format == Format::Json {
+        let summary = JsonSummary {
+            version: JSON_OUTPUT_VERSION,
+            record_type: "summary",
+            issues: issue_count,
+            files_with_issues,
+            files_checked: stats.checked,
+            fixed: fixed_count,
+            skipped_binary: stats.skipped_binary,
+            skipped_large: stats.skipped_large,
+        };
+        println!("{}", serde_json::to_string(&summary).unwrap());
+    } else {
         let mut summary = format!(
             "{} issue(s) in {} file(s) — {} file(s) checked",
             issue_count, files_with_issues, stats.checked
@@ -296,6 +327,8 @@ fn print_item(path: &Path, item: &Item, format: Format, color: bool) {
     match format {
         Format::Json => {
             let j = JsonIssue {
+                version: JSON_OUTPUT_VERSION,
+                record_type: "issue",
                 path,
                 line: issue.line,
                 column,
@@ -304,6 +337,7 @@ fn print_item(path: &Path, item: &Item, format: Format, color: bool) {
                 word: &issue.word,
                 kind: issue.kind.code(),
                 suggestions: &issue.suggestions,
+                fix: issue.safe_fix(),
                 message: issue.message(),
             };
             println!("{}", serde_json::to_string(&j).unwrap());
@@ -341,5 +375,117 @@ fn print_item(path: &Path, item: &Item, format: Format, color: bool) {
                 issue.kind.code(),
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ayame_spell_core::IssueKind;
+    use serde_json::json;
+
+    #[test]
+    fn json_issue_shape_is_stable() {
+        let item = Item {
+            issue: Issue {
+                line: 4,
+                col: 2,
+                offset: 42,
+                len: 7,
+                word: "recieve".to_string(),
+                kind: IssueKind::Typo,
+                suggestions: vec!["receive".to_string()],
+            },
+            line_text: "  recieve this".to_string(),
+        };
+        let issue = &item.issue;
+        let output = JsonIssue {
+            version: JSON_OUTPUT_VERSION,
+            record_type: "issue",
+            path: Path::new("docs/guide.md"),
+            line: issue.line,
+            column: 3,
+            offset: issue.offset,
+            length: issue.len,
+            word: &issue.word,
+            kind: issue.kind.code(),
+            suggestions: &issue.suggestions,
+            fix: issue.safe_fix(),
+            message: issue.message(),
+        };
+
+        assert_eq!(
+            serde_json::to_string(&output).unwrap(),
+            r#"{"version":1,"type":"issue","path":"docs/guide.md","line":4,"column":3,"offset":42,"length":7,"word":"recieve","kind":"typo","suggestions":["receive"],"fix":"receive","message":"`recieve` should be `receive`"}"#
+        );
+    }
+
+    #[test]
+    fn json_summary_shape_is_stable() {
+        let output = JsonSummary {
+            version: JSON_OUTPUT_VERSION,
+            record_type: "summary",
+            issues: 1,
+            files_with_issues: 1,
+            files_checked: 12,
+            fixed: 0,
+            skipped_binary: 2,
+            skipped_large: 3,
+        };
+
+        assert_eq!(
+            serde_json::to_string(&output).unwrap(),
+            r#"{"version":1,"type":"summary","issues":1,"files_with_issues":1,"files_checked":12,"fixed":0,"skipped_binary":2,"skipped_large":3}"#
+        );
+    }
+
+    #[test]
+    fn json_schema_matches_record_fields_and_issue_codes() {
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../site/public/schema/v1/ayame-spell-output.json"
+        ))
+        .unwrap();
+
+        assert_eq!(
+            schema["oneOf"][0]["required"],
+            json!([
+                "version",
+                "type",
+                "path",
+                "line",
+                "column",
+                "offset",
+                "length",
+                "word",
+                "kind",
+                "suggestions",
+                "fix",
+                "message"
+            ])
+        );
+        assert_eq!(
+            schema["oneOf"][0]["properties"]["kind"]["enum"],
+            json!([
+                "typo",
+                "unknown-word",
+                "ja-variant",
+                "fullwidth-alnum",
+                "halfwidth-kana",
+                "fullwidth-space"
+            ])
+        );
+        assert_eq!(
+            schema["oneOf"][1]["required"],
+            json!([
+                "version",
+                "type",
+                "issues",
+                "files_with_issues",
+                "files_checked",
+                "fixed",
+                "skipped_binary",
+                "skipped_large"
+            ])
+        );
     }
 }

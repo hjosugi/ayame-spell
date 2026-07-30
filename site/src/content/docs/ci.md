@@ -51,9 +51,16 @@ spell:
 ayame-spell check . --format json > ayame-spell.jsonl
 ```
 
-Each output line is an independent JSON object. A CI adapter can map `path`,
-`line`, `column`, `message`, and `kind` to native annotations. Do not parse the
-human format; use `brief` for compiler-style logs or `json` for automation.
+Each output line is an independent JSON object. Filter records whose `type` is
+`issue`, then map `path`, `line`, `column`, `message`, and `kind` to native
+annotations. The final `summary` record reports scan totals:
+
+```sh
+jq -c 'select(.type == "issue")' ayame-spell.jsonl
+```
+
+Do not parse the human format; use `brief` for compiler-style logs or `json`
+for automation.
 
 ## Registry dictionaries in CI
 

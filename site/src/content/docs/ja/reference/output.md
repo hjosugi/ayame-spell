@@ -43,14 +43,29 @@ docs/guide.md:4:3: recieve -> receive
 
 ## JSON Lines 形式
 
-`--format json` は指摘ごとに一つの JSON オブジェクトを書き、概要は出しません。
+`--format json` は指摘ごとに一つの JSON オブジェクトを書き、最後に一つの
+概要レコードを書きます。
 
 ```json
-{"path":"docs/guide.md","line":4,"column":3,"offset":42,"length":7,"word":"recieve","kind":"typo","suggestions":["receive"],"message":"`recieve` should be `receive`"}
+{"version":1,"type":"issue","path":"docs/guide.md","line":4,"column":3,"offset":42,"length":7,"word":"recieve","kind":"typo","suggestions":["receive"],"fix":"receive","message":"`recieve` should be `receive`"}
+{"version":1,"type":"summary","issues":1,"files_with_issues":1,"files_checked":12,"fixed":0,"skipped_binary":0,"skipped_large":0}
 ```
+
+すべてのレコードに数値の `version` と、種類を示す `type` があります。利用側は
+未対応の version を拒否し、未知のフィールドを無視してください。version 1 の
+既存フィールドと意味は変更しません。フィールドと `kind` の追加だけを行えます。
+削除、改名、型変更、意味変更では version 2 に上げます。
+
+機械可読スキーマは
+[`schema/v1/ayame-spell-output.json`](https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell-output.json)
+で公開します。
+
+指摘レコードのフィールド:
 
 | フィールド | 型 | 意味 |
 | --- | --- | --- |
+| `version` | 整数 | JSON Lines 契約の version。現在は `1`。 |
+| `type` | 文字列 | 指摘では常に `"issue"`。 |
 | `path` | 文字列 | ファイル走査が報告するチェック対象パス。 |
 | `line` | 整数 | 1 始まりの行。 |
 | `column` | 整数 | 1 始まりの文字位置。 |
@@ -59,9 +74,24 @@ docs/guide.md:4:3: recieve -> receive
 | `word` | 文字列 | 元のテキスト。 |
 | `kind` | 文字列 | 安定した[指摘コード](./rules/)。 |
 | `suggestions` | 文字列配列 | 順位付きの置換候補。 |
+| `fix` | 文字列または null | 非対話で安全な置換。確認が必要なら `null`。 |
 | `message` | 文字列 | 人が読める説明。 |
 
-ストリームを一行ずつ読み込んでください。出力全体は JSON 配列ではありません。
+概要レコードのフィールド:
+
+| フィールド | 型 | 意味 |
+| --- | --- | --- |
+| `version` | 整数 | JSON Lines 契約の version。現在は `1`。 |
+| `type` | 文字列 | 常に `"summary"`。 |
+| `issues` | 整数 | 任意の修正後に残った指摘数。 |
+| `files_with_issues` | 整数 | 指摘が残ったファイル数。 |
+| `files_checked` | 整数 | チェックしたテキストファイル数。 |
+| `fixed` | 整数 | この実行で安全に修正した指摘数。 |
+| `skipped_binary` | 整数 | バイナリと判断して除外したファイル数。 |
+| `skipped_large` | 整数 | `max-file-size` により除外したファイル数。 |
+
+指摘がなくても概要を出すため、コマンドが実行されなかった空ストリームと区別
+できます。一行ずつ読み込んでください。出力全体は JSON 配列ではありません。
 
 ## 単語収集の出力
 

@@ -51,9 +51,16 @@ spell:
 ayame-spell check . --format json > ayame-spell.jsonl
 ```
 
-出力の各行は独立した JSON オブジェクトです。CI アダプターでは `path`、`line`、
-`column`、`message`、`kind` をネイティブ注釈へ変換できます。人向け形式は解析
-せず、コンパイラー風のログには `brief`、自動処理には `json` を使ってください。
+出力の各行は独立した JSON オブジェクトです。`type` が `issue` のレコードを
+抽出し、`path`、`line`、`column`、`message`、`kind` をネイティブ注釈へ
+変換します。最後の `summary` レコードには走査の集計が入ります。
+
+```sh
+jq -c 'select(.type == "issue")' ayame-spell.jsonl
+```
+
+人向け形式は解析せず、コンパイラー風のログには `brief`、自動処理には `json` を
+使ってください。
 
 ## CI でレジストリ辞書を使う
 

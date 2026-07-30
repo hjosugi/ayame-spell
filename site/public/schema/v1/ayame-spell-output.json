@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell-output.json",
+  "title": "ayame-spell JSON Lines record",
+  "description": "One line emitted by ayame-spell --format json, schema version 1.",
+  "oneOf": [
+    {
+      "title": "Issue record",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "type",
+        "path",
+        "line",
+        "column",
+        "offset",
+        "length",
+        "word",
+        "kind",
+        "suggestions",
+        "fix",
+        "message"
+      ],
+      "properties": {
+        "version": {
+          "const": 1,
+          "description": "Major version of the JSON Lines contract."
+        },
+        "type": {
+          "const": "issue"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "word": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "typo",
+            "unknown-word",
+            "ja-variant",
+            "fullwidth-alnum",
+            "halfwidth-kana",
+            "fullwidth-space"
+          ]
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fix": {
+          "description": "The non-interactive safe replacement, or null when human review is required.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "title": "Summary record",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "type",
+        "issues",
+        "files_with_issues",
+        "files_checked",
+        "fixed",
+        "skipped_binary",
+        "skipped_large"
+      ],
+      "properties": {
+        "version": {
+          "const": 1,
+          "description": "Major version of the JSON Lines contract."
+        },
+        "type": {
+          "const": "summary"
+        },
+        "issues": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files_with_issues": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files_checked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fixed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped_binary": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped_large": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  ]
+}
