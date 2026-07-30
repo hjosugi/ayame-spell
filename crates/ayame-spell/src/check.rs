@@ -37,6 +37,7 @@ pub struct FileReport {
 #[derive(Default)]
 pub struct Stats {
     pub checked: usize,
+    pub cached: usize,
     pub skipped_binary: usize,
     pub skipped_large: usize,
 }
@@ -58,6 +59,8 @@ pub struct RunOptions {
     pub verbose: u8,
     pub stdin_filename: Option<PathBuf>,
     pub max_file_size: Option<u64>,
+    pub no_cache: bool,
+    pub cache_dir: Option<PathBuf>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -96,6 +99,126 @@ struct BaselineEntry {
     count: usize,
 }
 
+const SCAN_CACHE_VERSION: u8 = 1;
+
+#[derive(Clone)]
+pub struct ScanCache {
+    directory: PathBuf,
+    config_sha256: String,
+}
+
+#[derive(Deserialize, Serialize)]
+struct ScanCacheEntry {
+    version: u8,
+    binary_version: String,
+    path: String,
+    size: u64,
+    modified_ns: u64,
+    content_sha256: String,
+    config_sha256: String,
+    issues: Vec<Issue>,
+}
+
+impl ScanCache {
+    fn new(directory: PathBuf, loaded: &LoadedConfig) -> anyhow::Result<Self> {
+        std::fs::create_dir_all(&directory)
+            .with_context(|| format!("cannot create scan cache {}", directory.display()))?;
+        Ok(Self {
+            directory,
+            config_sha256: config_fingerprint(loaded)?,
+        })
+    }
+
+    fn entry_path(&self, path: &Path) -> PathBuf {
+        let mut digest = Sha256::new();
+        digest.update(path.to_string_lossy().as_bytes());
+        self.directory
+            .join(format!("{}.json", hex_digest(digest.finalize())))
+    }
+
+    fn load(
+        &self,
+        path: &Path,
+        size: u64,
+        modified: Option<SystemTime>,
+        content_sha256: &str,
+    ) -> Option<Vec<Issue>> {
+        let entry: ScanCacheEntry =
+            serde_json::from_slice(&std::fs::read(self.entry_path(path)).ok()?).ok()?;
+        (entry.version == SCAN_CACHE_VERSION
+            && entry.binary_version == env!("CARGO_PKG_VERSION")
+            && entry.path == path.to_string_lossy()
+            && entry.size == size
+            && entry.modified_ns == system_time_ns(modified)
+            && entry.content_sha256 == content_sha256
+            && entry.config_sha256 == self.config_sha256)
+            .then_some(entry.issues)
+    }
+
+    fn save(
+        &self,
+        path: &Path,
+        size: u64,
+        modified: Option<SystemTime>,
+        content_sha256: String,
+        issues: &[Issue],
+    ) {
+        let entry = ScanCacheEntry {
+            version: SCAN_CACHE_VERSION,
+            binary_version: env!("CARGO_PKG_VERSION").to_string(),
+            path: path.to_string_lossy().into_owned(),
+            size,
+            modified_ns: system_time_ns(modified),
+            content_sha256,
+            config_sha256: self.config_sha256.clone(),
+            issues: issues.to_vec(),
+        };
+        if let Ok(bytes) = serde_json::to_vec(&entry) {
+            let _ = std::fs::write(self.entry_path(path), bytes);
+        }
+    }
+}
+
+fn system_time_ns(time: Option<SystemTime>) -> u64 {
+    time.and_then(|time| time.duration_since(SystemTime::UNIX_EPOCH).ok())
+        .map_or(0, |duration| {
+            duration.as_nanos().min(u128::from(u64::MAX)) as u64
+        })
+}
+
+fn config_fingerprint(loaded: &LoadedConfig) -> anyhow::Result<String> {
+    let mut digest = Sha256::new();
+    digest.update(env!("CARGO_PKG_VERSION").as_bytes());
+    digest.update(serde_json::to_vec(&loaded.config)?);
+    let mut paths = Vec::new();
+    paths.extend(loaded.project_file.clone());
+    paths.extend(loaded.global_file.clone());
+    paths.push(loaded.project_words_path());
+    paths.extend(ayame_spell_core::global_words_path());
+    paths.push(loaded.root.join(ayame_spell_core::registry_lock::LOCK_FILE));
+    for reference in loaded
+        .config
+        .words
+        .dictionaries
+        .iter()
+        .chain(&loaded.config.corrections.extra)
+        .chain(&loaded.config.japanese.variant_files)
+    {
+        if let Ok(path) = loaded.resolve_ref(reference) {
+            paths.push(path);
+        }
+    }
+    paths.sort();
+    paths.dedup();
+    for path in paths {
+        digest.update(path.to_string_lossy().as_bytes());
+        if let Ok(bytes) = std::fs::read(path) {
+            digest.update(Sha256::digest(bytes));
+        }
+    }
+    Ok(hex_digest(digest.finalize()))
+}
+
 /// Load configuration and build a checker, printing warnings to stderr.
 pub fn load_context(start: &Path) -> anyhow::Result<(LoadedConfig, Checker)> {
     let loaded = ayame_spell_core::config::discover(start)?;
@@ -119,6 +242,7 @@ pub fn scan(
     threads: Option<usize>,
     fix: bool,
     no_ignore: bool,
+    cache: Option<&ScanCache>,
 ) -> anyhow::Result<(Vec<FileReport>, Stats)> {
     let paths: Vec<PathBuf> = if paths.is_empty() {
         vec![std::env::current_dir()?]
@@ -152,13 +276,33 @@ pub fn scan(
         }
         builder.overrides(ob.build()?);
     }
-    builder.filter_entry(|entry| entry.file_name() != ".git" && entry.file_name() != BASELINE_FILE);
+    let cache_directory = cache.map(|cache| {
+        cache
+            .directory
+            .canonicalize()
+            .unwrap_or_else(|_| cache.directory.clone())
+    });
+    builder.filter_entry(move |entry| {
+        if entry.file_name() == ".git" || entry.file_name() == BASELINE_FILE {
+            return false;
+        }
+        cache_directory.as_ref().map_or(true, |directory| {
+            !entry
+                .file_type()
+                .is_some_and(|file_type| file_type.is_dir())
+                || entry
+                    .path()
+                    .canonicalize()
+                    .map_or(entry.path() != directory, |path| path != *directory)
+        })
+    });
 
     let (tx, rx) = crossbeam_channel::unbounded::<FileReport>();
     let (error_tx, error_rx) = crossbeam_channel::unbounded::<String>();
     let checked = AtomicUsize::new(0);
     let skipped_binary = AtomicUsize::new(0);
     let skipped_large = AtomicUsize::new(0);
+    let cached = AtomicUsize::new(0);
     let root = loaded.root.clone();
     let max_size = cfg.files.max_file_size;
 
@@ -169,6 +313,8 @@ pub fn scan(
         let checked = &checked;
         let skipped_binary = &skipped_binary;
         let skipped_large = &skipped_large;
+        let cached = &cached;
+        let cache = cache.cloned();
         Box::new(move |entry| {
             let Ok(entry) = entry else {
                 return WalkState::Continue;
@@ -177,7 +323,9 @@ pub fn scan(
                 return WalkState::Continue;
             }
             let path = entry.path();
-            let modified = entry.metadata().ok().and_then(|meta| meta.modified().ok());
+            let metadata = entry.metadata().ok();
+            let modified = metadata.as_ref().and_then(|meta| meta.modified().ok());
+            let size = metadata.as_ref().map_or(0, |metadata| metadata.len());
             if max_size > 0 {
                 if let Ok(meta) = entry.metadata() {
                     if meta.len() > max_size {
@@ -194,12 +342,28 @@ pub fn scan(
                 return WalkState::Continue;
             }
             let text = String::from_utf8_lossy(&bytes).into_owned();
+            let content_sha256 = hex_digest(Sha256::digest(&bytes));
             let rel = path
                 .canonicalize()
                 .ok()
                 .and_then(|c| c.strip_prefix(&root).map(Path::to_path_buf).ok())
                 .unwrap_or_else(|| path.to_path_buf());
-            let issues = checker.check(&text, Some(&rel));
+            let issues = cache
+                .as_ref()
+                .and_then(|cache| {
+                    cache
+                        .load(path, size, modified, &content_sha256)
+                        .inspect(|_| {
+                            cached.fetch_add(1, Ordering::Relaxed);
+                        })
+                })
+                .unwrap_or_else(|| {
+                    let issues = checker.check(&text, Some(&rel));
+                    if let Some(cache) = &cache {
+                        cache.save(path, size, modified, content_sha256, &issues);
+                    }
+                    issues
+                });
             checked.fetch_add(1, Ordering::Relaxed);
             if issues.is_empty() {
                 return WalkState::Continue;
@@ -261,6 +425,7 @@ pub fn scan(
         reports,
         Stats {
             checked: checked.into_inner(),
+            cached: cached.into_inner(),
             skipped_binary: skipped_binary.into_inner(),
             skipped_large: skipped_large.into_inner(),
         },
@@ -815,6 +980,7 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
         loaded.config.files.max_file_size = max_file_size;
     }
     let (loaded, checker) = build_checker(loaded)?;
+    let cache = scan_cache(&options, &loaded)?;
 
     if options.verbose > 0 {
         eprintln!("config root: {}", loaded.root.display());
@@ -852,6 +1018,7 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
             options.threads,
             false,
             options.no_ignore,
+            cache.as_ref(),
         )?
     };
 
@@ -1003,8 +1170,9 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
 
     if options.verbose > 0 {
         eprintln!(
-            "elapsed: {:.3}s; skipped: {} binary, {} over max-file-size",
+            "elapsed: {:.3}s; cache hits: {}; skipped: {} binary, {} over max-file-size",
             started.elapsed().as_secs_f64(),
+            stats.cached,
             stats.skipped_binary,
             stats.skipped_large
         );
@@ -1014,6 +1182,25 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
     }
 
     Ok(if issue_count > 0 { 1 } else { 0 })
+}
+
+fn scan_cache(options: &RunOptions, loaded: &LoadedConfig) -> anyhow::Result<Option<ScanCache>> {
+    if options.no_cache {
+        return Ok(None);
+    }
+    let in_ci = ["CI", "GITHUB_ACTIONS"]
+        .into_iter()
+        .any(|variable| std::env::var_os(variable).is_some());
+    if in_ci && options.cache_dir.is_none() {
+        return Ok(None);
+    }
+    let directory = options
+        .cache_dir
+        .clone()
+        .or_else(ayame_spell_core::scan_cache_dir);
+    directory
+        .map(|directory| ScanCache::new(directory, loaded))
+        .transpose()
 }
 
 fn color_enabled(choice: ColorChoice, format: Format) -> bool {
@@ -1285,10 +1472,14 @@ mod tests {
             json!([
                 "typo",
                 "unknown-word",
+                "en-variant",
                 "ja-variant",
                 "fullwidth-alnum",
                 "halfwidth-kana",
-                "fullwidth-space"
+                "fullwidth-space",
+                "ja-compatibility",
+                "ja-number-style",
+                "ja-punctuation"
             ])
         );
         assert_eq!(

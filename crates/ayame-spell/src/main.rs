@@ -1,6 +1,7 @@
 mod check;
 mod dict;
 mod lsp;
+mod migrate;
 mod words;
 
 use std::{
@@ -103,6 +104,14 @@ struct ScanArgs {
     /// Worker threads (overrides the detected CPU count).
     #[arg(long, short = 'j')]
     threads: Option<usize>,
+
+    /// Disable the incremental per-file scan cache.
+    #[arg(long, conflicts_with = "cache_dir")]
+    no_cache: bool,
+
+    /// Use this incremental cache directory (also enables caching in CI).
+    #[arg(long, value_name = "PATH")]
+    cache_dir: Option<PathBuf>,
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -180,6 +189,11 @@ enum Cmd {
         registry: Option<String>,
         #[command(subcommand)]
         cmd: dict::DictCmd,
+    },
+    /// Import configuration and dictionaries from another spelling tool.
+    Import {
+        #[command(subcommand)]
+        cmd: migrate::ImportCmd,
     },
     /// Write a starter ayame-spell.toml in the current directory.
     Init {
@@ -314,6 +328,7 @@ fn main() {
                 }
                 dict::run(cmd)
             }
+            Some(Cmd::Import { cmd }) => migrate::run(cmd),
             Some(Cmd::Init {
                 force,
                 interactive,
@@ -407,6 +422,8 @@ fn complete(kind: CompletionKind, prefix: &str) -> anyhow::Result<i32> {
         CompletionKind::WordFile => word_file_candidates(prefix)?,
         CompletionKind::ConfigKey => [
             "check.mode",
+            "check.locale",
+            "check.profile",
             "check.min-word-len",
             "check.max-token-len",
             "files.exclude",
@@ -419,6 +436,14 @@ fn complete(kind: CompletionKind, prefix: &str) -> anyhow::Result<i32> {
             "corrections.extra",
             "japanese.enabled",
             "japanese.katakana-style",
+            "japanese.variant-files",
+            "japanese.flag-fullwidth-alnum",
+            "japanese.flag-halfwidth-kana",
+            "japanese.fullwidth-space",
+            "japanese.flag-compatibility",
+            "japanese.kanji-consistency",
+            "japanese.number-consistency",
+            "japanese.punctuation-consistency",
         ]
         .iter()
         .filter(|key| key.starts_with(prefix))
@@ -475,6 +500,8 @@ fn run_scan(scan: ScanArgs, fix: check::FixMode, format: Format) -> anyhow::Resu
         verbose: scan.verbose,
         stdin_filename: scan.stdin_filename,
         max_file_size: scan.max_file_size,
+        no_cache: scan.no_cache,
+        cache_dir: scan.cache_dir,
     })
 }
 
@@ -500,6 +527,8 @@ fn run_baseline(scan: ScanArgs, prune: bool) -> anyhow::Result<i32> {
         verbose: scan.verbose,
         stdin_filename: scan.stdin_filename,
         max_file_size: scan.max_file_size,
+        no_cache: scan.no_cache,
+        cache_dir: scan.cache_dir,
     })
 }
 
@@ -680,6 +709,8 @@ const INIT_TEMPLATE: &str = r#"# ayame-spell configuration
 # "corrections": flag only known misspellings (near-zero false positives).
 # "dictionary":  also flag words missing from the active wordlists.
 mode = "corrections"
+# Mask Markdown code and source identifiers while checking prose/comments.
+profile = "auto"
 
 [words]
 # Team-shared word file, committed to git. Editor quick fixes and
@@ -800,9 +831,9 @@ fn init_interactive(path: &Path) -> anyhow::Result<i32> {
         return Ok(0);
     }
 
-    dict::install_names(&answers.dictionaries, true)?;
     std::fs::write(path, rendered).with_context(|| format!("cannot write {}", path.display()))?;
     println!("wrote {}", path.display());
+    dict::install_names(&answers.dictionaries, false)?;
 
     if Confirm::new()
         .with_prompt(format!("Create {} now?", answers.project_words))

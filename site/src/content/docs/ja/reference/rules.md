@@ -12,10 +12,14 @@ LSP 診断で共通して使う安定した機械可読識別子です。
 | --- | --- | --- |
 | [`typo`](#typo) | 組み込み・設定・インラインの修正表にトークンが一致しました。 | `[corrections].builtin, [corrections].extra, [corrections.words]` |
 | [`unknown-word`](#unknown-word) | 辞書モードで、有効な単語リストのどれにもない語を検出しました。 | `[check].mode, [words].project, [words].dictionaries, [words].ignore` |
+| [`en-variant`](#en-variant) | 設定した en-US / en-GB 方針と異なるスペルです。 | `[check].locale` |
 | [`ja-variant`](#ja-variant) | カタカナ表記が指定スタイルまたは文書内の多数側と一致しません。 | `[japanese].katakana-style, [japanese.variants], [japanese].variant-files` |
 | [`fullwidth-alnum`](#fullwidth-alnum) | 全角 ASCII 英字・数字を機械的に半角へ変換できます。 | `[japanese].enabled` |
 | [`halfwidth-kana`](#halfwidth-kana) | 半角カタカナを全角カタカナへ正規化できます。 | `[japanese].enabled` |
 | [`fullwidth-space`](#fullwidth-space) | 設定した方針の対象位置に U+3000 の空白があります。 | `[japanese].fullwidth-space` |
+| [`ja-compatibility`](#ja-compatibility) | 互換単位・記号を標準的な NFKC 形へ変換できます。 | `[japanese].flag-compatibility` |
+| [`ja-number-style`](#ja-number-style) | 同じ数値と単位に算用数字と漢数字が混在しています。 | `[japanese].number-consistency` |
+| [`ja-punctuation`](#ja-punctuation) | 和文句読点と全角カンマ・ピリオドが混在しています。 | `[japanese].punctuation-consistency` |
 
 ## `typo`
 
@@ -36,6 +40,16 @@ LSP 診断で共通して使う安定した機械可読識別子です。
 - **設定:** `[check].mode, [words].project, [words].dictionaries, [words].ignore`
 - **例:** `recieve → receive`
 - **無視する方法:** `words add` で正しい語を追加するか、辞書または [words].ignore へ追加します。
+
+## `en-variant`
+
+設定した en-US / en-GB 方針と異なるスペルです。
+
+有効な英単語ですが、[check].locale で選んだ地域表記と異なります。既定の any は両方を許可します。
+
+- **設定:** `[check].locale`
+- **例:** `colour → color (en-US)`
+- **無視する方法:** locale を any または対象地域へ変更するか、[words].ignore かインライン指示で無視します。
 
 ## `ja-variant`
 
@@ -76,6 +90,36 @@ LSP 診断で共通して使う安定した機械可読識別子です。
 - **設定:** `[japanese].fullwidth-space`
 - **例:** `前　後 → 前 後`
 - **無視する方法:** fullwidth-space 方針を off にするか、ファイル上書き設定で対象を限定します。
+
+## `ja-compatibility`
+
+互換単位・記号を標準的な NFKC 形へ変換できます。
+
+㎏ や ㎡ のような互換文字を通常の文字と記号で表すと、検索や相互運用が安定します。
+
+- **設定:** `[japanese].flag-compatibility`
+- **例:** `㎏ → kg`
+- **無視する方法:** flag-compatibility を無効にするか、インラインで無視します。
+
+## `ja-number-style`
+
+同じ数値と単位に算用数字と漢数字が混在しています。
+
+一文書内で同値の数値・単位表記を比較し、少数側だけを報告します。
+
+- **設定:** `[japanese].number-consistency`
+- **例:** `1,000円 / 一〇〇〇円 → 1,000円`
+- **無視する方法:** number-consistency を無効にするか、文書内の表記を統一します。
+
+## `ja-punctuation`
+
+和文句読点と全角カンマ・ピリオドが混在しています。
+
+一文書内で 、/。 と ，/． が混在するとき、少数側だけを報告します。
+
+- **設定:** `[japanese].punctuation-consistency`
+- **例:** `説明，続き。 → 説明、続き。`
+- **無視する方法:** punctuation-consistency を無効にするか、文書内の句読点を統一します。
 
 ## トークンの除外処理
 

@@ -87,6 +87,27 @@ stdout:
             },
             {
               "fullDescription": {
+                "text": "The token is valid English, but its regional spelling differs from [check].locale. The default any policy accepts both forms."
+              },
+              "help": {
+                "text": "The token is valid English, but its regional spelling differs from [check].locale. The default any policy accepts both forms. Configuration: [check].locale How to silence: Set locale to any, choose the matching regional policy, add the word to [words].ignore, or use an inline ignore directive. Example: colour → color (en-US)"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#en-variant",
+              "id": "en-variant",
+              "name": "English locale variant",
+              "properties": {
+                "configKey": "[check].locale",
+                "tags": [
+                  "spelling",
+                  "en-variant"
+                ]
+              },
+              "shortDescription": {
+                "text": "A spelling conflicts with the configured en-US or en-GB policy."
+              }
+            },
+            {
+              "fullDescription": {
                 "text": "The checker found both forms of a known pair, a form that conflicts with the configured long-vowel style, or a configured custom variant."
               },
               "help": {
@@ -167,6 +188,69 @@ stdout:
               },
               "shortDescription": {
                 "text": "A U+3000 space appears where the configured policy forbids it."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "Compatibility characters such as ㎏ and ㎡ can be represented with ordinary letters and symbols, improving search and interoperability."
+              },
+              "help": {
+                "text": "Compatibility characters such as ㎏ and ㎡ can be represented with ordinary letters and symbols, improving search and interoperability. Configuration: [japanese].flag-compatibility How to silence: Disable flag-compatibility or use an inline ignore directive. Example: ㎏ → kg"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-compatibility",
+              "id": "ja-compatibility",
+              "name": "Japanese compatibility character",
+              "properties": {
+                "configKey": "[japanese].flag-compatibility",
+                "tags": [
+                  "spelling",
+                  "ja-compatibility"
+                ]
+              },
+              "shortDescription": {
+                "text": "A compatibility unit or symbol has a standard NFKC form."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "The checker compares equivalent number/unit forms within one document and reports only the minority style."
+              },
+              "help": {
+                "text": "The checker compares equivalent number/unit forms within one document and reports only the minority style. Configuration: [japanese].number-consistency How to silence: Disable number-consistency or make the document use one style. Example: 1,000円 / 一〇〇〇円 → 1,000円"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-number-style",
+              "id": "ja-number-style",
+              "name": "Japanese number-style inconsistency",
+              "properties": {
+                "configKey": "[japanese].number-consistency",
+                "tags": [
+                  "spelling",
+                  "ja-number-style"
+                ]
+              },
+              "shortDescription": {
+                "text": "The same number and unit use both Arabic and kanji digits."
+              }
+            },
+            {
+              "fullDescription": {
+                "text": "The checker reports the minority forms when 、/。 and ，/． are mixed in one document."
+              },
+              "help": {
+                "text": "The checker reports the minority forms when 、/。 and ，/． are mixed in one document. Configuration: [japanese].punctuation-consistency How to silence: Disable punctuation-consistency or make the document use one punctuation style. Example: 説明，続き。 → 説明、続き。"
+              },
+              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-punctuation",
+              "id": "ja-punctuation",
+              "name": "Japanese punctuation inconsistency",
+              "properties": {
+                "configKey": "[japanese].punctuation-consistency",
+                "tags": [
+                  "spelling",
+                  "ja-punctuation"
+                ]
+              },
+              "shortDescription": {
+                "text": "The document mixes Japanese and fullwidth-comma/full-stop styles."
               }
             }
           ],

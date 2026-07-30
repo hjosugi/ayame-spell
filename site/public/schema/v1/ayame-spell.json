@@ -15,6 +15,17 @@
           "default": "corrections",
           "description": "English checking mode. Japanese checks are independent."
         },
+        "locale": {
+          "type": "string",
+          "enum": ["any", "en-US", "en-GB"],
+          "default": "any",
+          "description": "Regional English spelling policy; any accepts both."
+        },
+        "profile": {
+          "$ref": "#/$defs/profile",
+          "default": "all",
+          "description": "Syntax filtering profile. auto selects prose/source behavior by extension."
+        },
         "min-word-len": {
           "type": "integer",
           "minimum": 0,
@@ -144,6 +155,26 @@
           "default": true,
           "description": "Report halfwidth katakana."
         },
+        "flag-compatibility": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report NFKC-normalizable compatibility units and symbols."
+        },
+        "kanji-consistency": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report minority forms when known kanji or okurigana pairs are mixed."
+        },
+        "number-consistency": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report mixed Arabic and kanji digits for an equivalent number and unit."
+        },
+        "punctuation-consistency": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report mixed 、/。 and ，/． punctuation styles."
+        },
         "fullwidth-space": {
           "type": "string",
           "enum": ["code", "always", "never"],
@@ -168,6 +199,7 @@
             "description": "Glob patterns relative to the project root."
           },
           "mode": { "$ref": "#/$defs/mode" },
+          "profile": { "$ref": "#/$defs/profile" },
           "japanese": {
             "type": "boolean",
             "description": "Enable or disable Japanese checks for matching files."
@@ -180,6 +212,10 @@
     "mode": {
       "type": "string",
       "enum": ["corrections", "dictionary", "off"]
+    },
+    "profile": {
+      "type": "string",
+      "enum": ["auto", "prose", "source", "all"]
     },
     "reference": {
       "type": "string",

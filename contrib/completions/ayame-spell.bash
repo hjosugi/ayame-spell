@@ -43,6 +43,9 @@ _ayame-spell() {
             ayame__spell,help)
                 cmd="ayame__spell__help"
                 ;;
+            ayame__spell,import)
+                cmd="ayame__spell__import"
+                ;;
             ayame__spell,init)
                 cmd="ayame__spell__init"
                 ;;
@@ -130,6 +133,9 @@ _ayame-spell() {
             ayame__spell__help,help)
                 cmd="ayame__spell__help__help"
                 ;;
+            ayame__spell__help,import)
+                cmd="ayame__spell__help__import"
+                ;;
             ayame__spell__help,init)
                 cmd="ayame__spell__help__init"
                 ;;
@@ -163,6 +169,15 @@ _ayame-spell() {
             ayame__spell__help__dict,vendor)
                 cmd="ayame__spell__help__dict__vendor"
                 ;;
+            ayame__spell__help__import,cspell)
+                cmd="ayame__spell__help__import__cspell"
+                ;;
+            ayame__spell__help__import,prh)
+                cmd="ayame__spell__help__import__prh"
+                ;;
+            ayame__spell__help__import,typos)
+                cmd="ayame__spell__help__import__typos"
+                ;;
             ayame__spell__help__words,add)
                 cmd="ayame__spell__help__words__add"
                 ;;
@@ -171,6 +186,30 @@ _ayame-spell() {
                 ;;
             ayame__spell__help__words,triage)
                 cmd="ayame__spell__help__words__triage"
+                ;;
+            ayame__spell__import,cspell)
+                cmd="ayame__spell__import__cspell"
+                ;;
+            ayame__spell__import,help)
+                cmd="ayame__spell__import__help"
+                ;;
+            ayame__spell__import,prh)
+                cmd="ayame__spell__import__prh"
+                ;;
+            ayame__spell__import,typos)
+                cmd="ayame__spell__import__typos"
+                ;;
+            ayame__spell__import__help,cspell)
+                cmd="ayame__spell__import__help__cspell"
+                ;;
+            ayame__spell__import__help,help)
+                cmd="ayame__spell__import__help__help"
+                ;;
+            ayame__spell__import__help,prh)
+                cmd="ayame__spell__import__help__prh"
+                ;;
+            ayame__spell__import__help,typos)
+                cmd="ayame__spell__import__help__typos"
                 ;;
             ayame__spell__words,add)
                 cmd="ayame__spell__words__add"
@@ -203,7 +242,7 @@ _ayame-spell() {
 
     case "${cmd}" in
         ayame__spell)
-            opts="-q -v -j -w -h -V --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --list-rules --lang --help --version [PATH]... check fix words dict init config baseline explain rules completions completion-candidates lsp help"
+            opts="-q -v -j -w -h -V --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --write --format --list-rules --lang --help --version [PATH]... check fix words dict import init config baseline explain rules completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -241,6 +280,10 @@ _ayame-spell() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --cache-dir)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --format)
                     COMPREPLY=($(compgen -W "human brief json github sarif" -- "${cur}"))
                     return 0
@@ -257,7 +300,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__baseline)
-            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --prune --help [PATH]..."
+            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --prune --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -292,6 +335,10 @@ _ayame-spell() {
                     return 0
                     ;;
                 -j)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cache-dir)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -303,7 +350,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__check)
-            opts="-q -v -j -w -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --help [PATH]..."
+            opts="-q -v -j -w -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --write --format --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -338,6 +385,10 @@ _ayame-spell() {
                     return 0
                     ;;
                 -j)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cache-dir)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -711,7 +762,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__fix)
-            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --dry-run --interactive --help [PATH]..."
+            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --dry-run --interactive --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -749,6 +800,10 @@ _ayame-spell() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --cache-dir)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -757,7 +812,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__help)
-            opts="check fix words dict init config baseline explain rules completions completion-candidates lsp help"
+            opts="check fix words dict import init config baseline explain rules completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -994,6 +1049,62 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        ayame__spell__help__import)
+            opts="cspell typos prh"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__help__import__cspell)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__help__import__prh)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__help__import__typos)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         ayame__spell__help__init)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
@@ -1081,6 +1192,136 @@ _ayame-spell() {
         ayame__spell__help__words__triage)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import)
+            opts="-h --help cspell typos prh help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__cspell)
+            opts="-h --dry-run --help [PATH]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__help)
+            opts="cspell typos prh help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__help__cspell)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__help__prh)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__help__typos)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__prh)
+            opts="-h --output --dry-run --help <PATH>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --output)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__import__typos)
+            opts="-h --dry-run --help [PATH]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -1262,7 +1503,7 @@ _ayame-spell() {
             fi
             case "${prev}" in
                 --kind)
-                    COMPREPLY=($(compgen -W "typo unknown-word ja-variant" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "typo unknown-word en-variant ja-variant" -- "${cur}"))
                     return 0
                     ;;
                 --min-count)

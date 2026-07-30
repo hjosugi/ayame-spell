@@ -72,6 +72,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
             [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--cache-dir', '--cache-dir', [CompletionResultType]::ParameterName, 'Use this incremental cache directory (also enables caching in CI)')
             [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'Output format')
             [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Language for `--list-rules` (defaults from LANG)')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
@@ -82,6 +83,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
             [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--no-cache', '--no-cache', [CompletionResultType]::ParameterName, 'Disable the incremental per-file scan cache')
             [CompletionResult]::new('-w', '-w', [CompletionResultType]::ParameterName, 'Apply safe fixes in place (shorthand for `fix`)')
             [CompletionResult]::new('--write', '--write', [CompletionResultType]::ParameterName, 'Apply safe fixes in place (shorthand for `fix`)')
             [CompletionResult]::new('--list-rules', '--list-rules', [CompletionResultType]::ParameterName, 'List every stable issue code')
@@ -93,6 +95,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('fix', 'fix', [CompletionResultType]::ParameterValue, 'Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)')
             [CompletionResult]::new('words', 'words', [CompletionResultType]::ParameterValue, 'Word management: bulk collection, triage, and dictionary additions')
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import configuration and dictionaries from another spelling tool')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print, validate, or describe the configuration')
             [CompletionResult]::new('baseline', 'baseline', [CompletionResultType]::ParameterValue, 'Record current findings so only new findings fail later checks')
@@ -113,6 +116,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
             [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--cache-dir', '--cache-dir', [CompletionResultType]::ParameterName, 'Use this incremental cache directory (also enables caching in CI)')
             [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'format')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
             [CompletionResult]::new('--no-baseline', '--no-baseline', [CompletionResultType]::ParameterName, 'Ignore `ayame-spell-baseline.json` and report every finding')
@@ -122,6 +126,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
             [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--no-cache', '--no-cache', [CompletionResultType]::ParameterName, 'Disable the incremental per-file scan cache')
             [CompletionResult]::new('-w', '-w', [CompletionResultType]::ParameterName, 'Apply safe fixes in place')
             [CompletionResult]::new('--write', '--write', [CompletionResultType]::ParameterName, 'Apply safe fixes in place')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
@@ -137,6 +142,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
             [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--cache-dir', '--cache-dir', [CompletionResultType]::ParameterName, 'Use this incremental cache directory (also enables caching in CI)')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
             [CompletionResult]::new('--no-baseline', '--no-baseline', [CompletionResultType]::ParameterName, 'Ignore `ayame-spell-baseline.json` and report every finding')
             [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
@@ -145,6 +151,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
             [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--no-cache', '--no-cache', [CompletionResultType]::ParameterName, 'Disable the incremental per-file scan cache')
             [CompletionResult]::new('--dry-run', '--dry-run', [CompletionResultType]::ParameterName, 'Print a unified diff without writing files')
             [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, 'Confirm or redirect each finding interactively')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
@@ -304,6 +311,53 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         'ayame-spell;dict;help;help' {
             break
         }
+        'ayame-spell;import' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('cspell', 'cspell', [CompletionResultType]::ParameterValue, 'Import cSpell words, ignores, paths, and known dictionaries')
+            [CompletionResult]::new('typos', 'typos', [CompletionResultType]::ParameterValue, 'Import _typos.toml extend-words and extend-exclude')
+            [CompletionResult]::new('prh', 'prh', [CompletionResultType]::ParameterValue, 'Import a supported subset of prh YAML rules')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'ayame-spell;import;cspell' {
+            [CompletionResult]::new('--dry-run', '--dry-run', [CompletionResultType]::ParameterName, 'Print the merged output without writing')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'ayame-spell;import;typos' {
+            [CompletionResult]::new('--dry-run', '--dry-run', [CompletionResultType]::ParameterName, 'Print the merged output without writing')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'ayame-spell;import;prh' {
+            [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, 'Project-relative TOML rule file to generate')
+            [CompletionResult]::new('--dry-run', '--dry-run', [CompletionResultType]::ParameterName, 'Print the merged config and rule file without writing')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'ayame-spell;import;help' {
+            [CompletionResult]::new('cspell', 'cspell', [CompletionResultType]::ParameterValue, 'Import cSpell words, ignores, paths, and known dictionaries')
+            [CompletionResult]::new('typos', 'typos', [CompletionResultType]::ParameterValue, 'Import _typos.toml extend-words and extend-exclude')
+            [CompletionResult]::new('prh', 'prh', [CompletionResultType]::ParameterValue, 'Import a supported subset of prh YAML rules')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'ayame-spell;import;help;cspell' {
+            break
+        }
+        'ayame-spell;import;help;typos' {
+            break
+        }
+        'ayame-spell;import;help;prh' {
+            break
+        }
+        'ayame-spell;import;help;help' {
+            break
+        }
         'ayame-spell;init' {
             [CompletionResult]::new('--force', '--force', [CompletionResultType]::ParameterName, 'Overwrite an existing config file')
             [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, 'Run the guided setup wizard')
@@ -328,6 +382,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--max-file-size', '--max-file-size', [CompletionResultType]::ParameterName, 'Skip files larger than this many bytes (overrides `[files].max-file-size`)')
             [CompletionResult]::new('-j', '-j', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
             [CompletionResult]::new('--threads', '--threads', [CompletionResultType]::ParameterName, 'Worker threads (overrides the detected CPU count)')
+            [CompletionResult]::new('--cache-dir', '--cache-dir', [CompletionResultType]::ParameterName, 'Use this incremental cache directory (also enables caching in CI)')
             [CompletionResult]::new('--no-config', '--no-config', [CompletionResultType]::ParameterName, 'Ignore project and global configuration files')
             [CompletionResult]::new('--no-baseline', '--no-baseline', [CompletionResultType]::ParameterName, 'Ignore `ayame-spell-baseline.json` and report every finding')
             [CompletionResult]::new('--no-ignore', '--no-ignore', [CompletionResultType]::ParameterName, 'Do not honour `.gitignore`, `.ignore`, or Git exclude files')
@@ -336,6 +391,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
             [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--no-cache', '--no-cache', [CompletionResultType]::ParameterName, 'Disable the incremental per-file scan cache')
             [CompletionResult]::new('--prune', '--prune', [CompletionResultType]::ParameterName, 'Remove baseline entries whose finding no longer exists')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
@@ -374,6 +430,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('fix', 'fix', [CompletionResultType]::ParameterValue, 'Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)')
             [CompletionResult]::new('words', 'words', [CompletionResultType]::ParameterValue, 'Word management: bulk collection, triage, and dictionary additions')
             [CompletionResult]::new('dict', 'dict', [CompletionResultType]::ParameterValue, 'Shared dictionaries from the ayame-spell registry')
+            [CompletionResult]::new('import', 'import', [CompletionResultType]::ParameterValue, 'Import configuration and dictionaries from another spelling tool')
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print, validate, or describe the configuration')
             [CompletionResult]::new('baseline', 'baseline', [CompletionResultType]::ParameterValue, 'Record current findings so only new findings fail later checks')
@@ -435,6 +492,21 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;help;dict;vendor' {
+            break
+        }
+        'ayame-spell;help;import' {
+            [CompletionResult]::new('cspell', 'cspell', [CompletionResultType]::ParameterValue, 'Import cSpell words, ignores, paths, and known dictionaries')
+            [CompletionResult]::new('typos', 'typos', [CompletionResultType]::ParameterValue, 'Import _typos.toml extend-words and extend-exclude')
+            [CompletionResult]::new('prh', 'prh', [CompletionResultType]::ParameterValue, 'Import a supported subset of prh YAML rules')
+            break
+        }
+        'ayame-spell;help;import;cspell' {
+            break
+        }
+        'ayame-spell;help;import;typos' {
+            break
+        }
+        'ayame-spell;help;import;prh' {
             break
         }
         'ayame-spell;help;init' {

@@ -85,6 +85,59 @@ ayame-spell dict add ja-tech-variants
 `ja-variants` は SudachiDict 由来の広い表記ペアを収録するため、推奨側が
 プロジェクトのスタイルと合うか確認してから有効にしてください。
 
+表記ゆれファイルにはprh互換の正規表現subsetも記述できます。
+
+```toml
+[[rules]]
+pattern = "Web ?サイト"
+replace = "ウェブサイト"
+```
+
+Rust正規表現と`$1`形式の置換captureに対応します。
+`ayame-spell import prh rules.yml`は対応ルールを変換し、表現できないルールを
+すべて一覧表示します。
+
+## 漢字と送り仮名の一貫性
+
+```toml
+[japanese]
+kanji-consistency = true
+```
+
+既定では`子供`/`子ども`、`行なう`/`行う`、`取扱い`/`取り扱い`など、
+限定したペアが一文書内で混在するときだけ報告します。どちらか一方で統一した
+文書は指摘なしです。style guideで推奨方向を強制する場合は
+`registry:ja-kanji-variants`を有効化します。この辞書は明示追加するまでoffです。
+
+カタカナの一貫性と同じ低ノイズ方針により、既存のhouse styleを認めながら
+意図しない表記ゆれを見つけます。
+
+## 数字、単位、互換文字
+
+```toml
+[japanese]
+number-consistency = true
+flag-compatibility = true
+```
+
+`1,000円`と`一〇〇〇円`のような同値表記を一文書内で比較し、少数側だけを
+報告します。`㎏`や`㎡`などの互換単位・記号には、標準的なNFKC候補（`kg`、
+`m2`）を提示します。全角ASCII数字は引き続き`flag-fullwidth-alnum`の対象です。
+
+算用数字・漢数字の一方を普遍的に正しいとせず、検索、copy、機械処理の安定性を
+高める既定値です。
+
+## 句読点の一貫性
+
+```toml
+[japanese]
+punctuation-consistency = true
+```
+
+一文書内に`、。`と`，．`が混在するとき、少数側の記号を報告し、多数側を
+候補にします。通常の和文styleでも、技術文書の全角comma・period styleでも、
+どちらか一方で統一されていれば指摘しません。
+
 ## 全角英数
 
 ```toml

@@ -144,6 +144,8 @@ use `ayame-spell config --validate` to catch unknown keys with suggestions.
 ```toml
 [check]
 mode = "corrections"     # "corrections" | "dictionary" | "off"
+locale = "any"           # "any" | "en-US" | "en-GB"
+profile = "auto"         # syntax-aware "auto" | "prose" | "source" | "all"
 min-word-len = 3
 max-token-len = 40       # longer digit-bearing tokens = hashes, skipped
 
@@ -171,12 +173,17 @@ variant-files = ["registry:ja-tech-variants"]
 flag-fullwidth-alnum = true     # １２３ＡＢＣ → 123ABC
 flag-halfwidth-kana = true      # ｶﾀｶﾅ → カタカナ
 fullwidth-space = "code"        # "code" | "always" | "never"
+flag-compatibility = true        # ㎏ → kg, ㎡ → m2
+kanji-consistency = true
+number-consistency = true
+punctuation-consistency = true
 [japanese.variants]
 "インタフェース" = "インターフェース"
 
 [[overrides]]                   # per-glob settings; later entries win
 paths = ["docs/**"]
 mode = "dictionary"
+profile = "prose"
 ```
 
 ### Where do added words go?

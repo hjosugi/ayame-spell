@@ -65,7 +65,20 @@ pub fn words_in_line<'t>(line: &'t str, opts: &TokenizerOptions) -> Vec<Word<'t>
             i = t1;
             continue;
         }
-        for (off, sub) in split_case(&line[start..end]) {
+        let mut lexical_end = end;
+        let run = &line[start..end];
+        if is_plural_acronym(run) {
+            continue;
+        }
+        if run.len() > 2
+            && (run.ends_with("'s") || run.ends_with("'S"))
+            && run[..run.len() - 2]
+                .bytes()
+                .any(|byte| byte.is_ascii_alphabetic())
+        {
+            lexical_end -= 2;
+        }
+        for (off, sub) in split_case(&line[start..lexical_end]) {
             if sub.len() >= opts.min_word_len {
                 out.push(Word {
                     text: sub,
@@ -75,6 +88,14 @@ pub fn words_in_line<'t>(line: &'t str, opts: &TokenizerOptions) -> Vec<Word<'t>
         }
     }
     out
+}
+
+fn is_plural_acronym(run: &str) -> bool {
+    run.len() >= 3
+        && run.ends_with('s')
+        && run[..run.len() - 1]
+            .bytes()
+            .all(|byte| byte.is_ascii_uppercase())
 }
 
 /// Byte spans of the line that must not be spell checked (URLs, e-mails).
@@ -286,6 +307,11 @@ mod tests {
     fn contractions_kept_whole() {
         assert_eq!(words("doesn't matter"), ["doesn't", "matter"]);
         assert_eq!(words("'quoted' words"), ["quoted", "words"]);
+        assert_eq!(words("developer's APIs and IDs"), ["developer", "and"]);
+        assert_eq!(
+            words("state-of-the-art tools"),
+            ["state", "the", "art", "tools"]
+        );
     }
 
     #[test]

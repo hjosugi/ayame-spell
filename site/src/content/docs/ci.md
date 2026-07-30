@@ -156,6 +156,19 @@ ayame-spell check .
 For hermetic or offline CI, run `ayame-spell dict vendor <name>`, commit the
 copied files and rewritten config, and use relative paths.
 
+## Restore the incremental scan cache
+
+CI disables the scan cache unless its location is explicit. Restore the same
+directory through the CI provider, then pass it to ayame-spell:
+
+```sh
+ayame-spell check . --cache-dir .cache/ayame-spell --format brief
+```
+
+The cache validates file content, effective configuration, dictionaries,
+lockfile, and binary version before reuse. Do not cache only by path. Use
+`--no-cache` when measuring a cold run.
+
 ## Check documentation freshness
 
 This repository generates its CLI reference from Clap and then verifies there

@@ -2,12 +2,12 @@
 //! correction tables, wordlist dictionaries, and Japanese checks over a
 //! text, and returns [`Issue`]s.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 
-use crate::config::{LoadedConfig, Mode};
+use crate::config::{EnglishLocale, LoadedConfig, Mode, SyntaxProfile};
 use crate::corrections::{Corrections, Verdict};
 use crate::dictionary::WordSets;
 use crate::issue::{Issue, IssueKind};
@@ -24,13 +24,16 @@ const PROSE_EXTENSIONS: [&str; 10] = [
 struct CompiledOverride {
     globs: GlobSet,
     mode: Option<Mode>,
+    profile: Option<SyntaxProfile>,
     japanese: Option<bool>,
 }
 
 pub struct Checker {
     mode: Mode,
+    profile: SyntaxProfile,
     ja_enabled: bool,
     corrections: Corrections,
+    locale_variants: HashMap<String, String>,
     words: WordSets,
     /// Words never flagged by any check: config ignore + project words +
     /// global words, lowercased.
@@ -109,9 +112,15 @@ impl Checker {
         let ja = cfg.japanese.enabled.then(|| {
             let mut ja = JapaneseChecker::new(
                 cfg.japanese.katakana_style.into(),
-                cfg.japanese.flag_fullwidth_alnum,
-                cfg.japanese.flag_halfwidth_kana,
-                cfg.japanese.fullwidth_space.into(),
+                crate::japanese::JapaneseOptions {
+                    flag_fullwidth_alnum: cfg.japanese.flag_fullwidth_alnum,
+                    flag_halfwidth_kana: cfg.japanese.flag_halfwidth_kana,
+                    flag_compatibility: cfg.japanese.flag_compatibility,
+                    kanji_consistency: cfg.japanese.kanji_consistency,
+                    number_consistency: cfg.japanese.number_consistency,
+                    punctuation_consistency: cfg.japanese.punctuation_consistency,
+                    fullwidth_space: cfg.japanese.fullwidth_space.into(),
+                },
             );
             for (variant, preferred) in &cfg.japanese.variants {
                 ja.add_variant(variant, preferred);
@@ -153,6 +162,7 @@ impl Checker {
                     overrides.push(CompiledOverride {
                         globs,
                         mode: o.mode,
+                        profile: o.profile,
                         japanese: o.japanese,
                     });
                 }
@@ -161,8 +171,10 @@ impl Checker {
 
         let checker = Self {
             mode: cfg.check.mode,
+            profile: cfg.check.profile,
             ja_enabled: cfg.japanese.enabled,
             corrections,
+            locale_variants: english_variants(cfg.check.locale),
             words,
             allow,
             ja,
@@ -184,14 +196,18 @@ impl Checker {
     }
 
     /// Effective settings for a file (path relative to the project root).
-    fn effective(&self, path: Option<&Path>) -> (Mode, bool, bool) {
+    fn effective(&self, path: Option<&Path>) -> (Mode, SyntaxProfile, bool, bool) {
         let mut mode = self.mode;
+        let mut profile = self.profile;
         let mut ja_on = self.ja_enabled;
         if let Some(p) = path {
             for o in &self.overrides {
                 if o.globs.is_match(p) {
                     if let Some(m) = o.mode {
                         mode = m;
+                    }
+                    if let Some(value) = o.profile {
+                        profile = value;
                     }
                     if let Some(j) = o.japanese {
                         ja_on = j;
@@ -206,19 +222,20 @@ impl Checker {
                 let e = e.to_ascii_lowercase();
                 PROSE_EXTENSIONS.contains(&e.as_str())
             });
-        (mode, ja_on && self.ja.is_some(), is_prose)
+        (mode, profile, ja_on && self.ja.is_some(), is_prose)
     }
 
     /// Check a text. `path` (relative to the project root) selects
     /// per-glob overrides and the prose/code distinction.
     pub fn check(&self, text: &str, path: Option<&Path>) -> Vec<Issue> {
-        let (mode, ja_on, is_prose) = self.effective(path);
+        let (mode, profile, ja_on, is_prose) = self.effective(path);
         if mode == Mode::Off && !ja_on {
             return Vec::new();
         }
         if memchr::memmem::find(text.as_bytes(), b"ayame-spell:ignore-file").is_some() {
             return Vec::new();
         }
+        let checked_text = crate::syntax::mask(text, path, profile);
 
         let mut issues = Vec::new();
         let mut occs: Vec<KatakanaOcc> = Vec::new();
@@ -231,7 +248,7 @@ impl Checker {
         let mut offset = 0usize;
         let mut line_no = 0u32;
         let mut skip_next = false;
-        for raw_line in text.split_inclusive('\n') {
+        for raw_line in checked_text.split_inclusive('\n') {
             line_no += 1;
             let line_offset = offset;
             offset += raw_line.len();
@@ -270,11 +287,13 @@ impl Checker {
         if want_consistency {
             issues.extend(japanese::consistency_issues(&occs));
         }
+        if ja_on {
+            if let Some(ja) = &self.ja {
+                issues.extend(ja.document_issues(&checked_text));
+            }
+        }
         // The allow list also silences Japanese findings (exact form).
-        issues.retain(|i| match i.kind {
-            IssueKind::JaVariant => !self.allow.contains(&i.word),
-            _ => true,
-        });
+        issues.retain(|issue| !self.allow.contains(&issue.word.to_lowercase()));
         issues.sort_by_key(|i| i.offset);
         issues
     }
@@ -308,6 +327,18 @@ impl Checker {
                 }
                 None => {}
             }
+            if let Some(preferred) = self.locale_variants.get(&lower) {
+                issues.push(Issue {
+                    line: line_no,
+                    col: w.start,
+                    offset: line_offset + w.start,
+                    len: w.text.len(),
+                    word: w.text.to_string(),
+                    kind: IssueKind::EnVariant,
+                    suggestions: vec![tokenizer::match_case(w.text, preferred)],
+                });
+                continue;
+            }
             if mode == Mode::Dictionary
                 && w.text.len() >= 4
                 && !w.text.bytes().all(|b| b.is_ascii_uppercase())
@@ -331,6 +362,28 @@ impl Checker {
             }
         }
     }
+}
+
+fn english_variants(locale: EnglishLocale) -> HashMap<String, String> {
+    let mut variants = HashMap::new();
+    if locale == EnglishLocale::Any {
+        return variants;
+    }
+    for line in include_str!("../data/en-variants.tsv").lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        if let Some((us, gb)) = line.split_once('\t') {
+            let (variant, preferred) = match locale {
+                EnglishLocale::Any => continue,
+                EnglishLocale::EnUs => (gb, us),
+                EnglishLocale::EnGb => (us, gb),
+            };
+            variants.insert(variant.to_string(), preferred.to_string());
+        }
+    }
+    variants
 }
 
 fn missing_ref(reference: &str, path: &Path) -> String {
@@ -407,6 +460,39 @@ mod tests {
         assert!(issues.iter().any(|i| i.kind == IssueKind::UnknownWord));
         // Known words and ALL-CAPS acronyms pass.
         assert!(c.check("hello world RECV\n", None).is_empty());
+    }
+
+    #[test]
+    fn english_locale_flags_only_the_opposite_variant() {
+        let us = checker_with("[check]\nlocale = \"en-US\"\n");
+        let issues = us.check("color and colour\n", None);
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].kind, IssueKind::EnVariant);
+        assert_eq!(issues[0].word, "colour");
+        assert_eq!(issues[0].suggestions, ["color"]);
+
+        let gb = checker_with("[check]\nlocale = \"en-GB\"\n");
+        let issues = gb.check("color and colour\n", None);
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].word, "color");
+        assert_eq!(issues[0].suggestions, ["colour"]);
+        assert!(checker_with("")
+            .check("color and colour\n", None)
+            .is_empty());
+    }
+
+    #[test]
+    fn syntax_profiles_keep_offsets_while_reducing_source_noise() {
+        let checker = checker_with("[check]\nprofile = \"auto\"\n");
+        let source = "let recieve = 1; // recieve comment\n";
+        let issues = checker.check(source, Some(Path::new("src/main.rs")));
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].offset, source.rfind("recieve").unwrap());
+
+        let markdown = "Prose recieve. `code recieve`\n";
+        let issues = checker.check(markdown, Some(Path::new("guide.md")));
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].offset, markdown.find("recieve").unwrap());
     }
 
     #[test]

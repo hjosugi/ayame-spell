@@ -28,6 +28,7 @@ ignore = [
     "teh",
     "aple",
     "neet",
+    "stle",
     "サーバ",
     "インタフェース",
 ]
@@ -39,6 +40,7 @@ ignore = [
 paths = [
     "crates/**",
     "site/src/content/docs/**",
+    "site/public/schema/**",
     "README.md",
     "README.ja.md",
     "DESIGN.md",

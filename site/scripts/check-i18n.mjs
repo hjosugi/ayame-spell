@@ -105,6 +105,8 @@ for (const page of english) {
 const requiredConfigKeys = [
   "[check]",
   "mode",
+  "locale",
+  "profile",
   "min-word-len",
   "max-token-len",
   "[files]",
@@ -126,18 +128,27 @@ const requiredConfigKeys = [
   "flag-fullwidth-alnum",
   "flag-halfwidth-kana",
   "fullwidth-space",
+  "flag-compatibility",
+  "kanji-consistency",
+  "number-consistency",
+  "punctuation-consistency",
   "[japanese.variants]",
   "[[overrides]]",
   "paths",
+  "profile",
   "japanese",
 ];
 const requiredIssueCodes = [
   "typo",
   "unknown-word",
+  "en-variant",
   "ja-variant",
   "fullwidth-alnum",
   "halfwidth-kana",
   "fullwidth-space",
+  "ja-compatibility",
+  "ja-number-style",
+  "ja-punctuation",
 ];
 
 async function requireTokens(relative, tokens) {

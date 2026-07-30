@@ -122,6 +122,8 @@ ignore リストへ一括で振り分けられます。VS Code では
 ```toml
 [check]
 mode = "corrections"     # "corrections" | "dictionary" | "off"
+locale = "any"           # "any" | "en-US" | "en-GB"
+profile = "auto"         # 構文対応 "auto" | "prose" | "source" | "all"
 
 [files]
 exclude = ["vendor/**"]  # .gitignore + ロックファイル等の既定除外に追加
@@ -139,12 +141,17 @@ neet = "neet"                   # 自分自身への修正 = 許可リスト入�
 katakana-style = "consistency"  # "consistency" | "long" | "short" | "off"
 variant-files = ["registry:ja-tech-variants"]
 fullwidth-space = "code"        # コードファイルのみ全角スペースを指摘
+flag-compatibility = true        # ㎏ → kg、㎡ → m2
+kanji-consistency = true
+number-consistency = true
+punctuation-consistency = true
 [japanese.variants]
 "インタフェース" = "インターフェース"
 
 [[overrides]]                   # glob 単位の上書き(後勝ち)
 paths = ["docs/**"]
 mode = "dictionary"
+profile = "prose"
 ```
 
 ### 追加した単語はどこに入る?

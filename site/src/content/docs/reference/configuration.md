@@ -58,12 +58,16 @@ variables replace the corresponding platform locations:
 | Key | Type | Default | Meaning |
 | --- | --- | --- | --- |
 | `mode` | `"corrections"` \| `"dictionary"` \| `"off"` | `"corrections"` | English checking mode. Japanese checks are independent. |
+| `locale` | `"any"` \| `"en-US"` \| `"en-GB"` | `"any"` | Accept both regional spellings or enforce one English variant. |
+| `profile` | `"all"` \| `"auto"` \| `"prose"` \| `"source"` | `"all"` | Syntax masking policy. `auto` selects Markdown prose or source comments/strings by extension. |
 | `min-word-len` | non-negative integer | `3` | ASCII subwords shorter than this byte length are skipped. Dictionary-mode unknown words also have a minimum length of four. |
 | `max-token-len` | non-negative integer | `40` | Longer digit-bearing tokens are treated as hashes or generated identifiers and skipped. |
 
 ```toml
 [check]
 mode = "dictionary"
+locale = "en-GB"
+profile = "auto"
 min-word-len = 3
 max-token-len = 40
 ```
@@ -158,6 +162,10 @@ possible.
 | `variant-files` | array of references | `[]` | TOML variant-rule files or registry dictionaries. |
 | `flag-fullwidth-alnum` | boolean | `true` | Report fullwidth ASCII letters and digits. |
 | `flag-halfwidth-kana` | boolean | `true` | Report halfwidth katakana. |
+| `flag-compatibility` | boolean | `true` | Report NFKC-compatible units and symbols such as `㎏`. |
+| `kanji-consistency` | boolean | `true` | Report the minority form when known kanji/okurigana pairs are mixed. |
+| `number-consistency` | boolean | `true` | Report mixed Arabic/kanji digits for the same number and unit. |
+| `punctuation-consistency` | boolean | `true` | Report mixed `、。` and `，．` styles. |
 | `fullwidth-space` | `"code"` \| `"always"` \| `"never"` | `"code"` | Where U+3000 is reported. |
 
 `"code"` reports fullwidth spaces outside recognized prose extensions.
@@ -173,6 +181,10 @@ katakana-style = "consistency"
 variant-files = ["registry:ja-tech-variants", "dict/product-variants.toml"]
 flag-fullwidth-alnum = true
 flag-halfwidth-kana = true
+flag-compatibility = true
+kanji-consistency = true
+number-consistency = true
+punctuation-consistency = true
 fullwidth-space = "code"
 ```
 
@@ -185,13 +197,19 @@ An inline map from a variant to its preferred form:
 "インタフェース" = "インターフェース"
 ```
 
-A variant file contains the same map under `[variants]` (a top-level map is
-also accepted):
+A variant file contains the same map under `[variants]`:
 
 ```toml
 [variants]
 "ソフトウエア" = "ソフトウェア"
+
+[[rules]]
+pattern = "Web ?サイト"
+replace = "ウェブサイト"
 ```
+
+`[[rules]]` uses Rust regular expressions and supports capture references such
+as `$1` in `replace`. `ayame-spell import prh` generates this supported subset.
 
 ## `[[overrides]]`
 
@@ -199,6 +217,7 @@ also accepted):
 | --- | --- | --- | --- |
 | `paths` | array of glob strings | yes | Paths matched relative to the project root. |
 | `mode` | checking mode | no | Replace `[check].mode` for matching files. |
+| `profile` | syntax profile | no | Replace `[check].profile` for matching files. |
 | `japanese` | boolean | no | Enable or disable Japanese checks for matching files. |
 
 Every matching entry is applied in file order. Later entries win independently
@@ -208,6 +227,7 @@ for each property:
 [[overrides]]
 paths = ["docs/**"]
 mode = "dictionary"
+profile = "prose"
 
 [[overrides]]
 paths = ["docs/generated/**"]
@@ -227,6 +247,8 @@ individual Japanese rule settings.
 ```toml
 [check]
 mode = "corrections"
+locale = "any"
+profile = "auto"
 min-word-len = 3
 max-token-len = 40
 
@@ -253,6 +275,10 @@ katakana-style = "consistency"
 variant-files = ["registry:ja-tech-variants"]
 flag-fullwidth-alnum = true
 flag-halfwidth-kana = true
+flag-compatibility = true
+kanji-consistency = true
+number-consistency = true
+punctuation-consistency = true
 fullwidth-space = "code"
 
 [japanese.variants]
@@ -261,4 +287,5 @@ fullwidth-space = "code"
 [[overrides]]
 paths = ["docs/**"]
 mode = "dictionary"
+profile = "prose"
 ```

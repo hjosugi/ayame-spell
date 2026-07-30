@@ -57,12 +57,16 @@ ayame-spell config --validate config/strict.toml
 | キー | 型 | 既定値 | 意味 |
 | --- | --- | --- | --- |
 | `mode` | `"corrections"` \| `"dictionary"` \| `"off"` | `"corrections"` | 英単語のチェックモード。日本語チェックは独立。 |
+| `locale` | `"any"` \| `"en-US"` \| `"en-GB"` | `"any"` | 両地域の表記を許可するか、片方の英語表記を強制。 |
+| `profile` | `"all"` \| `"auto"` \| `"prose"` \| `"source"` | `"all"` | 構文mask方針。`auto` は拡張子から Markdown 文章またはソースのコメント・文字列を選択。 |
 | `min-word-len` | 0 以上の整数 | `3` | このバイト長より短い ASCII 部分語を除外。辞書モードの未知語には別途 4 文字の下限もある。 |
 | `max-token-len` | 0 以上の整数 | `40` | これより長く数字を含むトークンを、ハッシュや生成識別子として除外。 |
 
 ```toml
 [check]
 mode = "dictionary"
+locale = "en-GB"
+profile = "auto"
 min-word-len = 3
 max-token-len = 40
 ```
@@ -157,6 +161,10 @@ neet = "neet"
 | `variant-files` | 参照の配列 | `[]` | TOML 表記ゆれルールまたはレジストリ辞書。 |
 | `flag-fullwidth-alnum` | 真偽値 | `true` | 全角 ASCII 英字・数字を報告。 |
 | `flag-halfwidth-kana` | 真偽値 | `true` | 半角カタカナを報告。 |
+| `flag-compatibility` | 真偽値 | `true` | `㎏` のような NFKC 互換単位・記号を報告。 |
+| `kanji-consistency` | 真偽値 | `true` | 既知の漢字・送り仮名ペアが混在するとき少数側を報告。 |
+| `number-consistency` | 真偽値 | `true` | 同じ数値・単位に算用数字と漢数字が混在したら報告。 |
+| `punctuation-consistency` | 真偽値 | `true` | `、。` と `，．` の混在を報告。 |
 | `fullwidth-space` | `"code"` \| `"always"` \| `"never"` | `"code"` | U+3000 を報告する場所。 |
 
 `"code"` は文章として認識する拡張子以外で全角スペースを報告します。
@@ -172,6 +180,10 @@ katakana-style = "consistency"
 variant-files = ["registry:ja-tech-variants", "dict/product-variants.toml"]
 flag-fullwidth-alnum = true
 flag-halfwidth-kana = true
+flag-compatibility = true
+kanji-consistency = true
+number-consistency = true
+punctuation-consistency = true
 fullwidth-space = "code"
 ```
 
@@ -184,13 +196,19 @@ fullwidth-space = "code"
 "インタフェース" = "インターフェース"
 ```
 
-表記ゆれファイルには同じマップを `[variants]` の下へ書きます。トップレベルの
-マップも読み込めます。
+表記ゆれファイルには同じマップを `[variants]` の下へ書きます。
 
 ```toml
 [variants]
 "ソフトウエア" = "ソフトウェア"
+
+[[rules]]
+pattern = "Web ?サイト"
+replace = "ウェブサイト"
 ```
+
+`[[rules]]` は Rust 正規表現を使い、`replace` の `$1` などのcapture参照にも
+対応します。`ayame-spell import prh` はこの対応範囲を生成します。
 
 ## `[[overrides]]`
 
@@ -198,6 +216,7 @@ fullwidth-space = "code"
 | --- | --- | --- | --- |
 | `paths` | glob 文字列の配列 | 必須 | プロジェクトルートからの相対パスに照合。 |
 | `mode` | チェックモード | 任意 | 一致したファイルの `[check].mode` を置換。 |
+| `profile` | 構文profile | 任意 | 一致したファイルの `[check].profile` を置換。 |
 | `japanese` | 真偽値 | 任意 | 一致したファイルの日本語チェックを有効化または無効化。 |
 
 一致する全項目を記載順に適用します。各プロパティで後の項目が優先です。
@@ -206,6 +225,7 @@ fullwidth-space = "code"
 [[overrides]]
 paths = ["docs/**"]
 mode = "dictionary"
+profile = "prose"
 
 [[overrides]]
 paths = ["docs/generated/**"]
@@ -224,6 +244,8 @@ japanese = false
 ```toml
 [check]
 mode = "corrections"
+locale = "any"
+profile = "auto"
 min-word-len = 3
 max-token-len = 40
 
@@ -250,6 +272,10 @@ katakana-style = "consistency"
 variant-files = ["registry:ja-tech-variants"]
 flag-fullwidth-alnum = true
 flag-halfwidth-kana = true
+flag-compatibility = true
+kanji-consistency = true
+number-consistency = true
+punctuation-consistency = true
 fullwidth-space = "code"
 
 [japanese.variants]
@@ -258,4 +284,5 @@ fullwidth-space = "code"
 [[overrides]]
 paths = ["docs/**"]
 mode = "dictionary"
+profile = "prose"
 ```

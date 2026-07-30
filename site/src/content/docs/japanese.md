@@ -90,6 +90,62 @@ ayame-spell dict add ja-tech-variants
 `ja-variants` contains broader SudachiDict-derived notation pairs; review its
 preferred forms against your style before enabling it.
 
+Variant files may also contain a prh-compatible regular-expression subset:
+
+```toml
+[[rules]]
+pattern = "Web ?サイト"
+replace = "ウェブサイト"
+```
+
+Rust regular expressions and `$1`-style replacement captures are supported.
+Use `ayame-spell import prh rules.yml` to translate supported rules and list
+every rule that cannot be represented.
+
+## Kanji and okurigana consistency
+
+```toml
+[japanese]
+kanji-consistency = true
+```
+
+The default reports only mixing within one document for a conservative set of
+pairs such as `子供`/`子ども`, `行なう`/`行う`, and
+`取扱い`/`取り扱い`. A document that consistently uses either form is clean.
+Enable `registry:ja-kanji-variants` when a style guide requires a specific
+preferred direction; that dictionary is off until explicitly added.
+
+This follows the same low-noise policy as katakana consistency: house styles
+remain valid, while accidental variation is visible.
+
+## Numbers, units, and compatibility characters
+
+```toml
+[japanese]
+number-consistency = true
+flag-compatibility = true
+```
+
+Equivalent forms such as `1,000円` and `一〇〇〇円` are compared within a
+document, and only the minority style is reported. Compatibility units and
+symbols such as `㎏` and `㎡` receive their standard NFKC suggestions (`kg`,
+`m2`). Fullwidth ASCII digits remain covered by `flag-fullwidth-alnum`.
+
+These defaults improve searching, copying, and machine processing without
+declaring Arabic or kanji numerals universally preferable.
+
+## Punctuation consistency
+
+```toml
+[japanese]
+punctuation-consistency = true
+```
+
+When a document mixes `、。` and `，．`, ayame-spell reports the minority
+marks and suggests the majority style. A document consistently following
+either a normal Japanese prose style or a technical fullwidth-comma/full-stop
+style is clean.
+
 ## Fullwidth alphanumerics
 
 ```toml

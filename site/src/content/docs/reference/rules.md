@@ -12,10 +12,14 @@ JSON Lines, GitHub annotations, SARIF, word collection, and LSP diagnostics.
 | --- | --- | --- |
 | [`typo`](#typo) | A token matches a built-in, configured, or inline correction. | `[corrections].builtin, [corrections].extra, [corrections.words]` |
 | [`unknown-word`](#unknown-word) | Dictionary mode found a word in no active word list. | `[check].mode, [words].project, [words].dictionaries, [words].ignore` |
+| [`en-variant`](#en-variant) | A spelling conflicts with the configured en-US or en-GB policy. | `[check].locale` |
 | [`ja-variant`](#ja-variant) | Katakana spelling is inconsistent with the selected or majority style. | `[japanese].katakana-style, [japanese.variants], [japanese].variant-files` |
 | [`fullwidth-alnum`](#fullwidth-alnum) | Fullwidth ASCII letters or digits can be converted mechanically. | `[japanese].enabled` |
 | [`halfwidth-kana`](#halfwidth-kana) | Halfwidth katakana can be normalized to fullwidth katakana. | `[japanese].enabled` |
 | [`fullwidth-space`](#fullwidth-space) | A U+3000 space appears where the configured policy forbids it. | `[japanese].fullwidth-space` |
+| [`ja-compatibility`](#ja-compatibility) | A compatibility unit or symbol has a standard NFKC form. | `[japanese].flag-compatibility` |
+| [`ja-number-style`](#ja-number-style) | The same number and unit use both Arabic and kanji digits. | `[japanese].number-consistency` |
+| [`ja-punctuation`](#ja-punctuation) | The document mixes Japanese and fullwidth-comma/full-stop styles. | `[japanese].punctuation-consistency` |
 
 ## `typo`
 
@@ -36,6 +40,16 @@ This rule only runs in dictionary mode. Suggestions are edit-distance matches an
 - **Configuration:** `[check].mode, [words].project, [words].dictionaries, [words].ignore`
 - **Example:** `recieve → receive`
 - **How to silence:** Add the intended word with `words add`, include a dictionary, or add it to [words].ignore.
+
+## `en-variant`
+
+A spelling conflicts with the configured en-US or en-GB policy.
+
+The token is valid English, but its regional spelling differs from [check].locale. The default any policy accepts both forms.
+
+- **Configuration:** `[check].locale`
+- **Example:** `colour → color (en-US)`
+- **How to silence:** Set locale to any, choose the matching regional policy, add the word to [words].ignore, or use an inline ignore directive.
 
 ## `ja-variant`
 
@@ -76,6 +90,36 @@ The fullwidth-space policy applies to prose by default and suggests a normal ASC
 - **Configuration:** `[japanese].fullwidth-space`
 - **Example:** `前　後 → 前 後`
 - **How to silence:** Set the fullwidth-space policy to off or restrict it with a file override.
+
+## `ja-compatibility`
+
+A compatibility unit or symbol has a standard NFKC form.
+
+Compatibility characters such as ㎏ and ㎡ can be represented with ordinary letters and symbols, improving search and interoperability.
+
+- **Configuration:** `[japanese].flag-compatibility`
+- **Example:** `㎏ → kg`
+- **How to silence:** Disable flag-compatibility or use an inline ignore directive.
+
+## `ja-number-style`
+
+The same number and unit use both Arabic and kanji digits.
+
+The checker compares equivalent number/unit forms within one document and reports only the minority style.
+
+- **Configuration:** `[japanese].number-consistency`
+- **Example:** `1,000円 / 一〇〇〇円 → 1,000円`
+- **How to silence:** Disable number-consistency or make the document use one style.
+
+## `ja-punctuation`
+
+The document mixes Japanese and fullwidth-comma/full-stop styles.
+
+The checker reports the minority forms when 、/。 and ，/． are mixed in one document.
+
+- **Configuration:** `[japanese].punctuation-consistency`
+- **Example:** `説明，続き。 → 説明、続き。`
+- **How to silence:** Disable punctuation-consistency or make the document use one punctuation style.
 
 ## Token filtering
 

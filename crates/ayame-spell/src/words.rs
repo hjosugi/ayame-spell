@@ -55,6 +55,7 @@ pub enum WordsCmd {
 pub enum TriageKind {
     Typo,
     UnknownWord,
+    EnVariant,
     JaVariant,
 }
 
@@ -64,6 +65,7 @@ impl TriageKind {
             (self, kind),
             (Self::Typo, IssueKind::Typo)
                 | (Self::UnknownWord, IssueKind::UnknownWord)
+                | (Self::EnVariant, IssueKind::EnVariant)
                 | (Self::JaVariant, IssueKind::JaVariant)
         )
     }
@@ -94,7 +96,7 @@ fn collect_words(paths: &[PathBuf]) -> anyhow::Result<CollectedScan> {
     let cwd = std::env::current_dir()?;
     let (loaded, checker) =
         check::load_context(paths.first().map_or(cwd.as_path(), |p| p.as_path()))?;
-    let (reports, _stats) = check::scan(&loaded, &checker, paths, None, false, false)?;
+    let (reports, _stats) = check::scan(&loaded, &checker, paths, None, false, false, None)?;
 
     let mut map: BTreeMap<String, Collected> = BTreeMap::new();
     let mut originals = BTreeMap::new();
@@ -104,7 +106,10 @@ fn collect_words(paths: &[PathBuf]) -> anyhow::Result<CollectedScan> {
             let issue = item.issue;
             if !matches!(
                 issue.kind,
-                IssueKind::Typo | IssueKind::UnknownWord | IssueKind::JaVariant
+                IssueKind::Typo
+                    | IssueKind::UnknownWord
+                    | IssueKind::EnVariant
+                    | IssueKind::JaVariant
             ) {
                 continue;
             }
@@ -705,6 +710,12 @@ mod tests {
         let snippet = context_snippet(&line);
         assert!(snippet.ends_with('…'));
         assert_eq!(snippet.chars().count(), 97);
+    }
+
+    #[test]
+    fn locale_variants_are_available_to_word_triage() {
+        assert!(TriageKind::EnVariant.matches(IssueKind::EnVariant));
+        assert!(!TriageKind::EnVariant.matches(IssueKind::Typo));
     }
 
     #[test]

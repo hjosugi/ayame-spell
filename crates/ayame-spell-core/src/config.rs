@@ -57,10 +57,39 @@ pub struct Config {
 #[serde(rename_all = "kebab-case")]
 pub struct CheckConfig {
     pub mode: Mode,
+    /// English regional spelling policy.
+    pub locale: EnglishLocale,
+    /// How markup and source syntax is filtered before checking.
+    pub profile: SyntaxProfile,
     /// Words shorter than this are never flagged.
     pub min_word_len: usize,
     /// Longer digit-containing tokens are treated as hashes and skipped.
     pub max_token_len: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, Serialize)]
+pub enum EnglishLocale {
+    #[default]
+    #[serde(rename = "any")]
+    Any,
+    #[serde(rename = "en-US")]
+    EnUs,
+    #[serde(rename = "en-GB")]
+    EnGb,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SyntaxProfile {
+    /// Select prose or source filtering from the file extension.
+    Auto,
+    /// Check prose while masking Markdown markup and code.
+    Prose,
+    /// Check only comments and string literals in source files.
+    Source,
+    /// Check every token, preserving the pre-1.0 behavior.
+    #[default]
+    All,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -109,6 +138,14 @@ pub struct JapaneseConfig {
     pub variant_files: Vec<String>,
     pub flag_fullwidth_alnum: bool,
     pub flag_halfwidth_kana: bool,
+    /// Flag compatibility characters such as ㎏ with an NFKC suggestion.
+    pub flag_compatibility: bool,
+    /// Flag minority kanji/okurigana forms when a document mixes known pairs.
+    pub kanji_consistency: bool,
+    /// Flag minority Arabic/kanji number forms for the same value and unit.
+    pub number_consistency: bool,
+    /// Flag minority Japanese/fullwidth punctuation styles.
+    pub punctuation_consistency: bool,
     pub fullwidth_space: SpacePolicyConfig,
 }
 
@@ -160,6 +197,8 @@ pub struct OverrideConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mode: Option<Mode>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub profile: Option<SyntaxProfile>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub japanese: Option<bool>,
 }
 
@@ -182,6 +221,8 @@ pub struct RawConfig {
 #[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
 struct RawCheck {
     mode: Option<Mode>,
+    locale: Option<EnglishLocale>,
+    profile: Option<SyntaxProfile>,
     min_word_len: Option<usize>,
     max_token_len: Option<usize>,
 }
@@ -235,6 +276,10 @@ struct RawJapanese {
     variant_files: Vec<String>,
     flag_fullwidth_alnum: Option<bool>,
     flag_halfwidth_kana: Option<bool>,
+    flag_compatibility: Option<bool>,
+    kanji_consistency: Option<bool>,
+    number_consistency: Option<bool>,
+    punctuation_consistency: Option<bool>,
     fullwidth_space: Option<SpacePolicyConfig>,
 }
 
@@ -247,6 +292,8 @@ impl RawConfig {
     /// lists and maps are extended.
     pub fn merge(mut self, other: RawConfig) -> Self {
         self.check.mode = other.check.mode.or(self.check.mode);
+        self.check.locale = other.check.locale.or(self.check.locale);
+        self.check.profile = other.check.profile.or(self.check.profile);
         self.check.min_word_len = other.check.min_word_len.or(self.check.min_word_len);
         self.check.max_token_len = other.check.max_token_len.or(self.check.max_token_len);
 
@@ -279,6 +326,22 @@ impl RawConfig {
             .japanese
             .flag_halfwidth_kana
             .or(self.japanese.flag_halfwidth_kana);
+        self.japanese.flag_compatibility = other
+            .japanese
+            .flag_compatibility
+            .or(self.japanese.flag_compatibility);
+        self.japanese.kanji_consistency = other
+            .japanese
+            .kanji_consistency
+            .or(self.japanese.kanji_consistency);
+        self.japanese.number_consistency = other
+            .japanese
+            .number_consistency
+            .or(self.japanese.number_consistency);
+        self.japanese.punctuation_consistency = other
+            .japanese
+            .punctuation_consistency
+            .or(self.japanese.punctuation_consistency);
         self.japanese.fullwidth_space = other
             .japanese
             .fullwidth_space
@@ -296,6 +359,8 @@ impl RawConfig {
         Config {
             check: CheckConfig {
                 mode: self.check.mode.unwrap_or_default(),
+                locale: self.check.locale.unwrap_or_default(),
+                profile: self.check.profile.unwrap_or_default(),
                 min_word_len: self.check.min_word_len.unwrap_or(3),
                 max_token_len: self.check.max_token_len.unwrap_or(40),
             },
@@ -333,6 +398,10 @@ impl RawConfig {
                 variant_files: self.japanese.variant_files,
                 flag_fullwidth_alnum: self.japanese.flag_fullwidth_alnum.unwrap_or(true),
                 flag_halfwidth_kana: self.japanese.flag_halfwidth_kana.unwrap_or(true),
+                flag_compatibility: self.japanese.flag_compatibility.unwrap_or(true),
+                kanji_consistency: self.japanese.kanji_consistency.unwrap_or(true),
+                number_consistency: self.japanese.number_consistency.unwrap_or(true),
+                punctuation_consistency: self.japanese.punctuation_consistency.unwrap_or(true),
                 fullwidth_space: self.japanese.fullwidth_space.unwrap_or_default(),
             },
             overrides: self.overrides,
@@ -395,7 +464,7 @@ fn allowed_keys(path: &str) -> Option<&'static [&'static str]> {
             "japanese",
             "overrides",
         ]),
-        "check" => Some(&["mode", "min-word-len", "max-token-len"]),
+        "check" => Some(&["mode", "locale", "profile", "min-word-len", "max-token-len"]),
         "files" => Some(&["exclude", "include-hidden", "max-file-size"]),
         "words" => Some(&["project", "ignore", "dictionaries"]),
         "corrections" => Some(&["builtin", "extra", "words"]),
@@ -406,9 +475,13 @@ fn allowed_keys(path: &str) -> Option<&'static [&'static str]> {
             "variant-files",
             "flag-fullwidth-alnum",
             "flag-halfwidth-kana",
+            "flag-compatibility",
+            "kanji-consistency",
+            "number-consistency",
+            "punctuation-consistency",
             "fullwidth-space",
         ]),
-        "overrides" => Some(&["paths", "mode", "japanese"]),
+        "overrides" => Some(&["paths", "mode", "profile", "japanese"]),
         // User-defined correction and variant keys are intentionally open.
         "corrections.words" | "japanese.variants" => None,
         _ => Some(&[]),
@@ -616,6 +689,8 @@ mod tests {
     fn defaults_are_sensible() {
         let c = RawConfig::default().finalize();
         assert_eq!(c.check.mode, Mode::Corrections);
+        assert_eq!(c.check.locale, EnglishLocale::Any);
+        assert_eq!(c.check.profile, SyntaxProfile::All);
         assert_eq!(c.check.min_word_len, 3);
         assert!(c.corrections.builtin);
         assert!(c.japanese.enabled);
@@ -635,6 +710,8 @@ mod tests {
             r#"
             [check]
             mode = "dictionary"
+            locale = "en-GB"
+            profile = "auto"
 
             [words]
             ignore = ["projectword"]
@@ -650,11 +727,14 @@ mod tests {
             [[overrides]]
             paths = ["docs/**"]
             mode = "corrections"
+            profile = "prose"
             "#,
         )
         .unwrap();
         let c = global.merge(project).finalize();
         assert_eq!(c.check.mode, Mode::Dictionary);
+        assert_eq!(c.check.locale, EnglishLocale::EnGb);
+        assert_eq!(c.check.profile, SyntaxProfile::Auto);
         assert_eq!(c.words.ignore, ["globalword", "projectword"]);
         assert_eq!(c.corrections.words["teh"], vec!["the"]);
         assert_eq!(c.japanese.katakana_style, KatakanaStyleConfig::Long);
@@ -684,6 +764,7 @@ mod tests {
         let override_value = serde_json::to_value(OverrideConfig {
             paths: vec!["docs/**".to_string()],
             mode: Some(Mode::Dictionary),
+            profile: Some(SyntaxProfile::Prose),
             japanese: Some(false),
         })
         .unwrap();

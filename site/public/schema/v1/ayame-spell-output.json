@@ -57,10 +57,14 @@
           "enum": [
             "typo",
             "unknown-word",
+            "en-variant",
             "ja-variant",
             "fullwidth-alnum",
             "halfwidth-kana",
-            "fullwidth-space"
+            "fullwidth-space",
+            "ja-compatibility",
+            "ja-number-style",
+            "ja-punctuation"
           ]
         },
         "suggestions": {

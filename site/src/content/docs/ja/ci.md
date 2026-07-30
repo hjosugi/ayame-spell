@@ -157,6 +157,19 @@ ayame-spell check .
 完全再現またはオフラインの CI では `ayame-spell dict vendor <name>` を実行し、
 コピーしたファイルと書き換え済み設定を commit して相対パスで参照します。
 
+## 差分スキャンキャッシュを復元する
+
+CI では配置を明示しない限りスキャンキャッシュを無効にします。CI provider で
+同じディレクトリを復元し、ayame-spell に渡します。
+
+```sh
+ayame-spell check . --cache-dir .cache/ayame-spell --format brief
+```
+
+再利用前にファイル内容、適用後の設定、辞書、lockfile、binary version を検証
+します。path だけを cache key にしないでください。コールド実行の計測には
+`--no-cache` を使います。
+
 ## ドキュメントの鮮度を確認する
 
 このリポジトリでは CLI リファレンスを Clap から生成し、差分がないことを

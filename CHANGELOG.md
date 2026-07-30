@@ -52,6 +52,15 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   project-local vendoring.
 - Fifteen independently curated technology, business, finance, correction,
   and Japanese-variant dictionaries, with provenance and license metadata.
+- Per-file incremental scan caching with content/configuration/dictionary
+  invalidation, CI opt-in paths, cold-run controls, and stable output.
+- Automated, dry-run-first migration from cSpell, typos, and a documented
+  Rust-regex-compatible subset of prh, including untranslated-setting reports.
+- Syntax-aware Markdown and source-code profiles with per-glob overrides.
+- Explicit `en-US` / `en-GB` policy checks plus compound, possessive, and
+  acronym-aware English tokenization.
+- Japanese compatibility-character, kanji/okurigana, number/unit, and
+  punctuation consistency checks plus regex-based project rules.
 
 ### Changed
 

@@ -33,6 +33,9 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `dict remove <NAME>` | キャッシュを削除して設定から無効化。 |
 | `dict update` | pin されていない辞書の更新確認または更新。 |
 | `dict vendor <NAME>` | lock 済みレジストリ辞書をプロジェクト内へコピー。 |
+| `import cspell [PATH]` | cSpell の単語、無視設定、path、既知の辞書を移行。 |
+| `import typos [PATH]` | typos の修正語と除外 path を移行。 |
+| `import prh <PATH>` | 対応する prh rule をプロジェクト rule file へ移行。 |
 | `init` | 初期設定 `ayame-spell.toml` を作成。 |
 | `config` | マージ・既定値適用後の最終設定を表示。 |
 | `explain <CODE>` | ルールの理由、設定、無視する方法を説明。 |
@@ -55,10 +58,12 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `--min-count <N>` | `words collect` | N 回以上現れた語だけを出力。既定は 1。 |
 | `--plain` | `words collect` | 追記しやすいよう、語だけを出力。 |
 | `--json` | `words collect` | `word`、`count`、`kind`、`example` の JSON Lines。 |
-| `--kind <KIND>` | `words triage` | `typo`、`unknown-word`、`ja-variant` で絞り込み。 |
+| `--kind <KIND>` | `words triage` | `typo`、`unknown-word`、`en-variant`、`ja-variant` で絞り込み。 |
 | `--min-count <N>` | `words triage` | N 回以上現れた語だけを確認。 |
 | `--limit <N>` | `words triage` | 絞り込み後の確認件数を最大 N 語に制限。 |
 | `--no-baseline` | 既定、`check`、`fix` | ベースラインで抑制せず全指摘を表示。 |
+| `--no-cache` | 既定、`check`、`fix`、`baseline` | ファイル単位の差分スキャンキャッシュを無効化。 |
+| `--cache-dir <PATH>` | 既定、`check`、`fix`、`baseline` | キャッシュ配置を指定し、CI でも明示的に有効化。 |
 | `--prune` | `baseline` | 現在は存在しない指摘のエントリーを除去。 |
 | `--schema` | `config` | バージョン固定の設定 JSON Schema を出力。 |
 | `--validate [PATH]` | `config` | 検出または指定した設定ファイルを検証。 |
@@ -71,6 +76,10 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `--check` | `dict update` | 書き込まず、更新があれば終了コード 1。 |
 | `<NAME>` | `dict vendor` | レジストリ名。`name@version` の pin も指定可能。 |
 | `--dir <DIR>` | `dict vendor` | プロジェクト相対の配置先。既定は `dict`。 |
+| `[PATH]` | `import cspell`、`import typos` | 移行元設定。省略時は各 tool の標準 file 名を検出。 |
+| `<PATH>` | `import prh` | 移行元の prh YAML rule file。 |
+| `--output <PATH>` | `import prh` | プロジェクト相対の生成 TOML。既定は `dict/imported-prh.toml`。 |
+| `--dry-run` | 全 `import` コマンド | 書き込まず、merge 後の設定と生成 file を表示。 |
 | `--force` | `init` | 既存の設定ファイルを上書き。 |
 | `<SHELL>` | `completions` | `bash`、`elvish`、`fish`、`powershell`、`zsh`。 |
 | `--stdio` | `lsp` | クライアント互換用。通信は常に標準入出力。 |
@@ -137,6 +146,7 @@ Commands:
                conversions)
   words        Word management: bulk collection, triage, and dictionary additions
   dict         Shared dictionaries from the ayame-spell registry
+  import       Import configuration and dictionaries from another spelling tool
   init         Write a starter ayame-spell.toml in the current directory
   config       Print, validate, or describe the configuration
   baseline     Record current findings so only new findings fail later checks
@@ -195,6 +205,12 @@ Options:
   -j, --threads <THREADS>
           Worker threads (overrides the detected CPU count)
 
+      --no-cache
+          Disable the incremental per-file scan cache
+
+      --cache-dir <PATH>
+          Use this incremental cache directory (also enables caching in CI)
+
   -w, --write
           Apply safe fixes in place (shorthand for `fix`)
 
@@ -246,6 +262,8 @@ Options:
       --max-file-size <BYTES>  Skip files larger than this many bytes (overrides
                                `[files].max-file-size`)
   -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
+      --no-cache               Disable the incremental per-file scan cache
+      --cache-dir <PATH>       Use this incremental cache directory (also enables caching in CI)
   -w, --write                  Apply safe fixes in place
       --format <FORMAT>        [possible values: human, brief, json, github, sarif]
   -h, --help                   Print help
@@ -279,6 +297,8 @@ Options:
       --max-file-size <BYTES>  Skip files larger than this many bytes (overrides
                                `[files].max-file-size`)
   -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
+      --no-cache               Disable the incremental per-file scan cache
+      --cache-dir <PATH>       Use this incremental cache directory (also enables caching in CI)
       --dry-run                Print a unified diff without writing files
       --interactive            Confirm or redirect each finding interactively
   -h, --help                   Print help
@@ -349,7 +369,7 @@ Arguments:
 
 Options:
       --kind <KIND>            Only include one finding kind [possible values: typo, unknown-word,
-                               ja-variant]
+                               en-variant, ja-variant]
       --min-count <MIN_COUNT>  Only include words flagged at least this many times [default: 1]
       --limit <LIMIT>          Review at most this many words after sorting and filtering
   -h, --help                   Print help
@@ -498,6 +518,74 @@ Options:
   -h, --help            Print help
 ```
 
+## `ayame-spell import`
+
+```text
+$ ayame-spell import --help
+Import configuration and dictionaries from another spelling tool
+
+Usage: ayame-spell import <COMMAND>
+
+Commands:
+  cspell  Import cSpell words, ignores, paths, and known dictionaries
+  typos   Import _typos.toml extend-words and extend-exclude
+  prh     Import a supported subset of prh YAML rules
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+```
+
+## `ayame-spell import cspell`
+
+```text
+$ ayame-spell import cspell --help
+Import cSpell words, ignores, paths, and known dictionaries
+
+Usage: ayame-spell import cspell [OPTIONS] [PATH]
+
+Arguments:
+  [PATH]  cspell.json, .cspell.json, or cspell.config.yaml
+
+Options:
+      --dry-run  Print the merged output without writing
+  -h, --help     Print help
+```
+
+## `ayame-spell import typos`
+
+```text
+$ ayame-spell import typos --help
+Import _typos.toml extend-words and extend-exclude
+
+Usage: ayame-spell import typos [OPTIONS] [PATH]
+
+Arguments:
+  [PATH]  typos configuration (default: _typos.toml)
+
+Options:
+      --dry-run  Print the merged output without writing
+  -h, --help     Print help
+```
+
+## `ayame-spell import prh`
+
+```text
+$ ayame-spell import prh --help
+Import a supported subset of prh YAML rules
+
+Usage: ayame-spell import prh [OPTIONS] <PATH>
+
+Arguments:
+  <PATH>  prh YAML rule file
+
+Options:
+      --output <OUTPUT>  Project-relative TOML rule file to generate [default:
+                         dict/imported-prh.toml]
+      --dry-run          Print the merged config and rule file without writing
+  -h, --help             Print help
+```
+
 ## `ayame-spell init`
 
 ```text
@@ -558,6 +646,8 @@ Options:
       --max-file-size <BYTES>  Skip files larger than this many bytes (overrides
                                `[files].max-file-size`)
   -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
+      --no-cache               Disable the incremental per-file scan cache
+      --cache-dir <PATH>       Use this incremental cache directory (also enables caching in CI)
       --prune                  Remove baseline entries whose finding no longer exists
   -h, --help                   Print help
 ```

@@ -1,7 +1,7 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// A single finding in a checked text.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Issue {
     /// 1-based line number.
     pub line: u32,
@@ -18,13 +18,15 @@ pub struct Issue {
     pub suggestions: Vec<String>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum IssueKind {
     /// A known misspelling from a corrections table.
     Typo,
     /// A word not present in any active dictionary (dictionary mode only).
     UnknownWord,
+    /// A spelling conflicts with the configured English locale.
+    EnVariant,
     /// A Japanese katakana notation variant (表記ゆれ).
     JaVariant,
     /// Fullwidth alphanumerics (１２３ＡＢＣ).
@@ -33,6 +35,12 @@ pub enum IssueKind {
     HalfwidthKana,
     /// Fullwidth space (U+3000).
     FullwidthSpace,
+    /// A Japanese compatibility character has a standard NFKC form.
+    JaCompatibility,
+    /// A number/unit spelling is inconsistent within the document.
+    JaNumberStyle,
+    /// Japanese punctuation style is inconsistent within the document.
+    JaPunctuation,
 }
 
 /// Localized, stable metadata for one issue code.
@@ -48,13 +56,17 @@ pub struct RuleInfo {
 
 impl IssueKind {
     /// Every issue kind emitted by the checker.
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 10] = [
         Self::Typo,
         Self::UnknownWord,
+        Self::EnVariant,
         Self::JaVariant,
         Self::FullwidthAlnum,
         Self::HalfwidthKana,
         Self::FullwidthSpace,
+        Self::JaCompatibility,
+        Self::JaNumberStyle,
+        Self::JaPunctuation,
     ];
 
     /// Stable machine-readable code, used as the LSP diagnostic code and in
@@ -63,10 +75,14 @@ impl IssueKind {
         match self {
             IssueKind::Typo => "typo",
             IssueKind::UnknownWord => "unknown-word",
+            IssueKind::EnVariant => "en-variant",
             IssueKind::JaVariant => "ja-variant",
             IssueKind::FullwidthAlnum => "fullwidth-alnum",
             IssueKind::HalfwidthKana => "halfwidth-kana",
             IssueKind::FullwidthSpace => "fullwidth-space",
+            IssueKind::JaCompatibility => "ja-compatibility",
+            IssueKind::JaNumberStyle => "ja-number-style",
+            IssueKind::JaPunctuation => "ja-punctuation",
         }
     }
 
@@ -102,6 +118,14 @@ impl IssueKind {
                 example: "recieve → receive",
                 silence: "Add the intended word with `words add`, include a dictionary, or add it to [words].ignore.",
             },
+            Self::EnVariant => RuleInfo {
+                title: "English locale variant",
+                summary: "A spelling conflicts with the configured en-US or en-GB policy.",
+                explanation: "The token is valid English, but its regional spelling differs from [check].locale. The default any policy accepts both forms.",
+                config_key: "[check].locale",
+                example: "colour → color (en-US)",
+                silence: "Set locale to any, choose the matching regional policy, add the word to [words].ignore, or use an inline ignore directive.",
+            },
             Self::JaVariant => RuleInfo {
                 title: "Japanese notation variant",
                 summary: "Katakana spelling is inconsistent with the selected or majority style.",
@@ -134,6 +158,30 @@ impl IssueKind {
                 example: "前　後 → 前 後",
                 silence: "Set the fullwidth-space policy to off or restrict it with a file override.",
             },
+            Self::JaCompatibility => RuleInfo {
+                title: "Japanese compatibility character",
+                summary: "A compatibility unit or symbol has a standard NFKC form.",
+                explanation: "Compatibility characters such as ㎏ and ㎡ can be represented with ordinary letters and symbols, improving search and interoperability.",
+                config_key: "[japanese].flag-compatibility",
+                example: "㎏ → kg",
+                silence: "Disable flag-compatibility or use an inline ignore directive.",
+            },
+            Self::JaNumberStyle => RuleInfo {
+                title: "Japanese number-style inconsistency",
+                summary: "The same number and unit use both Arabic and kanji digits.",
+                explanation: "The checker compares equivalent number/unit forms within one document and reports only the minority style.",
+                config_key: "[japanese].number-consistency",
+                example: "1,000円 / 一〇〇〇円 → 1,000円",
+                silence: "Disable number-consistency or make the document use one style.",
+            },
+            Self::JaPunctuation => RuleInfo {
+                title: "Japanese punctuation inconsistency",
+                summary: "The document mixes Japanese and fullwidth-comma/full-stop styles.",
+                explanation: "The checker reports the minority forms when 、/。 and ，/． are mixed in one document.",
+                config_key: "[japanese].punctuation-consistency",
+                example: "説明，続き。 → 説明、続き。",
+                silence: "Disable punctuation-consistency or make the document use one punctuation style.",
+            },
         }
     }
 
@@ -154,6 +202,14 @@ impl IssueKind {
                 config_key: "[check].mode, [words].project, [words].dictionaries, [words].ignore",
                 example: "recieve → receive",
                 silence: "`words add` で正しい語を追加するか、辞書または [words].ignore へ追加します。",
+            },
+            Self::EnVariant => RuleInfo {
+                title: "英語の地域別スペル",
+                summary: "設定した en-US / en-GB 方針と異なるスペルです。",
+                explanation: "有効な英単語ですが、[check].locale で選んだ地域表記と異なります。既定の any は両方を許可します。",
+                config_key: "[check].locale",
+                example: "colour → color (en-US)",
+                silence: "locale を any または対象地域へ変更するか、[words].ignore かインライン指示で無視します。",
             },
             Self::JaVariant => RuleInfo {
                 title: "日本語の表記ゆれ",
@@ -187,6 +243,30 @@ impl IssueKind {
                 example: "前　後 → 前 後",
                 silence: "fullwidth-space 方針を off にするか、ファイル上書き設定で対象を限定します。",
             },
+            Self::JaCompatibility => RuleInfo {
+                title: "日本語の互換文字",
+                summary: "互換単位・記号を標準的な NFKC 形へ変換できます。",
+                explanation: "㎏ や ㎡ のような互換文字を通常の文字と記号で表すと、検索や相互運用が安定します。",
+                config_key: "[japanese].flag-compatibility",
+                example: "㎏ → kg",
+                silence: "flag-compatibility を無効にするか、インラインで無視します。",
+            },
+            Self::JaNumberStyle => RuleInfo {
+                title: "数字表記の不統一",
+                summary: "同じ数値と単位に算用数字と漢数字が混在しています。",
+                explanation: "一文書内で同値の数値・単位表記を比較し、少数側だけを報告します。",
+                config_key: "[japanese].number-consistency",
+                example: "1,000円 / 一〇〇〇円 → 1,000円",
+                silence: "number-consistency を無効にするか、文書内の表記を統一します。",
+            },
+            Self::JaPunctuation => RuleInfo {
+                title: "句読点の不統一",
+                summary: "和文句読点と全角カンマ・ピリオドが混在しています。",
+                explanation: "一文書内で 、/。 と ，/． が混在するとき、少数側だけを報告します。",
+                config_key: "[japanese].punctuation-consistency",
+                example: "説明，続き。 → 説明、続き。",
+                silence: "punctuation-consistency を無効にするか、文書内の句読点を統一します。",
+            },
         }
     }
 }
@@ -213,6 +293,11 @@ impl Issue {
                 many => format!("`{}` should be one of: {}", self.word, join(many)),
             },
             IssueKind::UnknownWord => format!("`{}` is not a known word", self.word),
+            IssueKind::EnVariant => format!(
+                "regional spelling `{}` → `{}`",
+                self.word,
+                self.suggestions.first().map(String::as_str).unwrap_or("?")
+            ),
             IssueKind::JaVariant => format!(
                 "`{}` は `{}` に統一 (表記ゆれ)",
                 self.word,
@@ -229,6 +314,21 @@ impl Issue {
                 self.suggestions.first().map(String::as_str).unwrap_or("?")
             ),
             IssueKind::FullwidthSpace => "fullwidth space (U+3000)".to_string(),
+            IssueKind::JaCompatibility => format!(
+                "compatibility character `{}` → `{}`",
+                self.word,
+                self.suggestions.first().map(String::as_str).unwrap_or("?")
+            ),
+            IssueKind::JaNumberStyle => format!(
+                "`{}` は `{}` に統一 (数字表記)",
+                self.word,
+                self.suggestions.first().map(String::as_str).unwrap_or("?")
+            ),
+            IssueKind::JaPunctuation => format!(
+                "`{}` は `{}` に統一 (句読点)",
+                self.word,
+                self.suggestions.first().map(String::as_str).unwrap_or("?")
+            ),
         }
     }
 }

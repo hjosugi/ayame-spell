@@ -20,6 +20,7 @@ pub mod dictionary;
 pub mod issue;
 pub mod japanese;
 pub mod registry_lock;
+mod syntax;
 pub mod tokenizer;
 
 pub use checker::Checker;
@@ -55,6 +56,11 @@ pub fn registry_cache_path(name: &str) -> Option<PathBuf> {
 /// Cached registry index used by offline and dynamic completion.
 pub fn registry_index_cache_path() -> Option<PathBuf> {
     cache_dir().map(|directory| directory.join("index.json"))
+}
+
+/// Directory for incremental per-file scan results.
+pub fn scan_cache_dir() -> Option<PathBuf> {
+    cache_dir().map(|directory| directory.join("scan"))
 }
 
 /// Cached output from `words collect`, used by dynamic completion.

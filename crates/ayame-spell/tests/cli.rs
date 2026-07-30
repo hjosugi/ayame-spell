@@ -151,7 +151,7 @@ fn human_brief_and_json_formats_are_snapshotted() {
             .as_array()
             .unwrap()
             .len(),
-        6
+        ayame_spell_core::IssueKind::ALL.len()
     );
 
     let mut automatic = project.command();
@@ -545,6 +545,60 @@ fn core_flags_override_config_and_file_walking() {
 }
 
 #[test]
+fn incremental_cache_reuses_identical_results_and_invalidates_on_config() {
+    let project = Project::new();
+    project.write("ayame-spell.toml", "[check]\nprofile = \"auto\"\n");
+    project.write("input.rs", "// recieve this value\n");
+    let cache = project.root.join(".scan-cache");
+    let cache = cache.to_string_lossy().into_owned();
+
+    let first = project.run(&[
+        "check",
+        "--format",
+        "json",
+        "--verbose",
+        "--cache-dir",
+        &cache,
+        "input.rs",
+    ]);
+    assert_code(&first, 1);
+    assert!(String::from_utf8_lossy(&first.stderr).contains("cache hits: 0"));
+
+    let second = project.run(&[
+        "check",
+        "--format",
+        "json",
+        "--verbose",
+        "--cache-dir",
+        &cache,
+        "input.rs",
+    ]);
+    assert_code(&second, 1);
+    assert_eq!(first.stdout, second.stdout);
+    assert!(String::from_utf8_lossy(&second.stderr).contains("cache hits: 1"));
+
+    project.write(
+        "ayame-spell.toml",
+        "[check]\nprofile = \"auto\"\n\n[words]\nignore = [\"recieve\"]\n",
+    );
+    let invalidated = project.run(&[
+        "check",
+        "--format",
+        "json",
+        "--verbose",
+        "--cache-dir",
+        &cache,
+        "input.rs",
+    ]);
+    assert_code(&invalidated, 0);
+    assert!(String::from_utf8_lossy(&invalidated.stderr).contains("cache hits: 0"));
+
+    let disabled = project.run(&["check", "--verbose", "--no-cache", "input.rs"]);
+    assert_code(&disabled, 0);
+    assert!(String::from_utf8_lossy(&disabled.stderr).contains("cache hits: 0"));
+}
+
+#[test]
 fn quiet_verbose_color_and_stdin_flags_are_end_to_end() {
     let project = Project::new();
     project.write(
@@ -912,6 +966,95 @@ fn init_config_and_completions_subcommands_work() {
     let empty = empty_project.run(&["__complete", "dict-add", "anything"]);
     assert_code(&empty, 0);
     assert!(empty.stdout.is_empty());
+}
+
+#[test]
+fn import_commands_migrate_cspell_typos_and_prh_without_silent_loss() {
+    let project = Project::new();
+    project.write(
+        "cspell.json",
+        r#"{
+          "words": ["AyameProduct"],
+          "ignoreWords": ["brandtoken"],
+          "ignorePaths": ["generated/**"],
+          "dictionaries": ["typescript", "private-team"],
+          "language": "en"
+        }"#,
+    );
+
+    let preview = project.run(&["import", "cspell", "cspell.json", "--dry-run"]);
+    assert_code(&preview, 0);
+    let preview_stdout = String::from_utf8_lossy(&preview.stdout);
+    assert!(preview_stdout.contains("registry:typescript-node"));
+    assert!(preview_stdout.contains("AyameProduct"));
+    let preview_stderr = String::from_utf8_lossy(&preview.stderr);
+    assert!(preview_stderr.contains("private-team"));
+    assert!(preview_stderr.contains("language"));
+    assert!(!project.root.join("ayame-spell.toml").exists());
+
+    let cspell = project.run(&["import", "cspell", "cspell.json"]);
+    assert_code(&cspell, 0);
+    let config = fs::read_to_string(project.root.join("ayame-spell.toml")).unwrap();
+    assert!(config.contains("generated/**"));
+    assert!(config.contains("brandtoken"));
+    assert!(config.contains("registry:typescript-node"));
+    assert_eq!(
+        fs::read_to_string(project.root.join("ayame-words.txt")).unwrap(),
+        "AyameProduct\n"
+    );
+
+    project.write(
+        "_typos.toml",
+        r#"
+        [default.extend-words]
+        teh = "the"
+        crateword = "crateword"
+
+        [files]
+        extend-exclude = ["vendor/**"]
+
+        [type.rust]
+        extend-glob = ["*.rs"]
+        "#,
+    );
+    let typos = project.run(&["import", "typos"]);
+    assert_code(&typos, 0);
+    assert!(String::from_utf8_lossy(&typos.stderr).contains("type"));
+    let config = fs::read_to_string(project.root.join("ayame-spell.toml")).unwrap();
+    assert!(config.contains("teh = \"the\""));
+    assert!(config.contains("vendor/**"));
+
+    project.write(
+        "rules.yml",
+        r#"
+        version: 1
+        meta: team rules
+        rules:
+          - expected: ウェブサイト
+            note: review copy
+            patterns:
+              - /Web ?サイト/i
+          - expected: unsupported
+        "#,
+    );
+    let prh = project.run(&["import", "prh", "rules.yml"]);
+    assert_code(&prh, 0);
+    let prh_stderr = String::from_utf8_lossy(&prh.stderr);
+    assert!(prh_stderr.contains("meta"));
+    assert!(prh_stderr.contains("note"));
+    assert!(prh_stderr.contains("rule 2"));
+    let rules = fs::read_to_string(project.root.join("dict/imported-prh.toml")).unwrap();
+    assert!(rules.contains("(?i)Web ?サイト"));
+    let config = fs::read_to_string(project.root.join("ayame-spell.toml")).unwrap();
+    assert!(config.contains("dict/imported-prh.toml"));
+
+    project.write("input.md", "Web サイトを開く。\n");
+    let check = project.run(&["check", "--format", "json", "input.md"]);
+    assert_code(&check, 1);
+    let records = json_records(&check);
+    assert!(records.iter().any(|record| {
+        record["kind"] == "ja-variant" && record["suggestions"][0] == "ウェブサイト"
+    }));
 }
 
 fn lsp_frame(value: Value) -> Vec<u8> {

@@ -26,6 +26,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
             cand -j 'Worker threads (overrides the detected CPU count)'
             cand --threads 'Worker threads (overrides the detected CPU count)'
+            cand --cache-dir 'Use this incremental cache directory (also enables caching in CI)'
             cand --format 'Output format'
             cand --lang 'Language for `--list-rules` (defaults from LANG)'
             cand --no-config 'Ignore project and global configuration files'
@@ -36,6 +37,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --quiet 'Print findings only, without summaries'
             cand -v 'Report configuration sources, skipped files, and elapsed time'
             cand --verbose 'Report configuration sources, skipped files, and elapsed time'
+            cand --no-cache 'Disable the incremental per-file scan cache'
             cand -w 'Apply safe fixes in place (shorthand for `fix`)'
             cand --write 'Apply safe fixes in place (shorthand for `fix`)'
             cand --list-rules 'List every stable issue code'
@@ -47,6 +49,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand fix 'Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)'
             cand words 'Word management: bulk collection, triage, and dictionary additions'
             cand dict 'Shared dictionaries from the ayame-spell registry'
+            cand import 'Import configuration and dictionaries from another spelling tool'
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print, validate, or describe the configuration'
             cand baseline 'Record current findings so only new findings fail later checks'
@@ -66,6 +69,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
             cand -j 'Worker threads (overrides the detected CPU count)'
             cand --threads 'Worker threads (overrides the detected CPU count)'
+            cand --cache-dir 'Use this incremental cache directory (also enables caching in CI)'
             cand --format 'format'
             cand --no-config 'Ignore project and global configuration files'
             cand --no-baseline 'Ignore `ayame-spell-baseline.json` and report every finding'
@@ -75,6 +79,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --quiet 'Print findings only, without summaries'
             cand -v 'Report configuration sources, skipped files, and elapsed time'
             cand --verbose 'Report configuration sources, skipped files, and elapsed time'
+            cand --no-cache 'Disable the incremental per-file scan cache'
             cand -w 'Apply safe fixes in place'
             cand --write 'Apply safe fixes in place'
             cand -h 'Print help'
@@ -89,6 +94,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
             cand -j 'Worker threads (overrides the detected CPU count)'
             cand --threads 'Worker threads (overrides the detected CPU count)'
+            cand --cache-dir 'Use this incremental cache directory (also enables caching in CI)'
             cand --no-config 'Ignore project and global configuration files'
             cand --no-baseline 'Ignore `ayame-spell-baseline.json` and report every finding'
             cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
@@ -97,6 +103,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --quiet 'Print findings only, without summaries'
             cand -v 'Report configuration sources, skipped files, and elapsed time'
             cand --verbose 'Report configuration sources, skipped files, and elapsed time'
+            cand --no-cache 'Disable the incremental per-file scan cache'
             cand --dry-run 'Print a unified diff without writing files'
             cand --interactive 'Confirm or redirect each finding interactively'
             cand -h 'Print help'
@@ -229,6 +236,44 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         }
         &'ayame-spell;dict;help;help'= {
         }
+        &'ayame-spell;import'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand cspell 'Import cSpell words, ignores, paths, and known dictionaries'
+            cand typos 'Import _typos.toml extend-words and extend-exclude'
+            cand prh 'Import a supported subset of prh YAML rules'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'ayame-spell;import;cspell'= {
+            cand --dry-run 'Print the merged output without writing'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'ayame-spell;import;typos'= {
+            cand --dry-run 'Print the merged output without writing'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'ayame-spell;import;prh'= {
+            cand --output 'Project-relative TOML rule file to generate'
+            cand --dry-run 'Print the merged config and rule file without writing'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'ayame-spell;import;help'= {
+            cand cspell 'Import cSpell words, ignores, paths, and known dictionaries'
+            cand typos 'Import _typos.toml extend-words and extend-exclude'
+            cand prh 'Import a supported subset of prh YAML rules'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'ayame-spell;import;help;cspell'= {
+        }
+        &'ayame-spell;import;help;typos'= {
+        }
+        &'ayame-spell;import;help;prh'= {
+        }
+        &'ayame-spell;import;help;help'= {
+        }
         &'ayame-spell;init'= {
             cand --force 'Overwrite an existing config file'
             cand --interactive 'Run the guided setup wizard'
@@ -251,6 +296,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --max-file-size 'Skip files larger than this many bytes (overrides `[files].max-file-size`)'
             cand -j 'Worker threads (overrides the detected CPU count)'
             cand --threads 'Worker threads (overrides the detected CPU count)'
+            cand --cache-dir 'Use this incremental cache directory (also enables caching in CI)'
             cand --no-config 'Ignore project and global configuration files'
             cand --no-baseline 'Ignore `ayame-spell-baseline.json` and report every finding'
             cand --no-ignore 'Do not honour `.gitignore`, `.ignore`, or Git exclude files'
@@ -259,6 +305,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --quiet 'Print findings only, without summaries'
             cand -v 'Report configuration sources, skipped files, and elapsed time'
             cand --verbose 'Report configuration sources, skipped files, and elapsed time'
+            cand --no-cache 'Disable the incremental per-file scan cache'
             cand --prune 'Remove baseline entries whose finding no longer exists'
             cand -h 'Print help'
             cand --help 'Print help'
@@ -291,6 +338,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand fix 'Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)'
             cand words 'Word management: bulk collection, triage, and dictionary additions'
             cand dict 'Shared dictionaries from the ayame-spell registry'
+            cand import 'Import configuration and dictionaries from another spelling tool'
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print, validate, or describe the configuration'
             cand baseline 'Record current findings so only new findings fail later checks'
@@ -338,6 +386,17 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;help;dict;update'= {
         }
         &'ayame-spell;help;dict;vendor'= {
+        }
+        &'ayame-spell;help;import'= {
+            cand cspell 'Import cSpell words, ignores, paths, and known dictionaries'
+            cand typos 'Import _typos.toml extend-words and extend-exclude'
+            cand prh 'Import a supported subset of prh YAML rules'
+        }
+        &'ayame-spell;help;import;cspell'= {
+        }
+        &'ayame-spell;help;import;typos'= {
+        }
+        &'ayame-spell;help;import;prh'= {
         }
         &'ayame-spell;help;init'= {
         }

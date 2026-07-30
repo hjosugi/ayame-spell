@@ -8,6 +8,8 @@ description: レジストリの差し替え、プロジェクト検出、XDG 対
 | 変数 | 既定値 | 用途 |
 | --- | --- | --- |
 | `AYAME_SPELL_REGISTRY` | `https://hjosugi.github.io/ayame-spell/registry/index.json` | 辞書レジストリのインデックス URL を差し替える。辞書ファイルの URL はこのインデックスからの相対位置。 |
+| `AYAME_SPELL_CONFIG_DIR` | OS 標準の設定ディレクトリ | ユーザー共通の `config.toml` と `words.txt` を置くディレクトリを差し替える。 |
+| `AYAME_SPELL_CACHE_DIR` | OS 標準のキャッシュディレクトリ | レジストリ、補完、差分スキャンのキャッシュルートを差し替える。 |
 
 社内ミラーの例です。
 
@@ -45,9 +47,26 @@ ayame-spell は Rust の `dirs` クレートが返す OS 標準ディレクト�
 | ユーザー設定 | `${XDG_CONFIG_HOME:-~/.config}/ayame-spell/config.toml` | `~/Library/Application Support/ayame-spell/config.toml` | `%APPDATA%\ayame-spell\config.toml` |
 | ユーザー単語 | `${XDG_CONFIG_HOME:-~/.config}/ayame-spell/words.txt` | `~/Library/Application Support/ayame-spell/words.txt` | `%APPDATA%\ayame-spell\words.txt` |
 | レジストリキャッシュ | `${XDG_CACHE_HOME:-~/.cache}/ayame-spell/dicts/` | `~/Library/Caches/ayame-spell/dicts/` | `%LOCALAPPDATA%\ayame-spell\dicts\` |
+| 差分スキャンキャッシュ | `${XDG_CACHE_HOME:-~/.cache}/ayame-spell/scan/` | `~/Library/Caches/ayame-spell/scan/` | `%LOCALAPPDATA%\ayame-spell\scan\` |
 
 ユーザー設定は任意です。`words add --global` は親ディレクトリと単語ファイルを
 必要時に作成します。レジストリコマンドも必要時にキャッシュを作ります。
+
+## 差分スキャンキャッシュ
+
+ローカルスキャンでは、ファイルごとの指摘をキャッシュします。path、size、
+ナノ秒精度の更新時刻、内容 hash、適用後の設定、読み込んだ辞書、lockfile、
+ayame-spell version のいずれかが変わると無効化します。壊れた、または存在しない
+entry は無視して再生成します。
+
+コールドスキャンには `--no-cache`、明示した配置には `--cache-dir PATH`、
+hit 数の確認には `-v` を使います。`CI` または `GITHUB_ACTIONS` が設定済みの
+場合、`--cache-dir` を指定しない限り自動で無効になります。CI で意図的に復元
+した cache を使う例です。
+
+```sh
+ayame-spell check . --cache-dir .cache/ayame-spell --format brief
+```
 
 ## 参照パスの解決
 

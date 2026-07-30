@@ -110,6 +110,8 @@ export default defineConfig({
           translations: { ja: "ガイド" },
           items: [
             { slug: "japanese" },
+            { slug: "english" },
+            { slug: "syntax" },
             { slug: "registry" },
             { slug: "migration" },
           ],

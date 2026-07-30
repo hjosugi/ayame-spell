@@ -11,6 +11,9 @@
 
 use std::collections::HashMap;
 
+use regex::Regex;
+use unicode_normalization::UnicodeNormalization;
+
 use crate::issue::{Issue, IssueKind};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -34,8 +37,48 @@ pub enum SpacePolicy {
     Never,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct JapaneseOptions {
+    pub flag_fullwidth_alnum: bool,
+    pub flag_halfwidth_kana: bool,
+    pub flag_compatibility: bool,
+    pub kanji_consistency: bool,
+    pub number_consistency: bool,
+    pub punctuation_consistency: bool,
+    pub fullwidth_space: SpacePolicy,
+}
+
+impl Default for JapaneseOptions {
+    fn default() -> Self {
+        Self {
+            flag_fullwidth_alnum: true,
+            flag_halfwidth_kana: true,
+            flag_compatibility: true,
+            kanji_consistency: true,
+            number_consistency: true,
+            punctuation_consistency: true,
+            fullwidth_space: SpacePolicy::Code,
+        }
+    }
+}
+
 /// Curated pairs of trailing-long-vowel variants: `short<TAB>long`.
 const KATAKANA_PAIRS: &str = include_str!("../data/katakana-pairs.tsv");
+const KANJI_PAIRS: [(&str, &str); 8] = [
+    ("お問合せ", "お問い合わせ"),
+    ("取扱い", "取り扱い"),
+    ("子供", "子ども"),
+    ("引続き", "引き続き"),
+    ("行なう", "行う"),
+    ("表わす", "表す"),
+    ("読替える", "読み替える"),
+    ("問い合せ", "問い合わせ"),
+];
+
+struct RegexRule {
+    regex: Regex,
+    replacement: String,
+}
 
 /// One katakana word occurrence, collected for the document-level
 /// consistency check.
@@ -50,19 +93,19 @@ pub struct KatakanaOcc {
 pub struct JapaneseChecker {
     /// variant → preferred form.
     variants: HashMap<String, String>,
+    regex_rules: Vec<RegexRule>,
     pub style: KatakanaStyle,
     pub flag_fullwidth_alnum: bool,
     pub flag_halfwidth_kana: bool,
+    pub flag_compatibility: bool,
+    pub kanji_consistency: bool,
+    pub number_consistency: bool,
+    pub punctuation_consistency: bool,
     pub fullwidth_space: SpacePolicy,
 }
 
 impl JapaneseChecker {
-    pub fn new(
-        style: KatakanaStyle,
-        flag_fullwidth_alnum: bool,
-        flag_halfwidth_kana: bool,
-        fullwidth_space: SpacePolicy,
-    ) -> Self {
+    pub fn new(style: KatakanaStyle, options: JapaneseOptions) -> Self {
         let mut variants = HashMap::new();
         match style {
             KatakanaStyle::Long => {
@@ -79,10 +122,15 @@ impl JapaneseChecker {
         }
         Self {
             variants,
+            regex_rules: Vec::new(),
             style,
-            flag_fullwidth_alnum,
-            flag_halfwidth_kana,
-            fullwidth_space,
+            flag_fullwidth_alnum: options.flag_fullwidth_alnum,
+            flag_halfwidth_kana: options.flag_halfwidth_kana,
+            flag_compatibility: options.flag_compatibility,
+            kanji_consistency: options.kanji_consistency,
+            number_consistency: options.number_consistency,
+            punctuation_consistency: options.punctuation_consistency,
+            fullwidth_space: options.fullwidth_space,
         }
     }
 
@@ -92,20 +140,40 @@ impl JapaneseChecker {
             .insert(variant.to_string(), preferred.to_string());
     }
 
-    /// Load variant rules from TOML text: a `[variants]` table of
-    /// `"変種" = "正規形"` entries (also accepted at the top level).
+    /// Load literal `[variants]` and the supported prh-style
+    /// `[[rules]] pattern/replace` subset from TOML.
     pub fn load_variant_rules(&mut self, text: &str) -> anyhow::Result<usize> {
         let value: toml::Value = text.parse()?;
         let table = value
             .get("variants")
             .and_then(toml::Value::as_table)
-            .or_else(|| value.as_table())
             .cloned()
             .unwrap_or_default();
         let mut n = 0;
         for (variant, preferred) in table {
             if let Some(p) = preferred.as_str() {
                 self.add_variant(&variant, p);
+                n += 1;
+            }
+        }
+        if let Some(rules) = value.get("rules").and_then(toml::Value::as_array) {
+            for rule in rules {
+                let table = rule
+                    .as_table()
+                    .ok_or_else(|| anyhow::anyhow!("[[rules]] must be a table"))?;
+                let pattern = table
+                    .get("pattern")
+                    .and_then(toml::Value::as_str)
+                    .ok_or_else(|| anyhow::anyhow!("[[rules]].pattern must be a string"))?;
+                let replacement = table
+                    .get("replace")
+                    .and_then(toml::Value::as_str)
+                    .ok_or_else(|| anyhow::anyhow!("[[rules]].replace must be a string"))?;
+                self.regex_rules.push(RegexRule {
+                    regex: Regex::new(pattern)
+                        .map_err(|error| anyhow::anyhow!("invalid rule `{pattern}`: {error}"))?,
+                    replacement: replacement.to_string(),
+                });
                 n += 1;
             }
         }
@@ -131,8 +199,27 @@ impl JapaneseChecker {
         issues: &mut Vec<Issue>,
         mut occs: Option<&mut Vec<KatakanaOcc>>,
     ) {
-        if line.is_ascii() {
-            return;
+        for rule in &self.regex_rules {
+            for matched in rule
+                .regex
+                .find_iter(line)
+                .filter(|matched| !matched.is_empty())
+            {
+                let word = matched.as_str();
+                let replacement = rule.regex.replace(word, rule.replacement.as_str());
+                if replacement == word {
+                    continue;
+                }
+                issues.push(Issue {
+                    line: line_no,
+                    col: matched.start(),
+                    offset: line_offset + matched.start(),
+                    len: matched.len(),
+                    word: word.to_string(),
+                    kind: IssueKind::JaVariant,
+                    suggestions: vec![replacement.into_owned()],
+                });
+            }
         }
         let mut iter = line.char_indices().peekable();
         while let Some((i, c)) = iter.next() {
@@ -229,8 +316,35 @@ impl JapaneseChecker {
                         suggestions: vec![" ".to_string()],
                     });
                 }
+            } else if self.flag_compatibility && is_compatibility_character(c) {
+                let normalized: String = c.to_string().nfkc().collect();
+                if normalized != c.to_string() {
+                    issues.push(Issue {
+                        line: line_no,
+                        col: i,
+                        offset: line_offset + i,
+                        len: c.len_utf8(),
+                        word: c.to_string(),
+                        kind: IssueKind::JaCompatibility,
+                        suggestions: vec![normalized],
+                    });
+                }
             }
         }
+    }
+
+    pub fn document_issues(&self, text: &str) -> Vec<Issue> {
+        let mut issues = Vec::new();
+        if self.kanji_consistency {
+            issues.extend(kanji_consistency_issues(text));
+        }
+        if self.number_consistency {
+            issues.extend(number_consistency_issues(text));
+        }
+        if self.punctuation_consistency {
+            issues.extend(punctuation_consistency_issues(text));
+        }
+        issues
     }
 }
 
@@ -297,6 +411,226 @@ fn is_katakana(c: char) -> bool {
 
 fn is_halfwidth_kana(c: char) -> bool {
     matches!(c, '\u{FF61}'..='\u{FF9F}')
+}
+
+fn is_compatibility_character(character: char) -> bool {
+    matches!(
+        character,
+        '\u{2100}'..='\u{214f}' | '\u{3300}'..='\u{33ff}'
+    )
+}
+
+fn kanji_consistency_issues(text: &str) -> Vec<Issue> {
+    let mut issues = Vec::new();
+    for (variant, preferred) in KANJI_PAIRS {
+        let variants: Vec<usize> = text
+            .match_indices(variant)
+            .map(|(offset, _)| offset)
+            .collect();
+        let preferreds: Vec<usize> = text
+            .match_indices(preferred)
+            .map(|(offset, _)| offset)
+            .collect();
+        if variants.is_empty() || preferreds.is_empty() {
+            continue;
+        }
+        let (minority, form, suggestion) = if variants.len() < preferreds.len() {
+            (&variants, variant, preferred)
+        } else if preferreds.len() < variants.len() {
+            (&preferreds, preferred, variant)
+        } else {
+            (&variants, variant, preferred)
+        };
+        for offset in minority {
+            issues.push(issue_at(
+                text,
+                *offset,
+                form,
+                IssueKind::JaVariant,
+                suggestion,
+            ));
+        }
+    }
+    issues
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum NumberStyle {
+    Arabic,
+    Kanji,
+}
+
+struct NumberOccurrence {
+    offset: usize,
+    form: String,
+    canonical: String,
+    style: NumberStyle,
+}
+
+fn number_consistency_issues(text: &str) -> Vec<Issue> {
+    let occurrences = number_occurrences(text);
+    let mut groups: HashMap<&str, Vec<&NumberOccurrence>> = HashMap::new();
+    for occurrence in &occurrences {
+        groups
+            .entry(occurrence.canonical.as_str())
+            .or_default()
+            .push(occurrence);
+    }
+    let mut issues = Vec::new();
+    for group in groups.into_values() {
+        let arabic = group
+            .iter()
+            .filter(|occurrence| occurrence.style == NumberStyle::Arabic)
+            .count();
+        let kanji = group.len() - arabic;
+        if arabic == 0 || kanji == 0 {
+            continue;
+        }
+        let preferred_style = if arabic >= kanji {
+            NumberStyle::Arabic
+        } else {
+            NumberStyle::Kanji
+        };
+        let suggestion = group
+            .iter()
+            .find(|occurrence| occurrence.style == preferred_style)
+            .map(|occurrence| occurrence.form.as_str())
+            .unwrap_or_default();
+        for occurrence in group
+            .iter()
+            .filter(|occurrence| occurrence.style != preferred_style)
+        {
+            issues.push(issue_at(
+                text,
+                occurrence.offset,
+                &occurrence.form,
+                IssueKind::JaNumberStyle,
+                suggestion,
+            ));
+        }
+    }
+    issues
+}
+
+fn number_occurrences(text: &str) -> Vec<NumberOccurrence> {
+    let mut occurrences = Vec::new();
+    let indices: Vec<(usize, char)> = text.char_indices().collect();
+    let mut cursor = 0usize;
+    while cursor < indices.len() {
+        let (start, character) = indices[cursor];
+        let style = if character.is_ascii_digit() {
+            Some(NumberStyle::Arabic)
+        } else if kanji_digit(character).is_some() {
+            Some(NumberStyle::Kanji)
+        } else {
+            None
+        };
+        let Some(style) = style else {
+            cursor += 1;
+            continue;
+        };
+        let mut end_cursor = cursor;
+        let mut digits = String::new();
+        while end_cursor < indices.len() {
+            let (_, candidate) = indices[end_cursor];
+            match style {
+                NumberStyle::Arabic if candidate.is_ascii_digit() => digits.push(candidate),
+                NumberStyle::Arabic if candidate == ',' => {}
+                NumberStyle::Kanji => {
+                    let Some(digit) = kanji_digit(candidate) else {
+                        break;
+                    };
+                    digits.push(digit);
+                }
+                NumberStyle::Arabic => break,
+            }
+            end_cursor += 1;
+        }
+        let Some(&(unit_offset, unit)) = indices.get(end_cursor) else {
+            break;
+        };
+        if !matches!(
+            unit,
+            '円' | '人' | '件' | '年' | '月' | '日' | '時' | '分' | '秒'
+        ) {
+            cursor += 1;
+            continue;
+        }
+        let end = unit_offset + unit.len_utf8();
+        let form = text[start..end].to_string();
+        occurrences.push(NumberOccurrence {
+            offset: start,
+            form,
+            canonical: format!("{digits}{unit}"),
+            style,
+        });
+        cursor = end_cursor + 1;
+    }
+    occurrences
+}
+
+fn kanji_digit(character: char) -> Option<char> {
+    Some(match character {
+        '〇' | '零' => '0',
+        '一' => '1',
+        '二' => '2',
+        '三' => '3',
+        '四' => '4',
+        '五' => '5',
+        '六' => '6',
+        '七' => '7',
+        '八' => '8',
+        '九' => '9',
+        _ => return None,
+    })
+}
+
+fn punctuation_consistency_issues(text: &str) -> Vec<Issue> {
+    let japanese = text
+        .chars()
+        .filter(|character| matches!(character, '、' | '。'))
+        .count();
+    let fullwidth = text
+        .chars()
+        .filter(|character| matches!(character, '，' | '．'))
+        .count();
+    if japanese == 0 || fullwidth == 0 {
+        return Vec::new();
+    }
+    let prefer_japanese = japanese >= fullwidth;
+    text.char_indices()
+        .filter_map(|(offset, character)| {
+            let suggestion = match (prefer_japanese, character) {
+                (true, '，') => "、",
+                (true, '．') => "。",
+                (false, '、') => "，",
+                (false, '。') => "．",
+                _ => return None,
+            };
+            Some(issue_at(
+                text,
+                offset,
+                &character.to_string(),
+                IssueKind::JaPunctuation,
+                suggestion,
+            ))
+        })
+        .collect()
+}
+
+fn issue_at(text: &str, offset: usize, word: &str, kind: IssueKind, suggestion: &str) -> Issue {
+    let before = &text[..offset];
+    let line = before.bytes().filter(|byte| *byte == b'\n').count() as u32 + 1;
+    let line_start = before.rfind('\n').map_or(0, |position| position + 1);
+    Issue {
+        line,
+        col: offset - line_start,
+        offset,
+        len: word.len(),
+        word: word.to_string(),
+        kind,
+        suggestions: vec![suggestion.to_string()],
+    }
 }
 
 fn fullwidth_alnum(c: char) -> Option<char> {
@@ -446,7 +780,7 @@ mod tests {
     use super::*;
 
     fn checker(style: KatakanaStyle) -> JapaneseChecker {
-        JapaneseChecker::new(style, true, true, SpacePolicy::Code)
+        JapaneseChecker::new(style, JapaneseOptions::default())
     }
 
     fn check(c: &JapaneseChecker, line: &str) -> Vec<Issue> {
@@ -533,5 +867,50 @@ mod tests {
         c.add_variant("インタフェース", "インターフェース");
         let issues = check(&c, "インタフェース仕様");
         assert_eq!(issues[0].suggestions, ["インターフェース"]);
+    }
+
+    #[test]
+    fn compatibility_units_are_normalized() {
+        let c = checker(KatakanaStyle::Off);
+        let issues = check(&c, "重量は5㎏、面積は2㎡。");
+        assert!(issues
+            .iter()
+            .any(|issue| issue.word == "㎏" && issue.suggestions == ["kg"]));
+        assert!(issues
+            .iter()
+            .any(|issue| issue.word == "㎡" && issue.suggestions == ["m2"]));
+    }
+
+    #[test]
+    fn deeper_document_consistency_is_low_noise() {
+        let c = checker(KatakanaStyle::Off);
+        let text = "子どもは1,000円を使う。子どもを説明、する。\n\
+                    子供は一〇〇〇円を使う．\n";
+        let issues = c.document_issues(text);
+        assert!(issues
+            .iter()
+            .any(|issue| issue.word == "子供" && issue.kind == IssueKind::JaVariant));
+        assert!(issues.iter().any(|issue| {
+            issue.word == "一〇〇〇円" && issue.kind == IssueKind::JaNumberStyle
+        }));
+        assert!(issues
+            .iter()
+            .any(|issue| issue.word == "．" && issue.kind == IssueKind::JaPunctuation));
+        assert!(c.document_issues("子供だけ。1,000円だけ。").is_empty());
+    }
+
+    #[test]
+    fn regex_variant_rules_support_a_prh_style_subset() {
+        let mut c = checker(KatakanaStyle::Off);
+        c.load_variant_rules(
+            r#"
+            [[rules]]
+            pattern = "Web ?サイト"
+            replace = "ウェブサイト"
+            "#,
+        )
+        .unwrap();
+        let issues = check(&c, "Web サイトを開く");
+        assert_eq!(issues[0].suggestions, ["ウェブサイト"]);
     }
 }
