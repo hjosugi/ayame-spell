@@ -213,13 +213,16 @@ $ ayame-spell dict list
   ja-variants        ja  variants      3173  Katakana notation variants (SudachiDict)
   ja-tech-variants   ja  variants        42  Curated tech-writing katakana rules
 
-$ ayame-spell dict add en-base    # downloads + wires into ayame-spell.toml
+$ ayame-spell dict add en-base    # downloads + writes config and lockfile
+$ ayame-spell dict update --check # reports available unlocked updates
+$ ayame-spell dict vendor en-base # copies locked bytes into ./dict
 ```
 
-Because the config records `"registry:en-base"`, teammates just run
-`ayame-spell dict add en-base` once — or you can vendor the file and point
-at a path instead. Registry URL is overridable via `$AYAME_SPELL_REGISTRY`
-(point it at your company's own index.json).
+Commit both `ayame-spell.toml` and `ayame-spell.lock`: teammates then resolve
+the same version and sha256-verified bytes. Use `registry:en-base@1.0.0` for an
+explicit pin, or `dict vendor` for a network-independent project copy.
+Registry URL is overridable with `$AYAME_SPELL_REGISTRY` or
+`dict --registry URL` (for example, an internal index).
 
 ## Japanese checks in detail
 

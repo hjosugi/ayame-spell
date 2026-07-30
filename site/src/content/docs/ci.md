@@ -145,16 +145,16 @@ git diff --exit-code ayame-spell-baseline.json
 
 ## Registry dictionaries in CI
 
-Registry references resolve from the local cache, so install them before the
-check:
+Registry references resolve from the local cache. Commit `ayame-spell.lock`,
+then restore its exact versions before the check:
 
 ```sh
 ayame-spell dict add --cache-only en-base python
 ayame-spell check .
 ```
 
-For hermetic or offline CI, vendor the wordlists in the repository and use
-relative paths in `[words].dictionaries`.
+For hermetic or offline CI, run `ayame-spell dict vendor <name>`, commit the
+copied files and rewritten config, and use relative paths.
 
 ## Check documentation freshness
 

@@ -1,0 +1,20 @@
+# Go ecosystem terms independently curated by ayame-spell contributors.
+cgo
+gofmt
+gofumpt
+golangci
+gomod
+goroutine
+goroutines
+govet
+gox
+goyacc
+gqlgen
+grpcgateway
+magefile
+mockgen
+pkgsite
+pprof
+protobufgo
+tinygo
+wireguardgo

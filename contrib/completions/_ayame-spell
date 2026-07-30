@@ -181,6 +181,7 @@ esac
 ;;
 (dict)
 _arguments "${_arguments_options[@]}" : \
+'--registry=[Override the registry index URL]:URL:_default' \
 '-h[Print help]' \
 '--help[Print help]' \
 ":: :_ayame-spell__dict_commands" \
@@ -197,6 +198,7 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 '--lang=[Filter by language]:LANG:(en ja)' \
 '--kind=[Filter by dictionary kind]:KIND:(wordlist corrections variants)' \
+'--registry=[Override the registry index URL]:URL:_default' \
 '--json[Emit one JSON array for scripting]' \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -206,6 +208,7 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 '--lang=[Filter the interactive picker by language]:LANG:(en ja)' \
 '--kind=[Filter the interactive picker by dictionary kind]:KIND:(wordlist corrections variants)' \
+'--registry=[Override the registry index URL]:URL:_default' \
 '--cache-only[Download to the cache only; leave the project config untouched]' \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -216,6 +219,7 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 '--lang=[]:LANG:(en ja)' \
 '--kind=[]:KIND:(wordlist corrections variants)' \
+'--registry=[Override the registry index URL]:URL:_default' \
 '--json[]' \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -224,6 +228,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (info)
 _arguments "${_arguments_options[@]}" : \
+'--registry=[Override the registry index URL]:URL:_default' \
 '--json[]' \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -232,6 +237,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (remove)
 _arguments "${_arguments_options[@]}" : \
+'--registry=[Override the registry index URL]:URL:_default' \
 '-h[Print help]' \
 '--help[Print help]' \
 ':name:_default' \
@@ -239,8 +245,19 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (update)
 _arguments "${_arguments_options[@]}" : \
+'--registry=[Override the registry index URL]:URL:_default' \
+'--check[Exit with status 1 when an update is available; write nothing]' \
 '-h[Print help]' \
 '--help[Print help]' \
+&& ret=0
+;;
+(vendor)
+_arguments "${_arguments_options[@]}" : \
+'--dir=[Project-relative destination directory]:DIR:_files' \
+'--registry=[Override the registry index URL]:URL:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':name:_default' \
 && ret=0
 ;;
 (help)
@@ -276,6 +293,10 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(vendor)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -454,6 +475,10 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(vendor)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -555,7 +580,8 @@ _ayame-spell__dict_commands() {
 'search:Search registry names and descriptions' \
 'info:Show metadata and project status for one dictionary' \
 'remove:Delete a cached dictionary and disable it in the project config' \
-'update:Re-download every cached dictionary from the registry' \
+'update:Compare cached dictionaries with the registry and update unlocked ones' \
+'vendor:Copy a registry dictionary into the project and rewrite its config reference for offline use' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'ayame-spell dict commands' commands "$@"
@@ -573,7 +599,8 @@ _ayame-spell__dict__help_commands() {
 'search:Search registry names and descriptions' \
 'info:Show metadata and project status for one dictionary' \
 'remove:Delete a cached dictionary and disable it in the project config' \
-'update:Re-download every cached dictionary from the registry' \
+'update:Compare cached dictionaries with the registry and update unlocked ones' \
+'vendor:Copy a registry dictionary into the project and rewrite its config reference for offline use' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'ayame-spell dict help commands' commands "$@"
@@ -613,6 +640,11 @@ _ayame-spell__dict__help__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help update commands' commands "$@"
 }
+(( $+functions[_ayame-spell__dict__help__vendor_commands] )) ||
+_ayame-spell__dict__help__vendor_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict help vendor commands' commands "$@"
+}
 (( $+functions[_ayame-spell__dict__info_commands] )) ||
 _ayame-spell__dict__info_commands() {
     local commands; commands=()
@@ -637,6 +669,11 @@ _ayame-spell__dict__search_commands() {
 _ayame-spell__dict__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict update commands' commands "$@"
+}
+(( $+functions[_ayame-spell__dict__vendor_commands] )) ||
+_ayame-spell__dict__vendor_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell dict vendor commands' commands "$@"
 }
 (( $+functions[_ayame-spell__explain_commands] )) ||
 _ayame-spell__explain_commands() {
@@ -700,7 +737,8 @@ _ayame-spell__help__dict_commands() {
 'search:Search registry names and descriptions' \
 'info:Show metadata and project status for one dictionary' \
 'remove:Delete a cached dictionary and disable it in the project config' \
-'update:Re-download every cached dictionary from the registry' \
+'update:Compare cached dictionaries with the registry and update unlocked ones' \
+'vendor:Copy a registry dictionary into the project and rewrite its config reference for offline use' \
     )
     _describe -t commands 'ayame-spell help dict commands' commands "$@"
 }
@@ -733,6 +771,11 @@ _ayame-spell__help__dict__search_commands() {
 _ayame-spell__help__dict__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict update commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__dict__vendor_commands] )) ||
+_ayame-spell__help__dict__vendor_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help dict vendor commands' commands "$@"
 }
 (( $+functions[_ayame-spell__help__explain_commands] )) ||
 _ayame-spell__help__explain_commands() {

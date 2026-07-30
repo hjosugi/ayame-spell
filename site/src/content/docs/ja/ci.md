@@ -146,15 +146,16 @@ git diff --exit-code ayame-spell-baseline.json
 
 ## CI でレジストリ辞書を使う
 
-レジストリ参照はローカルキャッシュから解決するため、チェック前に導入します。
+レジストリ参照はローカルキャッシュから解決します。`ayame-spell.lock` を
+commit し、チェック前に同じ version を復元します。
 
 ```sh
 ayame-spell dict add --cache-only en-base python
 ayame-spell check .
 ```
 
-完全再現またはオフラインの CI では辞書をリポジトリ内に置き、
-`[words].dictionaries` から相対パスで参照します。
+完全再現またはオフラインの CI では `ayame-spell dict vendor <name>` を実行し、
+コピーしたファイルと書き換え済み設定を commit して相対パスで参照します。
 
 ## ドキュメントの鮮度を確認する
 

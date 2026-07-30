@@ -1,13 +1,13 @@
 //! Shared-dictionary registry client.
 //!
 //! Dictionaries are published as plain text files behind a JSON index on
-//! GitHub Pages. `dict add` downloads into `~/.cache/ayame-spell/dicts/`
-//! (sha256-verified) and wires the dictionary into the project config, so
-//! a whole team gets it by committing one config line.
+//! GitHub Pages. `dict add` downloads versioned bytes into the platform cache
+//! (sha256-verified), wires the dictionary into the project config, and writes
+//! `ayame-spell.lock` so a whole team resolves identical bytes.
 
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::io::{IsTerminal, Read};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
 use anyhow::Context;
@@ -16,7 +16,9 @@ use dialoguer::MultiSelect;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::words::{add_to_string_array, remove_from_string_array};
+use ayame_spell_core::registry_lock::{split_reference, LockedDictionary, RegistryLock, LOCK_FILE};
+
+use crate::words::{add_to_string_array, remove_from_string_array, replace_registry_reference};
 
 const DEFAULT_REGISTRY: &str = "https://hjosugi.github.io/ayame-spell/registry/index.json";
 const INDEX_TTL: Duration = Duration::from_secs(24 * 60 * 60);
@@ -66,8 +68,20 @@ pub enum DictCmd {
     },
     /// Delete a cached dictionary and disable it in the project config.
     Remove { name: String },
-    /// Re-download every cached dictionary from the registry.
-    Update,
+    /// Compare cached dictionaries with the registry and update unlocked ones.
+    Update {
+        /// Exit with status 1 when an update is available; write nothing.
+        #[arg(long)]
+        check: bool,
+    },
+    /// Copy a registry dictionary into the project and rewrite its config
+    /// reference for offline use.
+    Vendor {
+        name: String,
+        /// Project-relative destination directory.
+        #[arg(long, default_value = "dict")]
+        dir: PathBuf,
+    },
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -112,14 +126,36 @@ struct Index {
 #[derive(Clone, Deserialize, Serialize)]
 struct Entry {
     name: String,
+    #[serde(default = "default_dictionary_version")]
+    version: String,
     language: String,
     kind: String,
     description: String,
+    #[serde(default = "default_provenance")]
+    provenance: String,
     file: String,
     sha256: String,
     entries: usize,
+    #[serde(default)]
+    versions: Vec<Release>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     license: Option<String>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+struct Release {
+    version: String,
+    file: String,
+    sha256: String,
+    entries: usize,
+}
+
+fn default_dictionary_version() -> String {
+    "1.0.0".to_string()
+}
+
+fn default_provenance() -> String {
+    "not specified".to_string()
 }
 
 fn registry_url() -> String {
@@ -190,13 +226,13 @@ pub fn completion_names(prefix: &str, installed_only: bool) -> anyhow::Result<Ve
     Ok(names)
 }
 
-fn source_url(entry: &Entry) -> String {
+fn source_url(file: &str) -> String {
     let base = registry_url();
     let base = base
         .rsplit_once('/')
         .map(|(base, _)| base)
         .unwrap_or(base.as_str());
-    format!("{base}/{}", entry.file)
+    format!("{base}/{file}")
 }
 
 fn fetch_bytes(url: &str) -> anyhow::Result<Vec<u8>> {
@@ -214,17 +250,55 @@ fn cache_path(name: &str) -> anyhow::Result<PathBuf> {
     ayame_spell_core::registry_cache_path(name).context("cannot determine the cache directory")
 }
 
-fn download(entry: &Entry) -> anyhow::Result<PathBuf> {
-    let url = source_url(entry);
+struct SelectedRelease<'a> {
+    version: &'a str,
+    file: &'a str,
+    sha256: &'a str,
+    entries: usize,
+}
+
+fn select_release<'a>(
+    entry: &'a Entry,
+    requested_version: Option<&str>,
+) -> anyhow::Result<SelectedRelease<'a>> {
+    let version = requested_version.unwrap_or(&entry.version);
+    if version == entry.version {
+        return Ok(SelectedRelease {
+            version: &entry.version,
+            file: &entry.file,
+            sha256: &entry.sha256,
+            entries: entry.entries,
+        });
+    }
+    let release = entry
+        .versions
+        .iter()
+        .find(|release| release.version == version)
+        .with_context(|| {
+            format!(
+                "dictionary `{}` has no version `{version}` (current: {})",
+                entry.name, entry.version
+            )
+        })?;
+    Ok(SelectedRelease {
+        version: &release.version,
+        file: &release.file,
+        sha256: &release.sha256,
+        entries: release.entries,
+    })
+}
+
+fn download(entry: &Entry, release: &SelectedRelease<'_>) -> anyhow::Result<PathBuf> {
+    let url = source_url(release.file);
     let bytes = fetch_bytes(&url)?;
     let digest = hex(&Sha256::digest(&bytes));
     anyhow::ensure!(
-        digest == entry.sha256.to_lowercase(),
+        digest == release.sha256.to_lowercase(),
         "checksum mismatch for {} (expected {}, got {digest})",
         entry.name,
-        entry.sha256
+        release.sha256
     );
-    let path = cache_path(&entry.name)?;
+    let path = cache_path(&format!("{}@{}", entry.name, release.version))?;
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
     }
@@ -247,7 +321,7 @@ fn installed_names() -> HashSet<String> {
                 .path()
                 .file_stem()
                 .and_then(|stem| stem.to_str())
-                .map(str::to_string)
+                .map(|stem| split_reference(stem).0.to_string())
         })
         .collect()
 }
@@ -283,8 +357,8 @@ fn print_entries(entries: &[&Entry], installed: &HashSet<String>, json: bool) {
             " "
         };
         println!(
-            "{mark} {:20} {:3} {:12} {:>7}  {}",
-            entry.name, entry.language, entry.kind, entry.entries, entry.description
+            "{mark} {:20} {:9} {:3} {:12} {:>7}  {}",
+            entry.name, entry.version, entry.language, entry.kind, entry.entries, entry.description
         );
     }
 }
@@ -355,24 +429,40 @@ pub fn install_names(names: &[String], cache_only: bool) -> anyhow::Result<()> {
     let index = fetch_index()?;
     let cwd = std::env::current_dir()?;
     let loaded = ayame_spell_core::config::discover(&cwd)?;
-    for name in names {
+    let mut lock = RegistryLock::load(&loaded.root)?;
+    let mut lock_changed = false;
+    for requested in names {
+        let (name, explicit_version) = split_reference(requested);
         let entry = index
             .dictionaries
             .iter()
-            .find(|entry| &entry.name == name)
+            .find(|entry| entry.name == name)
             .with_context(|| {
                 format!("`{name}` is not in the registry (see `ayame-spell dict list`)")
             })?;
-        let path = download(entry)?;
+        let locked_version = lock.get(name).map(|dictionary| dictionary.version.as_str());
+        let release = select_release(entry, explicit_version.or(locked_version))?;
+        let path = download(entry, &release)?;
         println!(
-            "installed {} ({} entries) -> {}",
+            "installed {}@{} ({} entries) -> {}",
             name,
-            entry.entries,
+            release.version,
+            release.entries,
             path.display()
         );
         if !cache_only {
+            lock.upsert(LockedDictionary {
+                name: name.to_string(),
+                version: release.version.to_string(),
+                sha256: release.sha256.to_string(),
+                file: release.file.to_string(),
+            });
+            lock_changed = true;
             if let Some((table, key)) = config_slot(&entry.kind) {
-                let reference = format!("registry:{name}");
+                let reference = explicit_version.map_or_else(
+                    || format!("registry:{name}"),
+                    |version| format!("registry:{name}@{version}"),
+                );
                 let config = add_to_string_array(&loaded, table, key, &[reference])?;
                 println!("enabled in {} ([{table}].{key})", config.display());
             } else {
@@ -383,16 +473,36 @@ pub fn install_names(names: &[String], cache_only: bool) -> anyhow::Result<()> {
             }
         }
     }
+    if lock_changed {
+        let path = lock.save(&loaded.root)?;
+        println!("locked dictionary bytes in {}", path.display());
+    }
     Ok(())
 }
 
 fn is_enabled(loaded: &ayame_spell_core::LoadedConfig, entry: &Entry) -> bool {
-    let reference = format!("registry:{}", entry.name);
-    match entry.kind.as_str() {
-        "wordlist" => loaded.config.words.dictionaries.contains(&reference),
-        "corrections" => loaded.config.corrections.extra.contains(&reference),
-        "variants" => loaded.config.japanese.variant_files.contains(&reference),
-        _ => false,
+    let references = match entry.kind.as_str() {
+        "wordlist" => &loaded.config.words.dictionaries,
+        "corrections" => &loaded.config.corrections.extra,
+        "variants" => &loaded.config.japanese.variant_files,
+        _ => return false,
+    };
+    references.iter().any(|reference| {
+        reference
+            .strip_prefix("registry:")
+            .is_some_and(|reference| split_reference(reference).0 == entry.name)
+    })
+}
+
+fn configured_registry_references<'a>(
+    loaded: &'a ayame_spell_core::LoadedConfig,
+    kind: &str,
+) -> &'a [String] {
+    match kind {
+        "wordlist" => &loaded.config.words.dictionaries,
+        "corrections" => &loaded.config.corrections.extra,
+        "variants" => &loaded.config.japanese.variant_files,
+        _ => &[],
     }
 }
 
@@ -457,29 +567,38 @@ pub fn run(cmd: DictCmd) -> anyhow::Result<i32> {
         }
         DictCmd::Info { name, json } => {
             let index = fetch_index()?;
+            let (base_name, requested_version) = split_reference(&name);
             let entry = index
                 .dictionaries
                 .iter()
-                .find(|entry| entry.name == name)
+                .find(|entry| entry.name == base_name)
                 .with_context(|| {
                     format!("`{name}` is not in the registry (see `ayame-spell dict list`)")
                 })?;
-            let cache = cache_path(&name)?;
             let loaded = ayame_spell_core::config::discover(&std::env::current_dir()?)?;
+            let lock = RegistryLock::load(&loaded.root)?;
+            let locked_version = lock
+                .get(base_name)
+                .map(|dictionary| dictionary.version.as_str());
+            let release = select_release(entry, requested_version.or(locked_version))?;
+            let cache = cache_path(&format!("{base_name}@{}", release.version))?;
             let enabled = is_enabled(&loaded, entry);
             let installed = cache.is_file();
-            let source = source_url(entry);
+            let source = source_url(release.file);
             if json {
                 println!(
                     "{}",
                     serde_json::to_string_pretty(&serde_json::json!({
                         "name": entry.name,
+                        "version": release.version,
+                        "available_versions": entry.versions.iter().map(|release| release.version.as_str()).collect::<Vec<_>>(),
                         "language": entry.language,
                         "kind": entry.kind,
                         "description": entry.description,
+                        "provenance": entry.provenance,
                         "license": entry.license,
-                        "entries": entry.entries,
-                        "sha256": entry.sha256,
+                        "entries": release.entries,
+                        "sha256": release.sha256,
                         "cache_path": cache,
                         "installed": installed,
                         "enabled": enabled,
@@ -488,15 +607,17 @@ pub fn run(cmd: DictCmd) -> anyhow::Result<i32> {
                 );
             } else {
                 println!("name:        {}", entry.name);
+                println!("version:     {}", release.version);
                 println!("language:    {}", entry.language);
                 println!("kind:        {}", entry.kind);
                 println!("description: {}", entry.description);
+                println!("provenance:  {}", entry.provenance);
                 println!(
                     "license:     {}",
                     entry.license.as_deref().unwrap_or("not specified")
                 );
-                println!("entries:      {}", entry.entries);
-                println!("sha256:       {}", entry.sha256);
+                println!("entries:      {}", release.entries);
+                println!("sha256:       {}", release.sha256);
                 println!("cache:        {}", cache.display());
                 println!("installed:    {installed}");
                 println!("enabled:      {enabled}");
@@ -505,47 +626,247 @@ pub fn run(cmd: DictCmd) -> anyhow::Result<i32> {
             Ok(0)
         }
         DictCmd::Remove { name } => {
-            let path = cache_path(&name)?;
+            let (base_name, _) = split_reference(&name);
             let mut did_something = false;
-            if path.exists() {
-                std::fs::remove_file(&path)?;
-                println!("removed {}", path.display());
-                did_something = true;
+            if let Some(directory) = ayame_spell_core::registry_cache_dir() {
+                if let Ok(entries) = std::fs::read_dir(directory) {
+                    for entry in entries.flatten() {
+                        let path = entry.path();
+                        let matches = path
+                            .file_stem()
+                            .and_then(|stem| stem.to_str())
+                            .is_some_and(|stem| split_reference(stem).0 == base_name);
+                        if matches {
+                            std::fs::remove_file(&path)?;
+                            println!("removed {}", path.display());
+                            did_something = true;
+                        }
+                    }
+                }
             }
             let cwd = std::env::current_dir()?;
             let loaded = ayame_spell_core::config::discover(&cwd)?;
-            let reference = format!("registry:{name}");
             for (table, key) in [
                 ("words", "dictionaries"),
                 ("corrections", "extra"),
                 ("japanese", "variant-files"),
             ] {
-                if remove_from_string_array(&loaded, table, key, &reference)? {
-                    println!("disabled in project config ([{table}].{key})");
-                    did_something = true;
+                let references = match (table, key) {
+                    ("words", "dictionaries") => &loaded.config.words.dictionaries,
+                    ("corrections", "extra") => &loaded.config.corrections.extra,
+                    ("japanese", "variant-files") => &loaded.config.japanese.variant_files,
+                    _ => unreachable!(),
+                };
+                let matching: Vec<String> = references
+                    .iter()
+                    .filter(|reference| {
+                        reference
+                            .strip_prefix("registry:")
+                            .is_some_and(|reference| split_reference(reference).0 == base_name)
+                    })
+                    .cloned()
+                    .collect();
+                for reference in matching {
+                    if remove_from_string_array(&loaded, table, key, &reference)? {
+                        println!("disabled in project config ([{table}].{key})");
+                        did_something = true;
+                    }
                 }
+            }
+            let mut lock = RegistryLock::load(&loaded.root)?;
+            if lock.remove(base_name) {
+                lock.save(&loaded.root)?;
+                println!("removed {base_name} from {LOCK_FILE}");
+                did_something = true;
             }
             if !did_something {
                 println!("`{name}` was not installed");
             }
             Ok(0)
         }
-        DictCmd::Update => {
-            let index = fetch_index()?;
-            let dir = ayame_spell_core::registry_cache_dir()
-                .context("cannot determine the cache directory")?;
-            let mut updated = 0;
-            for entry in &index.dictionaries {
-                if dir.join(format!("{}.txt", entry.name)).exists() {
-                    download(entry)?;
-                    println!("updated {}", entry.name);
-                    updated += 1;
-                }
-            }
-            if updated == 0 {
-                println!("no cached dictionaries to update");
-            }
-            Ok(0)
+        DictCmd::Update { check } => update_dictionaries(check),
+        DictCmd::Vendor { name, dir } => vendor(&name, &dir),
+    }
+}
+
+fn update_dictionaries(check: bool) -> anyhow::Result<i32> {
+    let index = fetch_index()?;
+    let loaded = ayame_spell_core::config::discover(&std::env::current_dir()?)?;
+    let mut lock = RegistryLock::load(&loaded.root)?;
+    let mut names: BTreeSet<String> = installed_names().into_iter().collect();
+    names.extend(
+        lock.dictionaries
+            .iter()
+            .map(|dictionary| dictionary.name.clone()),
+    );
+    if names.is_empty() {
+        println!("no cached dictionaries to update");
+        return Ok(0);
+    }
+
+    let mut updates = 0usize;
+    let mut lock_changed = false;
+    for name in names {
+        let Some(entry) = index.dictionaries.iter().find(|entry| entry.name == name) else {
+            eprintln!("warning: `{name}` is no longer present in the registry");
+            continue;
+        };
+        let pinned_version = configured_registry_references(&loaded, &entry.kind)
+            .iter()
+            .filter_map(|reference| reference.strip_prefix("registry:"))
+            .find_map(|reference| {
+                let (configured_name, version) = split_reference(reference);
+                (configured_name == name).then_some(version).flatten()
+            });
+        if let Some(version) = pinned_version {
+            let release = select_release(entry, Some(version))?;
+            println!("pinned {name}@{} ({})", release.version, release.sha256);
+            continue;
         }
+
+        let current = select_release(entry, None)?;
+        let locked = lock.get(&name).cloned();
+        let path = cache_path(&format!("{name}@{}", current.version))?;
+        let up_to_date = locked.as_ref().is_some_and(|dictionary| {
+            dictionary.version == current.version
+                && dictionary.sha256.eq_ignore_ascii_case(current.sha256)
+                && path.is_file()
+                && ayame_spell_core::registry_lock::verify(&path, current.sha256).is_ok()
+        });
+        if up_to_date {
+            println!("up to date {name}@{} ({})", current.version, current.sha256);
+            continue;
+        }
+
+        updates += 1;
+        let old = locked
+            .as_ref()
+            .map_or("unlocked", |dictionary| dictionary.version.as_str());
+        if check {
+            println!("update available {name}: {old} -> {}", current.version);
+            continue;
+        }
+        download(entry, &current)?;
+        lock.upsert(LockedDictionary {
+            name: name.clone(),
+            version: current.version.to_string(),
+            sha256: current.sha256.to_string(),
+            file: current.file.to_string(),
+        });
+        lock_changed = true;
+        println!("updated {name}: {old} -> {}", current.version);
+    }
+
+    if lock_changed {
+        lock.save(&loaded.root)?;
+    }
+    Ok(if check && updates > 0 { 1 } else { 0 })
+}
+
+fn vendor(name: &str, directory: &Path) -> anyhow::Result<i32> {
+    let index = fetch_index()?;
+    let (base_name, requested_version) = split_reference(name);
+    let entry = index
+        .dictionaries
+        .iter()
+        .find(|entry| entry.name == base_name)
+        .with_context(|| {
+            format!("`{base_name}` is not in the registry (see `ayame-spell dict list`)")
+        })?;
+    let loaded = ayame_spell_core::config::discover(&std::env::current_dir()?)?;
+    let mut lock = RegistryLock::load(&loaded.root)?;
+    let locked_version = lock
+        .get(base_name)
+        .map(|dictionary| dictionary.version.as_str());
+    let release = select_release(entry, requested_version.or(locked_version))?;
+    let cache = cache_path(&format!("{base_name}@{}", release.version))?;
+    if !cache.is_file() || ayame_spell_core::registry_lock::verify(&cache, release.sha256).is_err()
+    {
+        download(entry, &release)?;
+    }
+
+    let destination_directory = if directory.is_absolute() {
+        directory.to_path_buf()
+    } else {
+        loaded.root.join(directory)
+    };
+    std::fs::create_dir_all(&destination_directory)?;
+    let extension = match entry.kind.as_str() {
+        "wordlist" => "txt",
+        "corrections" => "tsv",
+        "variants" => "toml",
+        other => anyhow::bail!("cannot vendor unknown dictionary kind `{other}`"),
+    };
+    let destination = destination_directory.join(format!("{base_name}.{extension}"));
+    std::fs::copy(&cache, &destination).with_context(|| {
+        format!(
+            "cannot copy {} to {}",
+            cache.display(),
+            destination.display()
+        )
+    })?;
+
+    let reference = destination
+        .strip_prefix(&loaded.root)
+        .unwrap_or(&destination)
+        .to_string_lossy()
+        .replace('\\', "/");
+    let (table, key) = config_slot(&entry.kind)
+        .with_context(|| format!("unknown dictionary kind `{}`", entry.kind))?;
+    let config = replace_registry_reference(&loaded, table, key, base_name, &reference)?;
+    if lock.remove(base_name) {
+        lock.save(&loaded.root)?;
+    }
+    println!(
+        "vendored {base_name}@{} -> {}",
+        release.version,
+        destination.display()
+    );
+    println!(
+        "rewrote [{table}].{key} in {} to `{reference}`",
+        config.display()
+    );
+    Ok(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn historical_releases_remain_selectable() {
+        let entry = Entry {
+            name: "fixture".to_string(),
+            version: "2.0.0".to_string(),
+            language: "en".to_string(),
+            kind: "wordlist".to_string(),
+            description: "fixture".to_string(),
+            provenance: "test".to_string(),
+            file: "dicts/fixture-2.txt".to_string(),
+            sha256: "22".repeat(32),
+            entries: 2,
+            versions: vec![
+                Release {
+                    version: "2.0.0".to_string(),
+                    file: "dicts/fixture-2.txt".to_string(),
+                    sha256: "22".repeat(32),
+                    entries: 2,
+                },
+                Release {
+                    version: "1.0.0".to_string(),
+                    file: "dicts/fixture-1.txt".to_string(),
+                    sha256: "11".repeat(32),
+                    entries: 1,
+                },
+            ],
+            license: Some("MIT".to_string()),
+        };
+
+        let current = select_release(&entry, None).unwrap();
+        assert_eq!(current.version, "2.0.0");
+        let historical = select_release(&entry, Some("1.0.0")).unwrap();
+        assert_eq!(historical.file, "dicts/fixture-1.txt");
+        assert_eq!(historical.entries, 1);
+        assert!(select_release(&entry, Some("0.1.0")).is_err());
     }
 }

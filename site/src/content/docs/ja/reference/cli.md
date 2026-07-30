@@ -31,7 +31,8 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `dict list` | レジストリ辞書と導入状態を一覧表示。 |
 | `dict add <NAMES>...` | 辞書を取得してプロジェクト設定へ追加。 |
 | `dict remove <NAME>` | キャッシュを削除して設定から無効化。 |
-| `dict update` | キャッシュ済み辞書を再取得。 |
+| `dict update` | pin されていない辞書の更新確認または更新。 |
+| `dict vendor <NAME>` | lock 済みレジストリ辞書をプロジェクト内へコピー。 |
 | `init` | 初期設定 `ayame-spell.toml` を作成。 |
 | `config` | マージ・既定値適用後の最終設定を表示。 |
 | `explain <CODE>` | ルールの理由、設定、無視する方法を説明。 |
@@ -65,7 +66,11 @@ description: Clap から生成した ayame-spell の全コマンドと全フラ�
 | `--global` | `words add` | プロジェクト単語ではなくユーザー単語へ追加。 |
 | `<NAMES>...` | `dict add` | 取得する一つ以上のレジストリ名。 |
 | `--cache-only` | `dict add` | 設定を変更せずキャッシュだけ作成。 |
+| `--registry <URL>` | 全 `dict` コマンド | この実行だけレジストリ索引 URL を差し替え。 |
 | `<NAME>` | `dict remove` | 削除するレジストリ名。 |
+| `--check` | `dict update` | 書き込まず、更新があれば終了コード 1。 |
+| `<NAME>` | `dict vendor` | レジストリ名。`name@version` の pin も指定可能。 |
+| `--dir <DIR>` | `dict vendor` | プロジェクト相対の配置先。既定は `dict`。 |
 | `--force` | `init` | 既存の設定ファイルを上書き。 |
 | `<SHELL>` | `completions` | `bash`、`elvish`、`fish`、`powershell`、`zsh`。 |
 | `--stdio` | `lsp` | クライアント互換用。通信は常に標準入出力。 |
@@ -356,7 +361,7 @@ Options:
 $ ayame-spell dict --help
 Shared dictionaries from the ayame-spell registry
 
-Usage: ayame-spell dict <COMMAND>
+Usage: ayame-spell dict [OPTIONS] <COMMAND>
 
 Commands:
   list    List available dictionaries and their install status
@@ -364,11 +369,14 @@ Commands:
   search  Search registry names and descriptions
   info    Show metadata and project status for one dictionary
   remove  Delete a cached dictionary and disable it in the project config
-  update  Re-download every cached dictionary from the registry
+  update  Compare cached dictionaries with the registry and update unlocked ones
+  vendor  Copy a registry dictionary into the project and rewrite its config reference for offline
+          use
   help    Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict list`
@@ -380,10 +388,11 @@ List available dictionaries and their install status
 Usage: ayame-spell dict list [OPTIONS]
 
 Options:
-      --json         Emit one JSON array for scripting
-      --lang <LANG>  Filter by language [possible values: en, ja]
-      --kind <KIND>  Filter by dictionary kind [possible values: wordlist, corrections, variants]
-  -h, --help         Print help
+      --json            Emit one JSON array for scripting
+      --registry <URL>  Override the registry index URL
+      --lang <LANG>     Filter by language [possible values: en, ja]
+      --kind <KIND>     Filter by dictionary kind [possible values: wordlist, corrections, variants]
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict add`
@@ -398,11 +407,12 @@ Arguments:
   [NAMES]...
 
 Options:
-      --cache-only   Download to the cache only; leave the project config untouched
-      --lang <LANG>  Filter the interactive picker by language [possible values: en, ja]
-      --kind <KIND>  Filter the interactive picker by dictionary kind [possible values: wordlist,
-                     corrections, variants]
-  -h, --help         Print help
+      --cache-only      Download to the cache only; leave the project config untouched
+      --registry <URL>  Override the registry index URL
+      --lang <LANG>     Filter the interactive picker by language [possible values: en, ja]
+      --kind <KIND>     Filter the interactive picker by dictionary kind [possible values: wordlist,
+                        corrections, variants]
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict search`
@@ -417,10 +427,11 @@ Arguments:
   <QUERY>
 
 Options:
-      --lang <LANG>  [possible values: en, ja]
-      --kind <KIND>  [possible values: wordlist, corrections, variants]
+      --lang <LANG>     [possible values: en, ja]
+      --registry <URL>  Override the registry index URL
+      --kind <KIND>     [possible values: wordlist, corrections, variants]
       --json
-  -h, --help         Print help
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict info`
@@ -436,7 +447,8 @@ Arguments:
 
 Options:
       --json
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict remove`
@@ -445,25 +457,45 @@ Options:
 $ ayame-spell dict remove --help
 Delete a cached dictionary and disable it in the project config
 
-Usage: ayame-spell dict remove <NAME>
+Usage: ayame-spell dict remove [OPTIONS] <NAME>
 
 Arguments:
   <NAME>
 
 Options:
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict update`
 
 ```text
 $ ayame-spell dict update --help
-Re-download every cached dictionary from the registry
+Compare cached dictionaries with the registry and update unlocked ones
 
-Usage: ayame-spell dict update
+Usage: ayame-spell dict update [OPTIONS]
 
 Options:
-  -h, --help  Print help
+      --check           Exit with status 1 when an update is available; write nothing
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
+```
+
+## `ayame-spell dict vendor`
+
+```text
+$ ayame-spell dict vendor --help
+Copy a registry dictionary into the project and rewrite its config reference for offline use
+
+Usage: ayame-spell dict vendor [OPTIONS] <NAME>
+
+Arguments:
+  <NAME>
+
+Options:
+      --dir <DIR>       Project-relative destination directory [default: dict]
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell init`

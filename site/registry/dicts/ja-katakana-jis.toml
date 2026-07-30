@@ -1,0 +1,11 @@
+# Independently curated JIS-style technical katakana preferences.
+# This is not copied from the text of JIS Z 8301.
+[variants]
+"インタフェース" = "インターフェース"
+"コンピュータ" = "コンピューター"
+"サーバ" = "サーバー"
+"シミュレータ" = "シミュレーター"
+"センサ" = "センサー"
+"パラメータ" = "パラメーター"
+"プリンタ" = "プリンター"
+"ユーザ" = "ユーザー"

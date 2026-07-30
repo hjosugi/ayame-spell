@@ -13,6 +13,7 @@ description: レジストリの差し替え、プロジェクト検出、XDG 対
 
 ```sh
 export AYAME_SPELL_REGISTRY=https://docs.example.com/spelling/index.json
+ayame-spell dict --registry https://docs.example.com/spelling/index.json list
 ayame-spell dict list
 ```
 
@@ -28,6 +29,7 @@ ayame-spell dict list
 | ファイル | 配置 | 用途 |
 | --- | --- | --- |
 | `ayame-spell.toml` または `.ayame-spell.toml` | チェック対象から上位へ進んで最初に一致する場所 | プロジェクト設定と無視単語。 |
+| `ayame-spell.lock` | プロジェクトルート | 解決済みのレジストリ version、ファイル、sha256。commit 対象。 |
 | `ayame-words.txt` | 既定ではプロジェクトルート | チーム単語リスト。`[words].project` で変更。 |
 | 相対パスの辞書 | プロジェクトルート基準 | 単語リスト、修正 TSV、日本語表記ゆれ TOML。 |
 
@@ -51,7 +53,9 @@ ayame-spell は Rust の `dirs` クレートが返す OS 標準ディレクト�
 
 - 絶対パスはそのまま使う。
 - 相対パスはプロセスの作業ディレクトリではなく、プロジェクトルート基準。
-- `registry:name` はレジストリキャッシュ内の `name.txt` に解決。
+- `registry:name` は `ayame-spell.lock` を通してキャッシュ内の
+  `name@version.txt` に解決。`registry:name@version` は明示 version を指定。
+- lock 済みの内容はロード前に sha256 を検証。
 - 参照ファイルがなければ、チェッカー構築時に警告を出す。
 
 `ayame-spell config` で検出したルートと設定パスを確認できます。

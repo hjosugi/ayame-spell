@@ -228,7 +228,7 @@ Options:
 .nf
 Shared dictionaries from the ayame-spell registry
 
-Usage: ayame-spell dict <COMMAND>
+Usage: ayame-spell dict [OPTIONS] <COMMAND>
 
 Commands:
   list    List available dictionaries and their install status
@@ -236,11 +236,14 @@ Commands:
   search  Search registry names and descriptions
   info    Show metadata and project status for one dictionary
   remove  Delete a cached dictionary and disable it in the project config
-  update  Re-download every cached dictionary from the registry
+  update  Compare cached dictionaries with the registry and update unlocked ones
+  vendor  Copy a registry dictionary into the project and rewrite its config reference for offline
+          use
   help    Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 .fi
 .SS ayame-spell dict list
 .nf
@@ -249,10 +252,11 @@ List available dictionaries and their install status
 Usage: ayame-spell dict list [OPTIONS]
 
 Options:
-      --json         Emit one JSON array for scripting
-      --lang <LANG>  Filter by language [possible values: en, ja]
-      --kind <KIND>  Filter by dictionary kind [possible values: wordlist, corrections, variants]
-  -h, --help         Print help
+      --json            Emit one JSON array for scripting
+      --registry <URL>  Override the registry index URL
+      --lang <LANG>     Filter by language [possible values: en, ja]
+      --kind <KIND>     Filter by dictionary kind [possible values: wordlist, corrections, variants]
+  -h, --help            Print help
 .fi
 .SS ayame-spell dict add
 .nf
@@ -264,11 +268,12 @@ Arguments:
   [NAMES]...
 
 Options:
-      --cache-only   Download to the cache only; leave the project config untouched
-      --lang <LANG>  Filter the interactive picker by language [possible values: en, ja]
-      --kind <KIND>  Filter the interactive picker by dictionary kind [possible values: wordlist,
-                     corrections, variants]
-  -h, --help         Print help
+      --cache-only      Download to the cache only; leave the project config untouched
+      --registry <URL>  Override the registry index URL
+      --lang <LANG>     Filter the interactive picker by language [possible values: en, ja]
+      --kind <KIND>     Filter the interactive picker by dictionary kind [possible values: wordlist,
+                        corrections, variants]
+  -h, --help            Print help
 .fi
 .SS ayame-spell dict search
 .nf
@@ -280,10 +285,11 @@ Arguments:
   <QUERY>
 
 Options:
-      --lang <LANG>  [possible values: en, ja]
-      --kind <KIND>  [possible values: wordlist, corrections, variants]
+      --lang <LANG>     [possible values: en, ja]
+      --registry <URL>  Override the registry index URL
+      --kind <KIND>     [possible values: wordlist, corrections, variants]
       --json
-  -h, --help         Print help
+  -h, --help            Print help
 .fi
 .SS ayame-spell dict info
 .nf
@@ -296,28 +302,46 @@ Arguments:
 
 Options:
       --json
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 .fi
 .SS ayame-spell dict remove
 .nf
 Delete a cached dictionary and disable it in the project config
 
-Usage: ayame-spell dict remove <NAME>
+Usage: ayame-spell dict remove [OPTIONS] <NAME>
 
 Arguments:
   <NAME>
 
 Options:
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 .fi
 .SS ayame-spell dict update
 .nf
-Re-download every cached dictionary from the registry
+Compare cached dictionaries with the registry and update unlocked ones
 
-Usage: ayame-spell dict update
+Usage: ayame-spell dict update [OPTIONS]
 
 Options:
-  -h, --help  Print help
+      --check           Exit with status 1 when an update is available; write nothing
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
+.fi
+.SS ayame-spell dict vendor
+.nf
+Copy a registry dictionary into the project and rewrite its config reference for offline use
+
+Usage: ayame-spell dict vendor [OPTIONS] <NAME>
+
+Arguments:
+  <NAME>
+
+Options:
+      --dir <DIR>       Project-relative destination directory [default: dict]
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 .fi
 .SS ayame-spell init
 .nf

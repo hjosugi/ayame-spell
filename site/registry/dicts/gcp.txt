@@ -1,0 +1,16 @@
+# Google Cloud service names independently curated by ayame-spell contributors.
+bigtable
+cloudbuild
+cloudfunctions
+cloudrun
+cloudsql
+cloudtasks
+dataflow
+dataproc
+firestore
+gcloud
+gke
+memorystore
+pubsub
+storagebucket
+vertexai

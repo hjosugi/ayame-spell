@@ -1,0 +1,21 @@
+# Java and Kotlin terms independently curated by ayame-spell contributors.
+androidx
+bytecode
+checkstyle
+coroutines
+detekt
+gradlew
+javadoc
+javafx
+jdk
+jooq
+junit
+jvm
+kapt
+kotlinx
+ktlint
+lombok
+micronaut
+mockito
+quarkus
+springboot

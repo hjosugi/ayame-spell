@@ -47,6 +47,11 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   suggestion-aware `config --validate` editor workflows.
 - A composite GitHub Action with annotations and optional SARIF upload,
   pre-commit check/fix hooks, and portable GitLab and CircleCI recipes.
+- Reproducible registry resolution through `ayame-spell.lock`, explicit
+  `name@version` pins, checksum verification, update-only checks, and
+  project-local vendoring.
+- Fifteen independently curated technology, business, finance, correction,
+  and Japanese-variant dictionaries, with provenance and license metadata.
 
 ### Changed
 
@@ -58,6 +63,9 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `AYAME_SPELL_CONFIG_DIR` and `AYAME_SPELL_CACHE_DIR`.
 - Registry indexes are cached for 24 hours and remain available offline;
   completion never performs network I/O.
+- The dictionary registry index is now versioned and retains immutable
+  historical releases; registry generation validates versions, formats,
+  duplicates, base-list overlap, provenance, and licenses.
 - Fixes abort instead of overwriting a file that changed after it was scanned.
 
 ## [0.3.1] - 2026-07-30

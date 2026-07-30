@@ -13,6 +13,7 @@ Example for an internal mirror:
 
 ```sh
 export AYAME_SPELL_REGISTRY=https://docs.example.com/spelling/index.json
+ayame-spell dict --registry https://docs.example.com/spelling/index.json list
 ayame-spell dict list
 ```
 
@@ -29,6 +30,7 @@ explanations in hovers.
 | File | Location | Purpose |
 | --- | --- | --- |
 | `ayame-spell.toml` or `.ayame-spell.toml` | First matching ancestor of the checked path | Project configuration and ignore words. |
+| `ayame-spell.lock` | Project root | Resolved registry versions, files, and sha256 digests; commit this file. |
 | `ayame-words.txt` | Project root by default | Team wordlist; controlled by `[words].project`. |
 | Relative dictionaries | Project-root relative | Wordlists, correction TSVs, and Japanese variant TOML files. |
 
@@ -54,7 +56,9 @@ demand.
 - Absolute paths are used unchanged.
 - Relative paths resolve against the project root, not the process working
   directory.
-- `registry:name` resolves to the cached `name.txt` inside the registry cache.
+- `registry:name` resolves through `ayame-spell.lock` to cached
+  `name@version.txt`; `registry:name@version` requests an explicit version.
+- Locked bytes are sha256-verified before they are loaded.
 - A missing referenced file produces a warning while the checker is built.
 
 Use `ayame-spell config` to confirm the discovered root and config paths.

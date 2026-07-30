@@ -183,7 +183,7 @@
     },
     "reference": {
       "type": "string",
-      "description": "Absolute path, project-relative path, or registry:name reference."
+      "description": "Absolute path, project-relative path, registry:name, or registry:name@version reference."
     }
   }
 }

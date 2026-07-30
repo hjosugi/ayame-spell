@@ -202,6 +202,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;dict' {
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available dictionaries and their install status')
@@ -209,13 +210,15 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, 'Search registry names and descriptions')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show metadata and project status for one dictionary')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Delete a cached dictionary and disable it in the project config')
-            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Re-download every cached dictionary from the registry')
+            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Compare cached dictionaries with the registry and update unlocked ones')
+            [CompletionResult]::new('vendor', 'vendor', [CompletionResultType]::ParameterValue, 'Copy a registry dictionary into the project and rewrite its config reference for offline use')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
         'ayame-spell;dict;list' {
             [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Filter by language')
             [CompletionResult]::new('--kind', '--kind', [CompletionResultType]::ParameterName, 'Filter by dictionary kind')
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
             [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'Emit one JSON array for scripting')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
@@ -224,6 +227,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         'ayame-spell;dict;add' {
             [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'Filter the interactive picker by language')
             [CompletionResult]::new('--kind', '--kind', [CompletionResultType]::ParameterName, 'Filter the interactive picker by dictionary kind')
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
             [CompletionResult]::new('--cache-only', '--cache-only', [CompletionResultType]::ParameterName, 'Download to the cache only; leave the project config untouched')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
@@ -232,23 +236,35 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
         'ayame-spell;dict;search' {
             [CompletionResult]::new('--lang', '--lang', [CompletionResultType]::ParameterName, 'lang')
             [CompletionResult]::new('--kind', '--kind', [CompletionResultType]::ParameterName, 'kind')
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
             [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'json')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'ayame-spell;dict;info' {
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
             [CompletionResult]::new('--json', '--json', [CompletionResultType]::ParameterName, 'json')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'ayame-spell;dict;remove' {
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
         'ayame-spell;dict;update' {
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
+            [CompletionResult]::new('--check', '--check', [CompletionResultType]::ParameterName, 'Exit with status 1 when an update is available; write nothing')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'ayame-spell;dict;vendor' {
+            [CompletionResult]::new('--dir', '--dir', [CompletionResultType]::ParameterName, 'Project-relative destination directory')
+            [CompletionResult]::new('--registry', '--registry', [CompletionResultType]::ParameterName, 'Override the registry index URL')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
@@ -259,7 +275,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, 'Search registry names and descriptions')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show metadata and project status for one dictionary')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Delete a cached dictionary and disable it in the project config')
-            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Re-download every cached dictionary from the registry')
+            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Compare cached dictionaries with the registry and update unlocked ones')
+            [CompletionResult]::new('vendor', 'vendor', [CompletionResultType]::ParameterValue, 'Copy a registry dictionary into the project and rewrite its config reference for offline use')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
@@ -279,6 +296,9 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;dict;help;update' {
+            break
+        }
+        'ayame-spell;dict;help;vendor' {
             break
         }
         'ayame-spell;dict;help;help' {
@@ -392,7 +412,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, 'Search registry names and descriptions')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Show metadata and project status for one dictionary')
             [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Delete a cached dictionary and disable it in the project config')
-            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Re-download every cached dictionary from the registry')
+            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Compare cached dictionaries with the registry and update unlocked ones')
+            [CompletionResult]::new('vendor', 'vendor', [CompletionResultType]::ParameterValue, 'Copy a registry dictionary into the project and rewrite its config reference for offline use')
             break
         }
         'ayame-spell;help;dict;list' {
@@ -411,6 +432,9 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;help;dict;update' {
+            break
+        }
+        'ayame-spell;help;dict;vendor' {
             break
         }
         'ayame-spell;help;init' {

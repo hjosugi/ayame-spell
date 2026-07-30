@@ -144,6 +144,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;words;help;help'= {
         }
         &'ayame-spell;dict'= {
+            cand --registry 'Override the registry index URL'
             cand -h 'Print help'
             cand --help 'Print help'
             cand list 'List available dictionaries and their install status'
@@ -151,12 +152,14 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand search 'Search registry names and descriptions'
             cand info 'Show metadata and project status for one dictionary'
             cand remove 'Delete a cached dictionary and disable it in the project config'
-            cand update 'Re-download every cached dictionary from the registry'
+            cand update 'Compare cached dictionaries with the registry and update unlocked ones'
+            cand vendor 'Copy a registry dictionary into the project and rewrite its config reference for offline use'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'ayame-spell;dict;list'= {
             cand --lang 'Filter by language'
             cand --kind 'Filter by dictionary kind'
+            cand --registry 'Override the registry index URL'
             cand --json 'Emit one JSON array for scripting'
             cand -h 'Print help'
             cand --help 'Print help'
@@ -164,6 +167,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;dict;add'= {
             cand --lang 'Filter the interactive picker by language'
             cand --kind 'Filter the interactive picker by dictionary kind'
+            cand --registry 'Override the registry index URL'
             cand --cache-only 'Download to the cache only; leave the project config untouched'
             cand -h 'Print help'
             cand --help 'Print help'
@@ -171,20 +175,31 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;dict;search'= {
             cand --lang 'lang'
             cand --kind 'kind'
+            cand --registry 'Override the registry index URL'
             cand --json 'json'
             cand -h 'Print help'
             cand --help 'Print help'
         }
         &'ayame-spell;dict;info'= {
+            cand --registry 'Override the registry index URL'
             cand --json 'json'
             cand -h 'Print help'
             cand --help 'Print help'
         }
         &'ayame-spell;dict;remove'= {
+            cand --registry 'Override the registry index URL'
             cand -h 'Print help'
             cand --help 'Print help'
         }
         &'ayame-spell;dict;update'= {
+            cand --registry 'Override the registry index URL'
+            cand --check 'Exit with status 1 when an update is available; write nothing'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'ayame-spell;dict;vendor'= {
+            cand --dir 'Project-relative destination directory'
+            cand --registry 'Override the registry index URL'
             cand -h 'Print help'
             cand --help 'Print help'
         }
@@ -194,7 +209,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand search 'Search registry names and descriptions'
             cand info 'Show metadata and project status for one dictionary'
             cand remove 'Delete a cached dictionary and disable it in the project config'
-            cand update 'Re-download every cached dictionary from the registry'
+            cand update 'Compare cached dictionaries with the registry and update unlocked ones'
+            cand vendor 'Copy a registry dictionary into the project and rewrite its config reference for offline use'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'ayame-spell;dict;help;list'= {
@@ -208,6 +224,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;dict;help;remove'= {
         }
         &'ayame-spell;dict;help;update'= {
+        }
+        &'ayame-spell;dict;help;vendor'= {
         }
         &'ayame-spell;dict;help;help'= {
         }
@@ -304,7 +322,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand search 'Search registry names and descriptions'
             cand info 'Show metadata and project status for one dictionary'
             cand remove 'Delete a cached dictionary and disable it in the project config'
-            cand update 'Re-download every cached dictionary from the registry'
+            cand update 'Compare cached dictionaries with the registry and update unlocked ones'
+            cand vendor 'Copy a registry dictionary into the project and rewrite its config reference for offline use'
         }
         &'ayame-spell;help;dict;list'= {
         }
@@ -317,6 +336,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         &'ayame-spell;help;dict;remove'= {
         }
         &'ayame-spell;help;dict;update'= {
+        }
+        &'ayame-spell;help;dict;vendor'= {
         }
         &'ayame-spell;help;init'= {
         }

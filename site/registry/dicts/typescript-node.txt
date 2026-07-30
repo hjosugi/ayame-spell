@@ -1,0 +1,24 @@
+# TypeScript and Node.js terms independently curated by ayame-spell contributors.
+bunjs
+corepack
+definitelytyped
+deno
+esbuild
+eslintconfig
+fastify
+jsdom
+nestjs
+nodejs
+nodenext
+nvmrc
+pnpm
+tseslint
+tslib
+tsnode
+tsup
+tsx
+typecheck
+typechecked
+typechecking
+vitepress
+yarnpkg

@@ -1,0 +1,18 @@
+# Terraform and infrastructure-as-code terms independently curated by ayame-spell contributors.
+cloudinit
+driftctl
+gruntwork
+hcl
+infracost
+localstack
+modulepath
+opentofu
+provisioner
+statefile
+terraform
+terraformer
+terragrunt
+tflint
+tfsec
+tfvars
+workspaceid

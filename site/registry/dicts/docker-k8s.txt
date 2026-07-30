@@ -1,0 +1,19 @@
+# Docker and Kubernetes terms independently curated by ayame-spell contributors.
+buildkit
+containerd
+dockerfile
+dockerfiles
+dockerhub
+etcd
+helmfile
+ingressclass
+kubeadm
+kubeconfig
+kubectl
+kubelet
+kubernetes
+kustomize
+minikube
+podman
+replicaset
+statefulset

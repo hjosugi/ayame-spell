@@ -126,6 +126,7 @@ dependencies = [
  "memchr",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
  "toml",
  "typos-dict",

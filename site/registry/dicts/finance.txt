@@ -1,0 +1,20 @@
+# Finance and accounting terms independently curated by ayame-spell contributors.
+backtesting
+basispoint
+basispoints
+bookvalue
+counterparty
+drawdown
+ebitda
+fintech
+frontoffice
+marktomarket
+midmarket
+multibagger
+orderbook
+paydown
+pricebook
+riskfree
+roboadvisor
+runrate
+tokenized

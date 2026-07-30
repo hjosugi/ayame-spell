@@ -1,0 +1,24 @@
+# AWS service names independently curated by ayame-spell contributors.
+appsync
+cloudformation
+cloudfront
+cloudtrail
+cloudwatch
+codebuild
+codecommit
+codedeploy
+cognito
+ec2
+ecr
+ecs
+eks
+fargate
+firehose
+iam
+kinesis
+lightsail
+route53
+sagemaker
+secretsmanager
+sns
+sqs

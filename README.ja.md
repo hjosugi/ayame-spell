@@ -180,11 +180,15 @@ $ ayame-spell dict list
   ja-variants        ja  variants      3173  カタカナ表記ゆれ (SudachiDict 由来)
   ja-tech-variants   ja  variants        42  技術文書向けカタカナ規則(厳選)
 
-$ ayame-spell dict add en-base    # DL + ayame-spell.toml へ自動追記
+$ ayame-spell dict add en-base    # DL + 設定と lockfile を更新
+$ ayame-spell dict update --check # pin していない辞書の更新確認
+$ ayame-spell dict vendor en-base # lock 済みの内容を ./dict へコピー
 ```
 
-設定には `"registry:en-base"` と記録されるので、チームメイトは同じコマンドを
-一度実行するだけ。社内レジストリを立てたい場合は `$AYAME_SPELL_REGISTRY` で
+`ayame-spell.toml` と `ayame-spell.lock` を両方 commit すると、チーム全員が
+同じ version と sha256 検証済みの内容を解決できます。明示 pin は
+`registry:en-base@1.0.0`、ネットワーク非依存のコピーは `dict vendor` を使います。
+社内レジストリは `$AYAME_SPELL_REGISTRY` または `dict --registry URL` で
 index.json の URL を差し替えられます。
 
 ## 日本語チェック詳細

@@ -16,15 +16,21 @@ ayame-spell はダウンロードした各ファイルを、インデックス�
 ```sh
 ayame-spell dict list
 ayame-spell dict add en-base python
+ayame-spell dict add en-base@1.0.0
 ayame-spell dict add --cache-only rust
 ayame-spell dict update
+ayame-spell dict update --check
+ayame-spell dict vendor en-base
 ayame-spell dict remove python
 ```
 
 - `list` はインデックスを取得し、キャッシュ済みの項目に `*` を付ける。
 - `add` は辞書を取得し、種類に合う設定配列へ追加する。
 - `--cache-only` はプロジェクト設定を変更せずに取得する。
-- `update` は現在キャッシュしている全項目を再取得する。
+- `update` は `up to date` を報告するか、pinしていない項目をversion間で更新する。
+  `--check` は書き込まず、更新があれば終了コード `1` を返す。
+- `vendor` は検証済みバイト列を `dict/` 以下へ複製し、プロジェクト設定を相対
+  パスへ書き換える。
 - `remove` はキャッシュファイルとプロジェクト設定の参照を削除する。
 
 ## 辞書の種類
@@ -35,14 +41,25 @@ ayame-spell dict remove python
 | `corrections` | `誤字<TAB>修正[,修正]` | `[corrections].extra` |
 | `variants` | TOML の `[variants]` マップ | `[japanese].variant-files` |
 
-レジストリ参照は `registry:name` 形式です。現在のレジストリ形式は、取得時に
-インデックスの SHA-256 で内容を固定します。設定内の辞書バージョン指定はまだ
-対応していません。将来のレジストリ更新後もビルドを完全に同じにする必要がある
-場合は、ファイルをプロジェクト内へ置いてください。
+レジストリ参照は `registry:name` または明示的な
+`registry:name@version` 形式です。通常の `dict add` は、解決したversion、
+変更しない配信ファイル、SHA-256を `ayame-spell.lock` に記録します。この
+lockfileをコミットすると、レジストリに新versionがあっても別環境で同じバイト列を
+取得・検証できます。
+
+公開済みversionはインデックスの `versions` 配列と配信ファイルに残し、書き換え
+ません。明示的な `@version` pin は `dict update` でも進みません。checker は
+ロック済みキャッシュを読み込む前に SHA-256 を検証します。
 
 ## オフライン・完全再現で使う
 
-辞書を取得してリポジトリへコピーし、レジストリ参照を相対パスへ置き換えます。
+次の1コマンドで辞書をプロジェクトへ置き、参照を書き換えます。
+
+```sh
+ayame-spell dict vendor en-base
+```
+
+生成される設定は相対パスを使います。
 
 ```toml
 [words]
@@ -57,22 +74,33 @@ dictionaries = ["dict/en-base.txt", "dict/team.txt"]
 
 ```sh
 export AYAME_SPELL_REGISTRY=https://docs.example.com/spelling/index.json
+ayame-spell dict --registry https://docs.example.com/spelling/index.json list
 ```
 
 インデックスのスキーマは次のとおりです。
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "dictionaries": [
     {
       "name": "team",
+      "version": "1.0.0",
       "language": "en",
       "kind": "wordlist",
       "description": "社名と製品用語",
+      "provenance": "Example Corp が保守",
       "file": "dicts/team.txt",
       "sha256": "...",
       "entries": 120,
+      "versions": [
+        {
+          "version": "1.0.0",
+          "file": "dicts/team.txt",
+          "sha256": "...",
+          "entries": 120
+        }
+      ],
       "license": "Proprietary"
     }
   ]
@@ -81,10 +109,13 @@ export AYAME_SPELL_REGISTRY=https://docs.example.com/spelling/index.json
 
 ## 辞書を追加する
 
-ayame-spell のチェックアウトで次を行います。
+ファイル形式、サイズ制限、versionの不変性、由来、ライセンス、pull requestの
+チェックリストは
+[辞書コントリビューションガイド](https://github.com/hjosugi/ayame-spell/blob/main/CONTRIBUTING-dictionaries.ja.md)
+を参照します。ayame-spell のチェックアウトで次を行います。
 
 1. UTF-8 データを `site/registry/dicts/` に追加する。
-2. `site/registry/registry.toml` に `[[dictionary]]` を追加する。
+2. `site/registry/registry.toml` にversion付き `[[dictionary]]` を追加する。
 3. 出典とライセンスをファイルヘッダーに記載し、必要なら `NOTICE.md` も更新する。
 4. インデックスを生成する。
 
@@ -100,5 +131,5 @@ ayame-spell のチェックアウトで次を行います。
    ```
 
 項目はソートし、一つの技術領域または表記方針に絞り、秘密情報や非公開識別子を
-含めないでください。一つのコードベースの全識別子ではなく、複数プロジェクトで
-役立つ用語を単語リストにします。
+含めません。生成処理は重複と、`en-base` に既にある言語別wordlist項目を拒否
+します。

@@ -5,10 +5,12 @@
 //! - `cargo xtask rules-docs` regenerates the EN/JA rules reference.
 //! - `cargo xtask man` regenerates the checked-in manual page from Clap.
 
+use std::collections::{BTreeSet, HashSet};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -21,12 +23,21 @@ struct Source {
 #[derive(Deserialize)]
 struct SourceDict {
     name: String,
+    version: String,
     language: String,
     kind: String,
     description: String,
+    provenance: String,
     file: String,
-    #[serde(default)]
-    license: Option<String>,
+    license: String,
+    #[serde(default, rename = "release")]
+    releases: Vec<SourceRelease>,
+}
+
+#[derive(Deserialize)]
+struct SourceRelease {
+    version: String,
+    file: String,
 }
 
 #[derive(Serialize)]
@@ -38,14 +49,24 @@ struct Index {
 #[derive(Serialize)]
 struct IndexDict {
     name: String,
+    version: String,
     language: String,
     kind: String,
     description: String,
+    provenance: String,
     file: String,
     sha256: String,
     entries: usize,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    license: Option<String>,
+    versions: Vec<IndexRelease>,
+    license: String,
+}
+
+#[derive(Serialize)]
+struct IndexRelease {
+    version: String,
+    file: String,
+    sha256: String,
+    entries: usize,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -96,41 +117,279 @@ fn registry() -> anyhow::Result<()> {
         registry_dir.join("registry.toml"),
     )?)?;
 
+    let en_base_file = source
+        .dictionaries
+        .iter()
+        .find(|dictionary| dictionary.name == "en-base")
+        .map(|dictionary| registry_dir.join(&dictionary.file))
+        .context("registry must contain en-base")?;
+    let en_base = wordlist_entries(&en_base_file)?;
     let mut dictionaries = Vec::new();
+    let mut names = HashSet::new();
     for d in source.dictionaries {
-        let path = registry_dir.join(&d.file);
-        let bytes = std::fs::read(&path).map_err(|e| anyhow::anyhow!("{}: {e}", path.display()))?;
-        let sha256 = hex(&Sha256::digest(&bytes));
-        let entries = String::from_utf8_lossy(&bytes)
-            .lines()
-            .map(str::trim)
-            .filter(|l| !l.is_empty() && !l.starts_with('#'))
-            .count();
-        println!(
-            "{:24} {:>6} entries  sha256 {}",
+        anyhow::ensure!(
+            names.insert(d.name.clone()),
+            "duplicate dictionary name `{}`",
+            d.name
+        );
+        anyhow::ensure!(!d.version.trim().is_empty(), "{} has no version", d.name);
+        anyhow::ensure!(
+            valid_semver(&d.version),
+            "{} has invalid semantic version `{}`",
             d.name,
+            d.version
+        );
+        anyhow::ensure!(
+            !d.provenance.trim().is_empty(),
+            "{} has no provenance",
+            d.name
+        );
+        anyhow::ensure!(!d.license.trim().is_empty(), "{} has no license", d.name);
+        let path = registry_dir.join(&d.file);
+        let (sha256, entries) = registry_file_metadata(&path, &d.kind)?;
+        lint_registry_file(&d.name, &d.kind, &path, &en_base)?;
+        let mut versions = vec![IndexRelease {
+            version: d.version.clone(),
+            file: d.file.clone(),
+            sha256: sha256.clone(),
+            entries,
+        }];
+        let mut version_names = HashSet::from([d.version.clone()]);
+        for release in d.releases {
+            anyhow::ensure!(
+                version_names.insert(release.version.clone()),
+                "duplicate version {}@{}",
+                d.name,
+                release.version
+            );
+            anyhow::ensure!(
+                valid_semver(&release.version),
+                "{} has invalid semantic version `{}`",
+                d.name,
+                release.version
+            );
+            let release_path = registry_dir.join(&release.file);
+            let (release_sha256, release_entries) = registry_file_metadata(&release_path, &d.kind)?;
+            lint_registry_file(&d.name, &d.kind, &release_path, &en_base)?;
+            versions.push(IndexRelease {
+                version: release.version,
+                file: release.file,
+                sha256: release_sha256,
+                entries: release_entries,
+            });
+        }
+        versions.sort_by(|left, right| right.version.cmp(&left.version));
+        println!(
+            "{:24} {:9} {:>6} entries  sha256 {}",
+            d.name,
+            d.version,
             entries,
             &sha256[..12]
         );
         dictionaries.push(IndexDict {
             name: d.name,
+            version: d.version,
             language: d.language,
             kind: d.kind,
             description: d.description,
+            provenance: d.provenance,
             file: d.file,
             sha256,
             entries,
+            versions,
             license: d.license,
         });
     }
 
     let index = Index {
-        version: 1,
+        version: 2,
         dictionaries,
     };
     let out = registry_dir.join("index.json");
     std::fs::write(&out, serde_json::to_string_pretty(&index)? + "\n")?;
     println!("wrote {}", out.display());
+    Ok(())
+}
+
+fn registry_file_metadata(path: &Path, kind: &str) -> anyhow::Result<(String, usize)> {
+    let bytes =
+        std::fs::read(path).map_err(|error| anyhow::anyhow!("{}: {error}", path.display()))?;
+    let sha256 = hex(&Sha256::digest(&bytes));
+    let text =
+        String::from_utf8(bytes).with_context(|| format!("{} is not UTF-8", path.display()))?;
+    let entries = match kind {
+        "wordlist" | "corrections" => text
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty() && !line.starts_with('#'))
+            .count(),
+        "variants" => toml::from_str::<toml::Value>(&text)?
+            .get("variants")
+            .and_then(toml::Value::as_table)
+            .map_or(0, |variants| variants.len()),
+        other => anyhow::bail!("unknown dictionary kind `{other}`"),
+    };
+    Ok((sha256, entries))
+}
+
+fn wordlist_entries(path: &Path) -> anyhow::Result<BTreeSet<String>> {
+    let text = std::fs::read_to_string(path)?;
+    Ok(text
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .map(str::to_ascii_lowercase)
+        .collect())
+}
+
+fn valid_semver(version: &str) -> bool {
+    let (without_build, build) = version
+        .split_once('+')
+        .map_or((version, None), |(version, build)| (version, Some(build)));
+    if build.is_some_and(|build| !valid_identifiers(build, false)) {
+        return false;
+    }
+    let (core, prerelease) = without_build
+        .split_once('-')
+        .map_or((without_build, None), |(core, prerelease)| {
+            (core, Some(prerelease))
+        });
+    if prerelease.is_some_and(|prerelease| !valid_identifiers(prerelease, true)) {
+        return false;
+    }
+    let parts: Vec<&str> = core.split('.').collect();
+    parts.len() == 3
+        && parts.iter().all(|part| {
+            !part.is_empty()
+                && part.bytes().all(|byte| byte.is_ascii_digit())
+                && (part == &"0" || !part.starts_with('0'))
+        })
+}
+
+fn valid_identifiers(value: &str, reject_numeric_leading_zero: bool) -> bool {
+    !value.is_empty()
+        && value.split('.').all(|identifier| {
+            !identifier.is_empty()
+                && identifier
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
+                && (!reject_numeric_leading_zero
+                    || !identifier.bytes().all(|byte| byte.is_ascii_digit())
+                    || identifier == "0"
+                    || !identifier.starts_with('0'))
+        })
+}
+
+fn lint_registry_file(
+    name: &str,
+    kind: &str,
+    path: &Path,
+    en_base: &BTreeSet<String>,
+) -> anyhow::Result<()> {
+    match kind {
+        "wordlist" => lint_wordlist(name, path, en_base),
+        "corrections" => lint_corrections(path),
+        "variants" => lint_variants(path),
+        other => anyhow::bail!("{name} has unknown dictionary kind `{other}`"),
+    }
+}
+
+fn lint_wordlist(name: &str, path: &Path, en_base: &BTreeSet<String>) -> anyhow::Result<()> {
+    let text = std::fs::read_to_string(path)?;
+    let entries: Vec<String> = text
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .map(str::to_ascii_lowercase)
+        .collect();
+    let mut sorted = entries.clone();
+    sorted.sort();
+    sorted.dedup();
+    anyhow::ensure!(
+        entries == sorted,
+        "{} must be sorted and deduplicated",
+        path.display()
+    );
+    if name != "en-base" {
+        let duplicates: Vec<&str> = entries
+            .iter()
+            .filter(|entry| en_base.contains(*entry))
+            .map(String::as_str)
+            .take(10)
+            .collect();
+        anyhow::ensure!(
+            duplicates.is_empty(),
+            "{} repeats en-base entries: {}",
+            path.display(),
+            duplicates.join(", ")
+        );
+    }
+    Ok(())
+}
+
+fn lint_corrections(path: &Path) -> anyhow::Result<()> {
+    let text = std::fs::read_to_string(path)?;
+    let mut typos = BTreeSet::new();
+    for (line_number, line) in text.lines().enumerate() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let (typo, fixes) = line.split_once('\t').with_context(|| {
+            format!(
+                "{}:{} must be typo<TAB>fix[,fix...]",
+                path.display(),
+                line_number + 1
+            )
+        })?;
+        anyhow::ensure!(
+            !typo.trim().is_empty() && fixes.split(',').any(|fix| !fix.trim().is_empty()),
+            "{}:{} has an empty typo or fix",
+            path.display(),
+            line_number + 1
+        );
+        anyhow::ensure!(
+            typos.insert(typo.trim().to_ascii_lowercase()),
+            "{}:{} repeats correction `{}`",
+            path.display(),
+            line_number + 1,
+            typo.trim()
+        );
+    }
+    anyhow::ensure!(
+        !typos.is_empty(),
+        "{} has no correction entries",
+        path.display()
+    );
+    Ok(())
+}
+
+fn lint_variants(path: &Path) -> anyhow::Result<()> {
+    let text = std::fs::read_to_string(path)?;
+    let value: toml::Value =
+        toml::from_str(&text).with_context(|| format!("cannot parse {}", path.display()))?;
+    let variants = value
+        .get("variants")
+        .and_then(toml::Value::as_table)
+        .context("variant dictionary must contain a [variants] table")?;
+    anyhow::ensure!(
+        !variants.is_empty(),
+        "{} has no variant entries",
+        path.display()
+    );
+    for (variant, preferred) in variants {
+        let preferred = preferred.as_str().with_context(|| {
+            format!(
+                "{} variant `{variant}` must map to a string",
+                path.display()
+            )
+        })?;
+        anyhow::ensure!(
+            !variant.trim().is_empty() && !preferred.trim().is_empty() && variant != preferred,
+            "{} has invalid variant mapping `{variant}` = `{preferred}`",
+            path.display()
+        );
+    }
     Ok(())
 }
 
@@ -396,7 +655,8 @@ Exit status and machine-readable fields are documented in
 | `dict list` | List registry dictionaries and installation state. |
 | `dict add <NAMES>...` | Fetch dictionaries and add them to project config. |
 | `dict remove <NAME>` | Delete a cache entry and disable it in config. |
-| `dict update` | Re-fetch cached dictionaries. |
+| `dict update` | Check or install registry updates for unlocked dictionaries. |
+| `dict vendor <NAME>` | Copy a locked registry dictionary into the project. |
 | `init` | Create a starter `ayame-spell.toml`. |
 | `config` | Print merged config after applying defaults. |
 | `explain <CODE>` | Explain a rule and how to configure or silence it. |
@@ -430,7 +690,11 @@ Exit status and machine-readable fields are documented in
 | `--global` | `words add` | Add user words instead of project words. |
 | `<NAMES>...` | `dict add` | One or more registry names to fetch. |
 | `--cache-only` | `dict add` | Cache without changing project config. |
+| `--registry <URL>` | every `dict` command | Override the registry index URL for this invocation. |
 | `<NAME>` | `dict remove` | Registry name to remove. |
+| `--check` | `dict update` | Exit 1 when an update is available without writing. |
+| `<NAME>` | `dict vendor` | Registry name, optionally pinned as `name@version`. |
+| `--dir <DIR>` | `dict vendor` | Project-relative destination directory; default `dict`. |
 | `--force` | `init` | Overwrite an existing config file. |
 | `<SHELL>` | `completions` | `bash`, `elvish`, `fish`, `powershell`, or `zsh`. |
 | `--stdio` | `lsp` | Client compatibility; transport is always stdio. |
@@ -507,7 +771,8 @@ const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 | `dict list` | レジストリ辞書と導入状態を一覧表示。 |
 | `dict add <NAMES>...` | 辞書を取得してプロジェクト設定へ追加。 |
 | `dict remove <NAME>` | キャッシュを削除して設定から無効化。 |
-| `dict update` | キャッシュ済み辞書を再取得。 |
+| `dict update` | pin されていない辞書の更新確認または更新。 |
+| `dict vendor <NAME>` | lock 済みレジストリ辞書をプロジェクト内へコピー。 |
 | `init` | 初期設定 `ayame-spell.toml` を作成。 |
 | `config` | マージ・既定値適用後の最終設定を表示。 |
 | `explain <CODE>` | ルールの理由、設定、無視する方法を説明。 |
@@ -541,7 +806,11 @@ const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 | `--global` | `words add` | プロジェクト単語ではなくユーザー単語へ追加。 |
 | `<NAMES>...` | `dict add` | 取得する一つ以上のレジストリ名。 |
 | `--cache-only` | `dict add` | 設定を変更せずキャッシュだけ作成。 |
+| `--registry <URL>` | 全 `dict` コマンド | この実行だけレジストリ索引 URL を差し替え。 |
 | `<NAME>` | `dict remove` | 削除するレジストリ名。 |
+| `--check` | `dict update` | 書き込まず、更新があれば終了コード 1。 |
+| `<NAME>` | `dict vendor` | レジストリ名。`name@version` の pin も指定可能。 |
+| `--dir <DIR>` | `dict vendor` | プロジェクト相対の配置先。既定は `dict`。 |
 | `--force` | `init` | 既存の設定ファイルを上書き。 |
 | `<SHELL>` | `completions` | `bash`、`elvish`、`fish`、`powershell`、`zsh`。 |
 | `--stdio` | `lsp` | クライアント互換用。通信は常に標準入出力。 |

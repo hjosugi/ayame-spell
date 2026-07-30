@@ -10,6 +10,7 @@ const labels =
   locale === "ja"
     ? {
         name: "名前",
+        version: "Version",
         language: "言語",
         kind: "種類",
         entries: "項目数",
@@ -17,6 +18,7 @@ const labels =
       }
     : {
         name: "Name",
+        version: "Version",
         language: "Language",
         kind: "Kind",
         entries: "Entries",
@@ -34,6 +36,7 @@ const kinds =
     <thead>
       <tr>
         <th>{labels.name}</th>
+        <th>{labels.version}</th>
         <th>{labels.language}</th>
         <th>{labels.kind}</th>
         <th>{labels.entries}</th>
@@ -47,6 +50,7 @@ const kinds =
             <td>
               <code>{dictionary.name}</code>
             </td>
+            <td>{dictionary.version}</td>
             <td>{dictionary.language}</td>
             <td>{kinds[dictionary.kind as keyof typeof kinds] ?? dictionary.kind}</td>
             <td>{dictionary.entries.toLocaleString(locale)}</td>

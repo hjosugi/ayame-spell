@@ -1,0 +1,18 @@
+# C and C++ ecosystem terms independently curated by ayame-spell contributors.
+autoconf
+automake
+cmake
+conanfile
+constexpr
+cppcheck
+cppreference
+ctest
+gdb
+includeos
+libcxx
+mesonbuild
+msvc
+pkgconfig
+stdcxx
+toolchain
+vcpkg

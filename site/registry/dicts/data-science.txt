@@ -1,0 +1,24 @@
+# Data science terms independently curated by ayame-spell contributors.
+backprop
+backpropagation
+catboost
+dataframe
+dataframes
+datapoint
+datapoints
+embeddings
+featurestore
+finetune
+finetuned
+finetuning
+hyperparameter
+hyperparameters
+lightgbm
+mlflow
+multicollinearity
+onehot
+sklearn
+tensorboard
+tokenization
+underfitting
+xgboost

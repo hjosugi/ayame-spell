@@ -1,0 +1,19 @@
+# .NET ecosystem terms independently curated by ayame-spell contributors.
+aspnet
+blazor
+clr
+dotnet
+efcore
+fsharp
+ildasm
+linq
+msbuild
+nuget
+razorpages
+signalr
+strongname
+vbnet
+webapi
+winforms
+winui
+xunit

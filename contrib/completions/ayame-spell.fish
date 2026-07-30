@@ -130,19 +130,22 @@ complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fis
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "add" -d 'Add words to the project (default) or global word file'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "triage" -d 'Search flagged words and choose a dictionary, ignore, fix, or skip action for each one'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand words; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -s h -l help -d 'Print help'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "list" -d 'List available dictionaries and their install status'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "add" -d 'Download dictionaries and enable them in the project config'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "search" -d 'Search registry names and descriptions'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "info" -d 'Show metadata and project status for one dictionary'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "remove" -d 'Delete a cached dictionary and disable it in the project config'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "update" -d 'Re-download every cached dictionary from the registry'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -l registry -d 'Override the registry index URL' -r
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -s h -l help -d 'Print help'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "list" -d 'List available dictionaries and their install status'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "add" -d 'Download dictionaries and enable them in the project config'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "search" -d 'Search registry names and descriptions'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "info" -d 'Show metadata and project status for one dictionary'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "remove" -d 'Delete a cached dictionary and disable it in the project config'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "update" -d 'Compare cached dictionaries with the registry and update unlocked ones'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "vendor" -d 'Copy a registry dictionary into the project and rewrite its config reference for offline use'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and not __fish_seen_subcommand_from list add search info remove update vendor help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from list" -l lang -d 'Filter by language' -r -f -a "en\t''
 ja\t''"
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from list" -l kind -d 'Filter by dictionary kind' -r -f -a "wordlist\t''
 corrections\t''
 variants\t''"
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from list" -l registry -d 'Override the registry index URL' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from list" -l json -d 'Emit one JSON array for scripting'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from add" -l lang -d 'Filter the interactive picker by language' -r -f -a "en\t''
@@ -150,6 +153,7 @@ ja\t''"
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from add" -l kind -d 'Filter the interactive picker by dictionary kind' -r -f -a "wordlist\t''
 corrections\t''
 variants\t''"
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from add" -l registry -d 'Override the registry index URL' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from add" -l cache-only -d 'Download to the cache only; leave the project config untouched'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from add" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from search" -l lang -r -f -a "en\t''
@@ -157,18 +161,27 @@ ja\t''"
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from search" -l kind -r -f -a "wordlist\t''
 corrections\t''
 variants\t''"
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from search" -l registry -d 'Override the registry index URL' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from search" -l json
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from search" -s h -l help -d 'Print help'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from info" -l registry -d 'Override the registry index URL' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from info" -l json
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from info" -s h -l help -d 'Print help'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from remove" -l registry -d 'Override the registry index URL' -r
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from remove" -s h -l help -d 'Print help'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from update" -l registry -d 'Override the registry index URL' -r
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from update" -l check -d 'Exit with status 1 when an update is available; write nothing'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from update" -s h -l help -d 'Print help'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from vendor" -l dir -d 'Project-relative destination directory' -r -F
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from vendor" -l registry -d 'Override the registry index URL' -r
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from vendor" -s h -l help -d 'Print help'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "list" -d 'List available dictionaries and their install status'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "add" -d 'Download dictionaries and enable them in the project config'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "search" -d 'Search registry names and descriptions'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "info" -d 'Show metadata and project status for one dictionary'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "remove" -d 'Delete a cached dictionary and disable it in the project config'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "update" -d 'Re-download every cached dictionary from the registry'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "update" -d 'Compare cached dictionaries with the registry and update unlocked ones'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "vendor" -d 'Copy a registry dictionary into the project and rewrite its config reference for offline use'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand dict; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand init" -l force -d 'Overwrite an existing config file'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand init" -l interactive -d 'Run the guided setup wizard'
@@ -227,7 +240,8 @@ complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "search" -d 'Search registry names and descriptions'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "info" -d 'Show metadata and project status for one dictionary'
 complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "remove" -d 'Delete a cached dictionary and disable it in the project config'
-complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "update" -d 'Re-download every cached dictionary from the registry'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "update" -d 'Compare cached dictionaries with the registry and update unlocked ones'
+complete -c ayame-spell -n "__fish_ayame_spell_using_subcommand help; and __fish_seen_subcommand_from dict" -f -a "vendor" -d 'Copy a registry dictionary into the project and rewrite its config reference for offline use'
 
 # ayame-spell dynamic completion (cache-only; never performs network I/O).
 complete -c ayame-spell -n '__fish_seen_subcommand_from dict; and __fish_seen_subcommand_from add' -f -a '(command ayame-spell __complete dict-add (commandline -ct))'

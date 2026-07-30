@@ -175,6 +175,9 @@ enum Cmd {
     },
     /// Shared dictionaries from the ayame-spell registry.
     Dict {
+        /// Override the registry index URL.
+        #[arg(long, value_name = "URL", global = true)]
+        registry: Option<String>,
         #[command(subcommand)]
         cmd: dict::DictCmd,
     },
@@ -305,7 +308,12 @@ fn main() {
                 Format::Human,
             ),
             Some(Cmd::Words { cmd }) => words::run(cmd),
-            Some(Cmd::Dict { cmd }) => dict::run(cmd),
+            Some(Cmd::Dict { registry, cmd }) => {
+                if let Some(registry) = registry {
+                    std::env::set_var("AYAME_SPELL_REGISTRY", registry);
+                }
+                dict::run(cmd)
+            }
             Some(Cmd::Init {
                 force,
                 interactive,

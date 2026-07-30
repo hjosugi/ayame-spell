@@ -3,7 +3,8 @@
 //!
 //! Dictionary references understand three forms:
 //! - `registry:name` — a dictionary installed from the ayame-spell registry
-//!   (`ayame-spell dict add name`), cached under `~/.cache/ayame-spell/`;
+//!   (`ayame-spell dict add name`), resolved through `ayame-spell.lock`;
+//! - `registry:name@version` — an explicit immutable registry release;
 //! - a path relative to the project root;
 //! - an absolute path.
 
@@ -80,7 +81,8 @@ pub struct WordsConfig {
     pub project: String,
     /// Words never flagged, in any mode.
     pub ignore: Vec<String>,
-    /// Wordlists for dictionary mode (`registry:name` or paths).
+    /// Wordlists for dictionary mode (`registry:name`,
+    /// `registry:name@version`, or paths).
     pub dictionaries: Vec<String>,
 }
 
@@ -90,7 +92,7 @@ pub struct CorrectionsConfig {
     /// Use the built-in English corrections table (typos-dict).
     pub builtin: bool,
     /// Extra correction tables: TSV files (`typo<TAB>fix[,fix]`) or
-    /// `registry:name` references.
+    /// `registry:name` / `registry:name@version` references.
     pub extra: Vec<String>,
     /// Inline corrections; a fix equal to its typo whitelists the word.
     pub words: BTreeMap<String, Vec<String>>,
@@ -103,7 +105,7 @@ pub struct JapaneseConfig {
     pub katakana_style: KatakanaStyleConfig,
     /// Inline variant rules: `"変種" = "正規形"`.
     pub variants: BTreeMap<String, String>,
-    /// Variant rule files (TOML `[variants]` tables) or `registry:name`.
+    /// Variant rule files (TOML `[variants]` tables) or registry references.
     pub variant_files: Vec<String>,
     pub flag_fullwidth_alnum: bool,
     pub flag_halfwidth_kana: bool,
@@ -456,10 +458,14 @@ pub struct LoadedConfig {
 impl LoadedConfig {
     /// Resolve a dictionary/corrections reference to a path.
     pub fn resolve_ref(&self, reference: &str) -> anyhow::Result<PathBuf> {
-        if let Some(name) = reference.strip_prefix("registry:") {
-            crate::registry_cache_path(name).ok_or_else(|| {
-                anyhow::anyhow!("cannot determine cache directory for registry:{name}")
-            })
+        if let Some(reference) = reference.strip_prefix("registry:") {
+            let resolved = crate::registry_lock::resolve(&self.root, reference)?;
+            if let Some(expected) = resolved.sha256.as_deref() {
+                if resolved.path.is_file() {
+                    crate::registry_lock::verify(&resolved.path, expected)?;
+                }
+            }
+            Ok(resolved.path)
         } else {
             let p = Path::new(reference);
             Ok(if p.is_absolute() {

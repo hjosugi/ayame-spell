@@ -31,7 +31,8 @@ Exit status and machine-readable fields are documented in
 | `dict list` | List registry dictionaries and installation state. |
 | `dict add <NAMES>...` | Fetch dictionaries and add them to project config. |
 | `dict remove <NAME>` | Delete a cache entry and disable it in config. |
-| `dict update` | Re-fetch cached dictionaries. |
+| `dict update` | Check or install registry updates for unlocked dictionaries. |
+| `dict vendor <NAME>` | Copy a locked registry dictionary into the project. |
 | `init` | Create a starter `ayame-spell.toml`. |
 | `config` | Print merged config after applying defaults. |
 | `explain <CODE>` | Explain a rule and how to configure or silence it. |
@@ -65,7 +66,11 @@ Exit status and machine-readable fields are documented in
 | `--global` | `words add` | Add user words instead of project words. |
 | `<NAMES>...` | `dict add` | One or more registry names to fetch. |
 | `--cache-only` | `dict add` | Cache without changing project config. |
+| `--registry <URL>` | every `dict` command | Override the registry index URL for this invocation. |
 | `<NAME>` | `dict remove` | Registry name to remove. |
+| `--check` | `dict update` | Exit 1 when an update is available without writing. |
+| `<NAME>` | `dict vendor` | Registry name, optionally pinned as `name@version`. |
+| `--dir <DIR>` | `dict vendor` | Project-relative destination directory; default `dict`. |
 | `--force` | `init` | Overwrite an existing config file. |
 | `<SHELL>` | `completions` | `bash`, `elvish`, `fish`, `powershell`, or `zsh`. |
 | `--stdio` | `lsp` | Client compatibility; transport is always stdio. |
@@ -357,7 +362,7 @@ Options:
 $ ayame-spell dict --help
 Shared dictionaries from the ayame-spell registry
 
-Usage: ayame-spell dict <COMMAND>
+Usage: ayame-spell dict [OPTIONS] <COMMAND>
 
 Commands:
   list    List available dictionaries and their install status
@@ -365,11 +370,14 @@ Commands:
   search  Search registry names and descriptions
   info    Show metadata and project status for one dictionary
   remove  Delete a cached dictionary and disable it in the project config
-  update  Re-download every cached dictionary from the registry
+  update  Compare cached dictionaries with the registry and update unlocked ones
+  vendor  Copy a registry dictionary into the project and rewrite its config reference for offline
+          use
   help    Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict list`
@@ -381,10 +389,11 @@ List available dictionaries and their install status
 Usage: ayame-spell dict list [OPTIONS]
 
 Options:
-      --json         Emit one JSON array for scripting
-      --lang <LANG>  Filter by language [possible values: en, ja]
-      --kind <KIND>  Filter by dictionary kind [possible values: wordlist, corrections, variants]
-  -h, --help         Print help
+      --json            Emit one JSON array for scripting
+      --registry <URL>  Override the registry index URL
+      --lang <LANG>     Filter by language [possible values: en, ja]
+      --kind <KIND>     Filter by dictionary kind [possible values: wordlist, corrections, variants]
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict add`
@@ -399,11 +408,12 @@ Arguments:
   [NAMES]...
 
 Options:
-      --cache-only   Download to the cache only; leave the project config untouched
-      --lang <LANG>  Filter the interactive picker by language [possible values: en, ja]
-      --kind <KIND>  Filter the interactive picker by dictionary kind [possible values: wordlist,
-                     corrections, variants]
-  -h, --help         Print help
+      --cache-only      Download to the cache only; leave the project config untouched
+      --registry <URL>  Override the registry index URL
+      --lang <LANG>     Filter the interactive picker by language [possible values: en, ja]
+      --kind <KIND>     Filter the interactive picker by dictionary kind [possible values: wordlist,
+                        corrections, variants]
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict search`
@@ -418,10 +428,11 @@ Arguments:
   <QUERY>
 
 Options:
-      --lang <LANG>  [possible values: en, ja]
-      --kind <KIND>  [possible values: wordlist, corrections, variants]
+      --lang <LANG>     [possible values: en, ja]
+      --registry <URL>  Override the registry index URL
+      --kind <KIND>     [possible values: wordlist, corrections, variants]
       --json
-  -h, --help         Print help
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict info`
@@ -437,7 +448,8 @@ Arguments:
 
 Options:
       --json
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict remove`
@@ -446,25 +458,45 @@ Options:
 $ ayame-spell dict remove --help
 Delete a cached dictionary and disable it in the project config
 
-Usage: ayame-spell dict remove <NAME>
+Usage: ayame-spell dict remove [OPTIONS] <NAME>
 
 Arguments:
   <NAME>
 
 Options:
-  -h, --help  Print help
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell dict update`
 
 ```text
 $ ayame-spell dict update --help
-Re-download every cached dictionary from the registry
+Compare cached dictionaries with the registry and update unlocked ones
 
-Usage: ayame-spell dict update
+Usage: ayame-spell dict update [OPTIONS]
 
 Options:
-  -h, --help  Print help
+      --check           Exit with status 1 when an update is available; write nothing
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
+```
+
+## `ayame-spell dict vendor`
+
+```text
+$ ayame-spell dict vendor --help
+Copy a registry dictionary into the project and rewrite its config reference for offline use
+
+Usage: ayame-spell dict vendor [OPTIONS] <NAME>
+
+Arguments:
+  <NAME>
+
+Options:
+      --dir <DIR>       Project-relative destination directory [default: dict]
+      --registry <URL>  Override the registry index URL
+  -h, --help            Print help
 ```
 
 ## `ayame-spell init`

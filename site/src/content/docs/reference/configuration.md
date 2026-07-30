@@ -106,7 +106,9 @@ max-file-size = 10485760
 | `dictionaries` | array of references | `[]` | Wordlists used by dictionary mode. |
 
 References can be an absolute path, a path relative to the project root, or
-`registry:name`. Registry files must first be cached with `dict add`.
+`registry:name` / `registry:name@version`. Registry files must first be cached
+with `dict add`; commit the generated `ayame-spell.lock` for reproducible
+unpinned references.
 
 ```toml
 [words]

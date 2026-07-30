@@ -639,6 +639,62 @@ pub fn remove_from_string_array(
     Ok(removed)
 }
 
+/// Replace all registry references for `name` in a configuration array with
+/// one project-local path, preserving unrelated values.
+pub fn replace_registry_reference(
+    loaded: &LoadedConfig,
+    table: &str,
+    key: &str,
+    name: &str,
+    replacement: &str,
+) -> anyhow::Result<PathBuf> {
+    let path = loaded
+        .project_file
+        .clone()
+        .unwrap_or_else(|| loaded.root.join("ayame-spell.toml"));
+    let text = std::fs::read_to_string(&path).unwrap_or_default();
+    let mut doc: toml_edit::DocumentMut = text
+        .parse()
+        .with_context(|| format!("cannot parse {}", path.display()))?;
+    let table_item = doc
+        .entry(table)
+        .or_insert(toml_edit::Item::Table(toml_edit::Table::new()));
+    let table = table_item
+        .as_table_mut()
+        .with_context(|| format!("[{table}] in {} is not a table", path.display()))?;
+    let item = table
+        .entry(key)
+        .or_insert(toml_edit::value(toml_edit::Array::new()));
+    let array = item
+        .as_array_mut()
+        .with_context(|| format!("{key} in {} is not an array", path.display()))?;
+    let mut rewritten = toml_edit::Array::new();
+    let mut replaced = false;
+    for value in array.iter() {
+        let value = value
+            .as_str()
+            .with_context(|| format!("{key} in {} must contain strings", path.display()))?;
+        let matches = value.strip_prefix("registry:").is_some_and(|reference| {
+            ayame_spell_core::registry_lock::split_reference(reference).0 == name
+        });
+        if matches {
+            if !replaced {
+                rewritten.push(replacement);
+                replaced = true;
+            }
+        } else {
+            rewritten.push(value);
+        }
+    }
+    if !replaced {
+        rewritten.push(replacement);
+    }
+    *array = rewritten;
+    std::fs::write(&path, doc.to_string())
+        .with_context(|| format!("cannot write {}", path.display()))?;
+    Ok(path)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

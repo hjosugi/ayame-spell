@@ -80,7 +80,9 @@ edit the generated CLI pages directly.
 
 Registry sources live in `site/registry/registry.toml` and
 `site/registry/dicts/`. Record the dictionary's source and license, keep entries
-sorted and deduplicated, then run:
+sorted and deduplicated, and follow the complete versioning, provenance,
+licensing, size, and pull-request checklist in
+[`CONTRIBUTING-dictionaries.md`](CONTRIBUTING-dictionaries.md). Then run:
 
 ```sh
 cargo xtask registry

@@ -80,7 +80,10 @@ CLI リファレンスは Clap から生成します。コマンドパーサー�
 
 レジストリのソースは `site/registry/registry.toml` と
 `site/registry/dicts/` にあります。辞書の出典とライセンスを記録し、項目を
-ソートして重複を除いた後、次を実行します。
+ソートして重複を除きます。version、由来、ライセンス、サイズ、pull request の
+完全なチェックリストは
+[`CONTRIBUTING-dictionaries.ja.md`](CONTRIBUTING-dictionaries.ja.md)を参照します。
+その後、次を実行します。
 
 ```sh
 cargo xtask registry

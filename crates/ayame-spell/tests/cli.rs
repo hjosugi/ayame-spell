@@ -4,7 +4,7 @@ use std::net::TcpListener;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
@@ -643,6 +643,8 @@ fn words_commands_cover_collect_add_and_noninteractive_triage() {
 
 struct RegistryServer {
     url: String,
+    index: Arc<Mutex<Vec<u8>>>,
+    dictionary: Arc<Mutex<Vec<u8>>>,
     stop: Arc<AtomicBool>,
     thread: Option<thread::JoinHandle<()>>,
 }
@@ -650,25 +652,11 @@ struct RegistryServer {
 impl RegistryServer {
     fn start() -> Self {
         let dictionary = b"fixtureword\n".to_vec();
-        let digest = Sha256::digest(&dictionary)
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>();
-        let index = json!({
-            "version": 1,
-            "dictionaries": [{
-                "name": "fixture",
-                "language": "en",
-                "kind": "wordlist",
-                "description": "Fixture dictionary",
-                "file": "fixture.txt",
-                "sha256": digest,
-                "entries": 1,
-                "license": "MIT OR Apache-2.0"
-            }]
-        })
-        .to_string()
-        .into_bytes();
+        let index = fixture_registry_index("1.0.0", &dictionary);
+        let index = Arc::new(Mutex::new(index));
+        let dictionary = Arc::new(Mutex::new(dictionary));
+        let thread_index = Arc::clone(&index);
+        let thread_dictionary = Arc::clone(&dictionary);
 
         let listener = TcpListener::bind("127.0.0.1:0").expect("registry listener");
         listener.set_nonblocking(true).unwrap();
@@ -690,10 +678,18 @@ impl RegistryServer {
                             .next()
                             .and_then(|line| line.split_whitespace().nth(1))
                             .unwrap_or("/");
-                        let (status, content_type, body): (&str, &str, &[u8]) = match path {
-                            "/index.json" => ("200 OK", "application/json", &index),
-                            "/fixture.txt" => ("200 OK", "text/plain", &dictionary),
-                            _ => ("404 Not Found", "text/plain", b"not found"),
+                        let (status, content_type, body) = match path {
+                            "/index.json" => (
+                                "200 OK",
+                                "application/json",
+                                thread_index.lock().unwrap().clone(),
+                            ),
+                            "/fixture.txt" => (
+                                "200 OK",
+                                "text/plain",
+                                thread_dictionary.lock().unwrap().clone(),
+                            ),
+                            _ => ("404 Not Found", "text/plain", b"not found".to_vec()),
                         };
                         write!(
                             stream,
@@ -702,7 +698,7 @@ impl RegistryServer {
                             body.len()
                         )
                         .unwrap();
-                        stream.write_all(body).unwrap();
+                        stream.write_all(&body).unwrap();
                     }
                     Err(error) if error.kind() == ErrorKind::WouldBlock => {
                         thread::sleep(Duration::from_millis(5));
@@ -714,10 +710,47 @@ impl RegistryServer {
 
         Self {
             url: format!("http://{address}/index.json"),
+            index,
+            dictionary,
             stop,
             thread: Some(handle),
         }
     }
+
+    fn publish(&self, version: &str, dictionary: &[u8]) {
+        *self.dictionary.lock().unwrap() = dictionary.to_vec();
+        *self.index.lock().unwrap() = fixture_registry_index(version, dictionary);
+    }
+}
+
+fn fixture_registry_index(version: &str, dictionary: &[u8]) -> Vec<u8> {
+    let digest = Sha256::digest(dictionary)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    json!({
+        "version": 2,
+        "dictionaries": [{
+            "name": "fixture",
+            "version": version,
+            "language": "en",
+            "kind": "wordlist",
+            "description": "Fixture dictionary",
+            "provenance": "Integration test fixture",
+            "file": "fixture.txt",
+            "sha256": digest,
+            "entries": 1,
+            "versions": [{
+                "version": version,
+                "file": "fixture.txt",
+                "sha256": digest,
+                "entries": 1
+            }],
+            "license": "MIT OR Apache-2.0"
+        }]
+    })
+    .to_string()
+    .into_bytes()
 }
 
 impl Drop for RegistryServer {
@@ -744,7 +777,11 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
             .expect("dictionary command")
     };
 
-    let list = run(&["dict", "list"]);
+    let list = project
+        .command()
+        .args(["dict", "--registry", &registry.url, "list"])
+        .output()
+        .unwrap();
     assert_code(&list, 0);
     assert!(String::from_utf8_lossy(&list.stdout).contains("fixture"));
 
@@ -769,8 +806,16 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
 
     let add = run(&["dict", "add", "fixture"]);
     assert_code(&add, 0);
-    let cached = project.cache_dir.join("dicts/fixture.txt");
+    let cached = project.cache_dir.join("dicts/fixture@1.0.0.txt");
     assert_eq!(fs::read_to_string(&cached).unwrap(), "fixtureword\n");
+    let lock = fs::read_to_string(project.root.join("ayame-spell.lock")).unwrap();
+    let expected_digest = Sha256::digest(b"fixtureword\n")
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    assert!(lock.contains("name = \"fixture\""));
+    assert!(lock.contains("version = \"1.0.0\""));
+    assert!(lock.contains(&expected_digest));
     assert!(fs::read_to_string(project.root.join("ayame-spell.toml"))
         .unwrap()
         .contains("registry:fixture"));
@@ -786,22 +831,57 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
     let info: Value = serde_json::from_slice(&info.stdout).unwrap();
     assert_eq!(info["installed"], true);
     assert_eq!(info["enabled"], true);
+    assert_eq!(info["version"], "1.0.0");
+    assert_eq!(info["provenance"], "Integration test fixture");
     assert_eq!(info["license"], "MIT OR Apache-2.0");
     assert!(info["source_url"]
         .as_str()
         .unwrap()
         .ends_with("/fixture.txt"));
 
+    let update_check = run(&["dict", "update", "--check"]);
+    assert_code(&update_check, 0);
+    assert!(String::from_utf8_lossy(&update_check.stdout).contains("up to date fixture@1.0.0"));
+
+    fs::remove_file(&cached).unwrap();
+    let restore = run(&["dict", "add", "--cache-only", "fixture"]);
+    assert_code(&restore, 0);
+    assert_eq!(fs::read_to_string(&cached).unwrap(), "fixtureword\n");
+
+    registry.publish("2.0.0", b"fixtureword-v2\n");
+    fs::remove_file(project.cache_dir.join("index.json")).unwrap();
+    let update_available = run(&["dict", "update", "--check"]);
+    assert_code(&update_available, 1);
+    assert!(String::from_utf8_lossy(&update_available.stdout)
+        .contains("update available fixture: 1.0.0 -> 2.0.0"));
+
     let update = run(&["dict", "update"]);
     assert_code(&update, 0);
-    assert!(String::from_utf8_lossy(&update.stdout).contains("updated fixture"));
+    assert!(String::from_utf8_lossy(&update.stdout).contains("updated fixture: 1.0.0 -> 2.0.0"));
+    let updated_cached = project.cache_dir.join("dicts/fixture@2.0.0.txt");
+    assert_eq!(
+        fs::read_to_string(&updated_cached).unwrap(),
+        "fixtureword-v2\n"
+    );
+
+    let vendor = run(&["dict", "vendor", "fixture"]);
+    assert_code(&vendor, 0);
+    assert_eq!(
+        fs::read_to_string(project.root.join("dict/fixture.txt")).unwrap(),
+        "fixtureword-v2\n"
+    );
+    assert!(fs::read_to_string(project.root.join("ayame-spell.toml"))
+        .unwrap()
+        .contains("dict/fixture.txt"));
+    assert!(!fs::read_to_string(project.root.join("ayame-spell.toml"))
+        .unwrap()
+        .contains("registry:fixture"));
 
     let remove = run(&["dict", "remove", "fixture"]);
     assert_code(&remove, 0);
     assert!(!cached.exists());
-    assert!(!fs::read_to_string(project.root.join("ayame-spell.toml"))
-        .unwrap()
-        .contains("registry:fixture"));
+    assert!(!updated_cached.exists());
+    assert!(project.root.join("dict/fixture.txt").is_file());
 }
 
 #[test]

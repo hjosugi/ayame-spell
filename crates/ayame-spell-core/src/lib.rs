@@ -19,6 +19,7 @@ pub mod corrections;
 pub mod dictionary;
 pub mod issue;
 pub mod japanese;
+pub mod registry_lock;
 pub mod tokenizer;
 
 pub use checker::Checker;

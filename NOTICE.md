@@ -37,3 +37,16 @@ extracted from the [SudachiDict](https://github.com/WorksApplications/SudachiDic
 synonym dictionary, Copyright Works Applications Co., Ltd., licensed under
 the Apache License, Version 2.0. The extraction (variant → canonical pairs)
 is a modification of the original file.
+
+## Contributor-curated registry dictionaries (not bundled)
+
+The following registry artifacts are independently curated by ayame-spell
+contributors and distributed under MIT OR Apache-2.0:
+
+`aws`, `cpp`, `data-science`, `docker-k8s`, `dotnet`,
+`en-extra-corrections`, `finance`, `gcp`, `go`, `java-kotlin`, `python`,
+`rust`, `terraform`, `typescript-node`, `web`, `ja-business-variants`,
+`ja-kanji-variants`, `ja-katakana-jis`, and `ja-tech-variants`.
+
+`ja-katakana-jis` expresses independently curated JIS-style preferences; it
+does not copy the text of JIS Z 8301.
