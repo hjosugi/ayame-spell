@@ -2,6 +2,12 @@
 
 [English README](README.md) · [ドキュメント](https://hjosugi.github.io/ayame-spell/ja/) · [設計メモ](DESIGN.ja.md) · [コントリビューション](CONTRIBUTING.ja.md)
 
+[![CI](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml/badge.svg)](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/ayame-spell.svg)](https://crates.io/crates/ayame-spell)
+[![docs.rs](https://img.shields.io/docsrs/ayame-spell)](https://docs.rs/ayame-spell)
+[![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/hjosugi.ayame-spell)](https://marketplace.visualstudio.com/items?itemName=hjosugi.ayame-spell)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
+
 **コードと文章のための高速・低ノイズなスペルチェッカー(英語・日本語対応)。**
 1つの設定ファイルで CLI(CI 用)・LSP サーバ・VS Code 拡張がすべて同じ結果を返します。
 

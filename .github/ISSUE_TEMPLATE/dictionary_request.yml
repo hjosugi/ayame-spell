@@ -1,0 +1,51 @@
+name: Dictionary request / 辞書リクエスト
+description: Propose a redistributable wordlist, correction table, or Japanese variant set.
+title: "Dictionary: "
+labels:
+  - enhancement
+  - area:registry
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Proposed dictionary name
+      placeholder: ecosystem-terms
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Dictionary kind
+      options:
+        - Wordlist
+        - Corrections
+        - Japanese variants
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Upstream source URL
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: License and attribution
+      description: Link to the exact license and state required notices.
+    validations:
+      required: true
+  - type: textarea
+    id: contents
+    attributes:
+      label: Scope and examples
+      description: Describe the audience, approximate size, update cadence, and representative entries.
+    validations:
+      required: true
+  - type: checkboxes
+    id: redistribution
+    attributes:
+      label: Redistribution
+      options:
+        - label: I verified that the source permits redistribution by this project.
+          required: true

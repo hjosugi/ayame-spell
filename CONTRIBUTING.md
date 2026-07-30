@@ -32,8 +32,14 @@ Run the same core checks as CI:
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
+RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
+cargo deny check
 npm run check --prefix site
 ```
+
+The workspace MSRV is the `rust-version` in the root `Cargo.toml` (currently
+Rust 1.80). CI compiles the workspace with that exact toolchain in addition to
+running lint and test jobs on stable Rust.
 
 If your change affects generated content, regenerate it and commit the result:
 
@@ -94,3 +100,7 @@ acceptance criteria are satisfied.
 Do not commit generated build directories, editor settings, credentials, or
 downloaded registry caches. Contributions are submitted under the repository's
 MIT OR Apache-2.0 licensing terms.
+
+By participating, follow the [Code of Conduct](CODE_OF_CONDUCT.md). Report
+security vulnerabilities privately according to [SECURITY.md](SECURITY.md);
+do not open a public issue for an undisclosed vulnerability.

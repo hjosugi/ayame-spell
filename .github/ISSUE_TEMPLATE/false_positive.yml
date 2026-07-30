@@ -1,0 +1,50 @@
+name: False positive / 誤検知
+description: Report text that ayame-spell should not flag.
+title: "False positive: "
+labels:
+  - bug
+  - area:engine
+body:
+  - type: input
+    id: version
+    attributes:
+      label: ayame-spell version
+      placeholder: ayame-spell 0.3.1
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: Minimal input
+      description: Remove proprietary or personal content.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Include mode, active dictionaries, overrides, and Japanese settings.
+      render: toml
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: JSON output
+      description: Paste `ayame-spell check <file> --format json`.
+      render: json
+    validations:
+      required: true
+  - type: dropdown
+    id: reason
+    attributes:
+      label: Why should it be accepted?
+      options:
+        - Correct English word or proper noun
+        - Valid source-code identifier
+        - Valid Japanese notation
+        - Project-specific term
+        - Other
+    validations:
+      required: true

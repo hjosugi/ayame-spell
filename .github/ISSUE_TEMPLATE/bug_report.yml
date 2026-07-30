@@ -1,0 +1,54 @@
+name: Bug report / バグ報告
+description: Report reproducible incorrect behavior or a crash.
+title: "Bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Remove credentials and private text from all examples.
+        報告ありがとうございます。例から認証情報と非公開テキストを除いてください。
+  - type: input
+    id: version
+    attributes:
+      label: ayame-spell version
+      description: Paste `ayame-spell --version` or the VS Code extension version.
+      placeholder: ayame-spell 0.3.1
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Operating system and editor
+      placeholder: Ubuntu 24.04 / VS Code 1.xx
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Paste the smallest ayame-spell.toml that reproduces the bug.
+      render: toml
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Include exact commands, input text, and ordered steps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and logs
+      description: Use `--format json` or the VS Code ayame-spell output channel when useful.
+    validations:
+      required: true

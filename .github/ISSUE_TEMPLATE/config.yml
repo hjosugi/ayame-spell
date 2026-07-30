@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability / セキュリティ脆弱性
+    url: https://github.com/hjosugi/ayame-spell/security/advisories/new
+    about: Report vulnerabilities privately; do not open a public issue.
+  - name: Documentation / ドキュメント
+    url: https://hjosugi.github.io/ayame-spell/
+    about: Check the English and Japanese documentation before filing.

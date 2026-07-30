@@ -33,8 +33,14 @@ CI と同じ主要チェックを実行します。
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
+RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
+cargo deny check
 npm run check --prefix site
 ```
+
+workspace の MSRV はルート `Cargo.toml` の `rust-version`（現在は Rust 1.80）
+です。CI は stable Rust の lint・test job に加えて、このバージョンで workspace
+をコンパイルします。
 
 生成物に影響する変更では、再生成した結果もコミットしてください。
 
@@ -94,3 +100,7 @@ request で説明してください。`Closes #123` は受け入れ条件をす�
 生成されたビルドディレクトリ、エディター個人設定、認証情報、ダウンロードした
 レジストリキャッシュはコミットしません。すべてのコントリビューションは、
 リポジトリの MIT OR Apache-2.0 ライセンス条件で提出されます。
+
+参加時は[行動規範](CODE_OF_CONDUCT.md)に従ってください。セキュリティ脆弱性は
+[SECURITY.md](SECURITY.md)に従って非公開で報告し、未公開の脆弱性を public
+issue に投稿しないでください。

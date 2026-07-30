@@ -2,6 +2,12 @@
 
 [日本語 README](README.ja.md) · [Documentation](https://hjosugi.github.io/ayame-spell/) · [Design notes](DESIGN.md) · [Contributing](CONTRIBUTING.md)
 
+[![CI](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml/badge.svg)](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/ayame-spell.svg)](https://crates.io/crates/ayame-spell)
+[![docs.rs](https://img.shields.io/docsrs/ayame-spell)](https://docs.rs/ayame-spell)
+[![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/hjosugi.ayame-spell)](https://marketplace.visualstudio.com/items?itemName=hjosugi.ayame-spell)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
+
 **Fast, low-noise spell checker for code and prose — English & Japanese.**
 One config file drives the CLI (CI), the LSP server, and the VS Code
 extension.
