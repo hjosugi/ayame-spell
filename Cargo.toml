@@ -21,31 +21,31 @@ ayame-spell-core = { version = "0.3.1", path = "crates/ayame-spell-core" }
 anyhow = "1"
 # Exact pins below keep the declared Rust 1.80 MSRV. Later releases that raise
 # their MSRV are evaluated deliberately before an upgrade.
-clap = { version = "=4.5.40", features = ["derive", "wrap_help"] }
-clap_complete = "=4.5.58"
+clap = { version = "=4.6.4", features = ["derive", "wrap_help"] }
+clap_complete = "=4.6.8"
 crossbeam-channel = "0.5"
-criterion = "=0.5.1"
-dialoguer = { version = "0.11", features = ["fuzzy-select"] }
-dictgen = "=0.5.0"
+criterion = "=0.8.2"
+dialoguer = { version = "0.12", features = ["fuzzy-select"] }
+dictgen = "=0.5.3"
 dirs = "6"
 fst = { version = "0.4", features = ["levenshtein"] }
-globset = "=0.4.16"
-ignore = "=0.4.23"
-lsp-server = "=0.7.8"
-lsp-types = "0.95"
+globset = "=0.4.19"
+ignore = "=0.4.31"
+lsp-server = "=0.10.0"
+lsp-types = "0.97"
 memchr = "2"
-proptest = "=1.5.0"
+proptest = "=1.11.0"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
-sha2 = "0.10"
-toml = "0.8"
-toml_edit = "0.22"
-typos-dict = "=0.13.10"
+sha2 = "0.11"
+toml = "1.1"
+toml_edit = "0.25"
+typos-dict = "=0.13.31"
 unicase = "2"
 unicode-normalization = "0.1"
-ureq = "2"
+ureq = "3"
 
 [profile.release]
 lto = true
