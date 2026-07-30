@@ -33,18 +33,32 @@ fn configured_dir(variable: &str) -> Option<PathBuf> {
         .map(PathBuf::from)
 }
 
+/// Application cache directory (`~/.cache/ayame-spell`).
+pub fn cache_dir() -> Option<PathBuf> {
+    configured_dir("AYAME_SPELL_CACHE_DIR")
+        .or_else(|| dirs::cache_dir().map(|directory| directory.join("ayame-spell")))
+}
+
 /// Directory where registry dictionaries are cached
 /// (`~/.cache/ayame-spell/dicts`).
 pub fn registry_cache_dir() -> Option<PathBuf> {
-    configured_dir("AYAME_SPELL_CACHE_DIR")
-        .or_else(|| dirs::cache_dir().map(|d| d.join("ayame-spell")))
-        .map(|d| d.join("dicts"))
+    cache_dir().map(|directory| directory.join("dicts"))
 }
 
 /// Path of the cached registry dictionary `name`, if the cache directory is
 /// known. The file may or may not exist yet.
 pub fn registry_cache_path(name: &str) -> Option<PathBuf> {
     registry_cache_dir().map(|d| d.join(format!("{name}.txt")))
+}
+
+/// Cached registry index used by offline and dynamic completion.
+pub fn registry_index_cache_path() -> Option<PathBuf> {
+    cache_dir().map(|directory| directory.join("index.json"))
+}
+
+/// Cached output from `words collect`, used by dynamic completion.
+pub fn completion_words_cache_path() -> Option<PathBuf> {
+    cache_dir().map(|directory| directory.join("completion-words.json"))
 }
 
 /// Directory for global (per-user) configuration

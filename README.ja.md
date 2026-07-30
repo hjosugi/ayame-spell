@@ -89,12 +89,16 @@ eval (ayame-spell completions elvish | slurp)
 ```
 
 リリースアーカイブにも生成済みスクリプトを `completions/` として同梱します。
+辞書名と単語は `dict list` / `dict add` と `words collect` が作るローカル
+キャッシュから補完し、Tab 入力時にネットワークを待つことはありません。
 
 ## クイックスタート
 
 ```sh
 ayame-spell                  # カレントディレクトリをチェック(設定不要)
 ayame-spell fix              # 安全な修正を一括適用
+ayame-spell fix --dry-run    # 適用予定の unified diff を正確に表示
+ayame-spell fix --interactive # 書き込み前に指摘を1件ずつ確認
 ayame-spell init             # ayame-spell.toml の雛形を生成
 
 # 共有辞書つき dictionary モード:

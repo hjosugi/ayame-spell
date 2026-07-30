@@ -291,7 +291,7 @@ Exit status and machine-readable fields are documented in
 | --- | --- |
 | `ayame-spell [PATH]...` | Check paths, or the current directory when omitted. |
 | `check [PATH]...` | Run a check explicitly. |
-| `fix [PATH]...` | Apply safe fixes to files. |
+| `fix [PATH]...` | Apply safe fixes, preview a diff, or review findings interactively. |
 | `words collect [PATH]...` | Collect findings ranked by frequency. |
 | `words add <WORDS>...` | Add project or user words. |
 | `words triage [PATH]...` | Review several findings interactively. |
@@ -310,6 +310,8 @@ Exit status and machine-readable fields are documented in
 | --- | --- | --- |
 | `[PATH]...` | default, `check`, `fix`, `words collect`, `words triage` | Files or directories. |
 | `-w`, `--write` | default, `check` | Apply safe fixes in place. |
+| `--dry-run` | `fix` | Print the exact unified diff without writing. |
+| `--interactive` | `fix` | Review each finding before writing. |
 | `--format <FORMAT>` | default, `check` | `human`, `brief`, or `json`; default `human`. |
 | `-j`, `--threads <THREADS>` | default, `check`, `fix` | Worker count; defaults to CPU count. |
 | `--min-count <N>` | `words collect` | Emit words seen at least N times; default 1. |
@@ -359,6 +361,12 @@ eval (ayame-spell completions elvish | slurp)
 ```
 
 Release archives contain pre-generated files in `completions/`.
+Registry names and flagged words are completed through a hidden, cache-only
+candidate provider rather than `clap_complete::dynamic`: this keeps the Rust
+1.80 toolchain and all five generated shells while guaranteeing that Tab never
+performs network I/O. `dict list` / `dict add` refresh the registry-index cache,
+and `words collect` refreshes the word cache. An empty cache returns no
+candidates immediately.
 
 ## Generated command help
 
@@ -382,7 +390,7 @@ const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 | --- | --- |
 | `ayame-spell [PATH]...` | パスをチェック。省略時はカレントディレクトリ。 |
 | `check [PATH]...` | チェックを明示的に実行。 |
-| `fix [PATH]...` | 安全な修正をファイルへ適用。 |
+| `fix [PATH]...` | 安全な修正の適用、diff 表示、指摘ごとの対話確認。 |
 | `words collect [PATH]...` | 指摘語を頻度順に収集。 |
 | `words add <WORDS>...` | プロジェクトまたはユーザー単語を追加。 |
 | `words triage [PATH]...` | 複数の指摘語を対話形式で一括整理。 |
@@ -401,6 +409,8 @@ const JA_CLI_PREAMBLE: &str = r#"## 呼び出し方
 | --- | --- | --- |
 | `[PATH]...` | 既定、`check`、`fix`、`words collect`、`words triage` | ファイルまたはディレクトリ。 |
 | `-w`, `--write` | 既定、`check` | 安全な修正をその場で適用。 |
+| `--dry-run` | `fix` | 書き込まず、適用予定と一致する unified diff を表示。 |
+| `--interactive` | `fix` | 書き込み前に指摘を1件ずつ確認。 |
 | `--format <FORMAT>` | 既定、`check` | `human`、`brief`、`json`。既定は `human`。 |
 | `-j`, `--threads <THREADS>` | 既定、`check`、`fix` | ワーカースレッド数。省略時は CPU 数。 |
 | `--min-count <N>` | `words collect` | N 回以上現れた語だけを出力。既定は 1。 |
@@ -450,6 +460,11 @@ eval (ayame-spell completions elvish | slurp)
 ```
 
 リリースアーカイブには生成済みファイルが `completions/` に入っています。
+辞書名と指摘語の候補には `clap_complete::dynamic` ではなく、非公開の
+キャッシュ専用候補プロバイダーを採用しました。これにより Rust 1.80 と5種類の
+生成シェルを維持しつつ、Tab 入力時のネットワークアクセスを禁止できます。
+`dict list` / `dict add` が辞書索引キャッシュを、`words collect` が単語
+キャッシュを更新します。空のキャッシュでは候補なしとして即座に戻ります。
 
 ## 生成されたコマンドヘルプ
 

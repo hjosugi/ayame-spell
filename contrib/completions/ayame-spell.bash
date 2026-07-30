@@ -19,6 +19,9 @@ _ayame-spell() {
             ayame__spell,check)
                 cmd="ayame__spell__check"
                 ;;
+            ayame__spell,completion-candidates)
+                cmd="ayame__spell__completion__candidates"
+                ;;
             ayame__spell,completions)
                 cmd="ayame__spell__completions"
                 ;;
@@ -87,6 +90,9 @@ _ayame-spell() {
                 ;;
             ayame__spell__help,check)
                 cmd="ayame__spell__help__check"
+                ;;
+            ayame__spell__help,completion-candidates)
+                cmd="ayame__spell__help__completion__candidates"
                 ;;
             ayame__spell__help,completions)
                 cmd="ayame__spell__help__completions"
@@ -170,7 +176,7 @@ _ayame-spell() {
 
     case "${cmd}" in
         ayame__spell)
-            opts="-q -v -j -w -h -V --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --help --version [PATH]... check fix words dict init config completions lsp help"
+            opts="-q -v -j -w -h -V --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --write --format --help --version [PATH]... check fix words dict init config completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -262,6 +268,20 @@ _ayame-spell() {
                     COMPREPLY=($(compgen -W "human brief json" -- "${cur}"))
                     return 0
                     ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__completion__candidates)
+            opts="-h --help dict-add dict-remove words-add word-file config-key [PREFIX]"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;
@@ -532,7 +552,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__fix)
-            opts="-q -v -j -h --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --help [PATH]..."
+            opts="-q -v -j -h --config --no-config --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --dry-run --interactive --help [PATH]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -578,7 +598,7 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__help)
-            opts="check fix words dict init config completions lsp help"
+            opts="check fix words dict init config completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -592,6 +612,20 @@ _ayame-spell() {
             return 0
             ;;
         ayame__spell__help__check)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        ayame__spell__help__completion__candidates)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1009,3 +1043,24 @@ if [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -ge 4 || "${BASH_VERS
 else
     complete -F _ayame-spell -o bashdefault -o default ayame-spell
 fi
+
+# ayame-spell dynamic completion (cache-only; never performs network I/O).
+_ayame_spell_dynamic_wrapper() {
+    local cur="${COMP_WORDS[COMP_CWORD]}" kind=""
+    if (( COMP_CWORD >= 2 )); then
+        case "${COMP_WORDS[COMP_CWORD-2]} ${COMP_WORDS[COMP_CWORD-1]}" in
+            "dict add") kind="dict-add" ;;
+            "dict remove") kind="dict-remove" ;;
+            "words add") kind="words-add" ;;
+        esac
+    fi
+    if [[ -z "$kind" && "${COMP_WORDS[COMP_CWORD-1]}" == "--words" ]]; then
+        kind="word-file"
+    fi
+    if [[ -n "$kind" ]]; then
+        mapfile -t COMPREPLY < <(command ayame-spell __complete "$kind" "$cur")
+        return
+    fi
+    _ayame-spell "$@"
+}
+complete -o bashdefault -o default -F _ayame_spell_dynamic_wrapper ayame-spell

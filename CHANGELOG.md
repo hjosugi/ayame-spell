@@ -26,6 +26,10 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Reproducible per-run CLI overrides for configuration, mode, excludes,
   ignore handling, hidden files, colour, verbosity, standard input, file size,
   and worker threads.
+- Cache-only dynamic completion for registry dictionaries, collected words,
+  and word-list paths in Bash, Zsh, Fish, PowerShell, and Elvish.
+- `fix --dry-run` unified-diff previews and `fix --interactive` per-finding
+  review, including multi-candidate selection and dictionary additions.
 
 ### Changed
 
@@ -35,6 +39,9 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   matching version section in this changelog.
 - Global configuration and cache locations can be isolated with
   `AYAME_SPELL_CONFIG_DIR` and `AYAME_SPELL_CACHE_DIR`.
+- Registry indexes are cached for 24 hours and remain available offline;
+  completion never performs network I/O.
+- Fixes abort instead of overwriting a file that changed after it was scanned.
 
 ## [0.3.1] - 2026-07-30
 

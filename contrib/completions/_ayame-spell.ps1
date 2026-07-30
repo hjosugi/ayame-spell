@@ -7,6 +7,27 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
 
     $commandElements = $commandAst.CommandElements
     $lastElement = $commandElements[$commandElements.Count - 1]
+    $dynamicKind = if ($commandElements.Count -ge 3 -and
+                       $lastElement.Value -eq $wordToComplete) {
+        $context = @(
+            $commandElements[$commandElements.Count - 3].Value,
+            $commandElements[$commandElements.Count - 2].Value
+        ) -join ' '
+        switch ($context) {
+            'dict add' { 'dict-add' }
+            'dict remove' { 'dict-remove' }
+            'words add' { 'words-add' }
+        }
+    }
+    if ($null -ne $dynamicKind) {
+        & ayame-spell __complete $dynamicKind $wordToComplete |
+            ForEach-Object {
+                [CompletionResult]::new(
+                    $_, $_, [CompletionResultType]::ParameterValue, $_)
+            }
+        return
+    }
+
     $valueFor = if ($lastElement.Value -in @('--format', 'completions')) {
         $lastElement.Value
     } elseif ($commandElements.Count -ge 3 -and
@@ -72,6 +93,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate a shell completion script on standard output')
+            [CompletionResult]::new('completion-candidates', 'completion-candidates', [CompletionResultType]::ParameterValue, 'Internal, non-network completion candidate provider')
             [CompletionResult]::new('lsp', 'lsp', [CompletionResultType]::ParameterValue, 'Run the LSP server (used by editor integrations)')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -115,6 +137,8 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'Print findings only, without summaries')
             [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
             [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Report configuration sources, skipped files, and elapsed time')
+            [CompletionResult]::new('--dry-run', '--dry-run', [CompletionResultType]::ParameterName, 'Print a unified diff without writing files')
+            [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, 'Confirm or redirect each finding interactively')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
@@ -267,6 +291,11 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
+        'ayame-spell;completion-candidates' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
         'ayame-spell;lsp' {
             [CompletionResult]::new('--stdio', '--stdio', [CompletionResultType]::ParameterName, 'Use standard input/output transport. Accepted for client compatibility; stdio is always the transport')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
@@ -281,6 +310,7 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             [CompletionResult]::new('init', 'init', [CompletionResultType]::ParameterValue, 'Write a starter ayame-spell.toml in the current directory')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Print the effective merged configuration')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate a shell completion script on standard output')
+            [CompletionResult]::new('completion-candidates', 'completion-candidates', [CompletionResultType]::ParameterValue, 'Internal, non-network completion candidate provider')
             [CompletionResult]::new('lsp', 'lsp', [CompletionResultType]::ParameterValue, 'Run the LSP server (used by editor integrations)')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -340,6 +370,9 @@ Register-ArgumentCompleter -Native -CommandName 'ayame-spell' -ScriptBlock {
             break
         }
         'ayame-spell;help;completions' {
+            break
+        }
+        'ayame-spell;help;completion-candidates' {
             break
         }
         'ayame-spell;help;lsp' {

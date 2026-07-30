@@ -94,6 +94,7 @@ pub fn run(cmd: WordsCmd) -> anyhow::Result<i32> {
             json,
         } => {
             let (_loaded, list) = collect_words(&paths)?;
+            cache_completion_words(&list)?;
             for c in list.iter().filter(|c| c.count >= min_count) {
                 if json {
                     println!(
@@ -128,6 +129,40 @@ pub fn run(cmd: WordsCmd) -> anyhow::Result<i32> {
         }
         WordsCmd::Triage { paths } => triage(&paths),
     }
+}
+
+fn cache_completion_words(words: &[Collected]) -> anyhow::Result<()> {
+    let Some(path) = ayame_spell_core::completion_words_cache_path() else {
+        return Ok(());
+    };
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let words: Vec<&str> = words
+        .iter()
+        .map(|collected| collected.word.as_str())
+        .collect();
+    std::fs::write(path, serde_json::to_vec(&words)?)?;
+    Ok(())
+}
+
+/// Return cached `words collect` candidates without scanning the project.
+pub fn completion_words(prefix: &str) -> anyhow::Result<Vec<String>> {
+    let Some(path) = ayame_spell_core::completion_words_cache_path() else {
+        return Ok(Vec::new());
+    };
+    let bytes = match std::fs::read(path) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(error.into()),
+    };
+    let prefix = prefix.to_lowercase();
+    let mut words: Vec<String> = serde_json::from_slice::<Vec<String>>(&bytes)?
+        .into_iter()
+        .filter(|word| word.to_lowercase().starts_with(&prefix))
+        .collect();
+    words.sort();
+    Ok(words)
 }
 
 fn triage(paths: &[PathBuf]) -> anyhow::Result<i32> {

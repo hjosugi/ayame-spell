@@ -1,13 +1,15 @@
 //! Parallel file walking, checking, reporting, and in-place fixing.
 
+use std::collections::HashMap;
 use std::io::{IsTerminal, Read};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::time::Instant;
+use std::time::{Instant, SystemTime};
 
 use anyhow::Context;
 use ayame_spell_core::config::LoadedConfig;
 use ayame_spell_core::{Checker, Issue, Mode};
+use dialoguer::Select;
 use ignore::overrides::OverrideBuilder;
 use ignore::{WalkBuilder, WalkState};
 use serde::Serialize;
@@ -27,6 +29,8 @@ pub struct FileReport {
     pub path: PathBuf,
     pub items: Vec<Item>,
     pub fixed: usize,
+    pub original_text: String,
+    pub modified: Option<SystemTime>,
 }
 
 #[derive(Default)]
@@ -38,7 +42,7 @@ pub struct Stats {
 
 pub struct RunOptions {
     pub paths: Vec<PathBuf>,
-    pub fix: bool,
+    pub fix: FixMode,
     pub format: Format,
     pub threads: Option<usize>,
     pub config: Option<PathBuf>,
@@ -52,6 +56,14 @@ pub struct RunOptions {
     pub verbose: u8,
     pub stdin_filename: Option<PathBuf>,
     pub max_file_size: Option<u64>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum FixMode {
+    None,
+    Apply,
+    DryRun,
+    Interactive,
 }
 
 /// Load configuration and build a checker, printing warnings to stderr.
@@ -113,6 +125,7 @@ pub fn scan(
     builder.filter_entry(|e| e.file_name() != ".git");
 
     let (tx, rx) = crossbeam_channel::unbounded::<FileReport>();
+    let (error_tx, error_rx) = crossbeam_channel::unbounded::<String>();
     let checked = AtomicUsize::new(0);
     let skipped_binary = AtomicUsize::new(0);
     let skipped_large = AtomicUsize::new(0);
@@ -121,6 +134,7 @@ pub fn scan(
 
     builder.build_parallel().run(|| {
         let tx = tx.clone();
+        let error_tx = error_tx.clone();
         let root = root.clone();
         let checked = &checked;
         let skipped_binary = &skipped_binary;
@@ -133,6 +147,7 @@ pub fn scan(
                 return WalkState::Continue;
             }
             let path = entry.path();
+            let modified = entry.metadata().ok().and_then(|meta| meta.modified().ok());
             if max_size > 0 {
                 if let Ok(meta) = entry.metadata() {
                     if meta.len() > max_size {
@@ -148,7 +163,7 @@ pub fn scan(
                 skipped_binary.fetch_add(1, Ordering::Relaxed);
                 return WalkState::Continue;
             }
-            let text = String::from_utf8_lossy(&bytes);
+            let text = String::from_utf8_lossy(&bytes).into_owned();
             let rel = path
                 .canonicalize()
                 .ok()
@@ -164,8 +179,15 @@ pub fn scan(
             let remaining: Vec<Issue> = if fix {
                 let (new_text, n, remaining) = apply_fixes(&text, &issues);
                 if n > 0 {
+                    if !file_is_unchanged(path, &bytes, modified) {
+                        let _ = error_tx.send(format!(
+                            "{} changed on disk after scanning; refusing to overwrite it",
+                            path.display()
+                        ));
+                        return WalkState::Continue;
+                    }
                     if let Err(e) = write_in_place(path, &new_text) {
-                        eprintln!("error: cannot write {}: {e}", path.display());
+                        let _ = error_tx.send(format!("cannot write {}: {e}", path.display()));
                         return WalkState::Continue;
                     }
                 }
@@ -190,11 +212,18 @@ pub fn scan(
                 path: path.to_path_buf(),
                 items,
                 fixed,
+                original_text: text,
+                modified,
             });
             WalkState::Continue
         })
     });
     drop(tx);
+    drop(error_tx);
+
+    if let Some(error) = error_rx.into_iter().next() {
+        anyhow::bail!("{error}");
+    }
 
     let mut reports: Vec<FileReport> = rx.into_iter().collect();
     reports.sort_by(|a, b| a.path.cmp(&b.path));
@@ -243,6 +272,8 @@ fn scan_stdin(
             path: display_path,
             items,
             fixed: 0,
+            original_text: text.into_owned(),
+            modified: None,
         }]
     };
     Ok((
@@ -252,6 +283,13 @@ fn scan_stdin(
             ..Stats::default()
         },
     ))
+}
+
+fn file_is_unchanged(path: &Path, original: &[u8], modified: Option<SystemTime>) -> bool {
+    let current_modified = std::fs::metadata(path)
+        .ok()
+        .and_then(|metadata| metadata.modified().ok());
+    current_modified == modified && std::fs::read(path).is_ok_and(|bytes| bytes == original)
 }
 
 /// Apply all safe fixes; returns the new text, the number of fixes applied,
@@ -275,6 +313,218 @@ fn apply_fixes(text: &str, issues: &[Issue]) -> (String, usize, Vec<Issue>) {
     }
     out.push_str(&text[last..]);
     (out, applied, remaining)
+}
+
+fn dry_run(reports: &[FileReport], quiet: bool) -> anyhow::Result<i32> {
+    let mut fixed = 0;
+    let mut skipped_multiple = 0;
+    let mut unfixable = 0;
+    for report in reports {
+        let issues: Vec<Issue> = report.items.iter().map(|item| item.issue.clone()).collect();
+        let (proposed, applied, remaining) = apply_fixes(&report.original_text, &issues);
+        fixed += applied;
+        skipped_multiple += remaining
+            .iter()
+            .filter(|issue| issue.suggestions.len() > 1)
+            .count();
+        unfixable += remaining
+            .iter()
+            .filter(|issue| issue.suggestions.is_empty())
+            .count();
+        if proposed != report.original_text {
+            print!(
+                "{}",
+                unified_diff(&report.path, &report.original_text, &proposed)
+            );
+        }
+    }
+    if !quiet {
+        eprintln!(
+            "{fixed} would be fixed, {skipped_multiple} skipped (multiple candidates), {unfixable} unfixable"
+        );
+    }
+    Ok(if fixed + skipped_multiple + unfixable > 0 {
+        1
+    } else {
+        0
+    })
+}
+
+fn unified_diff(path: &Path, original: &str, proposed: &str) -> String {
+    let old_lines = original.lines().count();
+    let new_lines = proposed.lines().count();
+    let mut output = format!(
+        "--- a/{0}\n+++ b/{0}\n@@ -1,{old_lines} +1,{new_lines} @@\n",
+        path.display()
+    );
+    push_diff_lines(&mut output, '-', original);
+    push_diff_lines(&mut output, '+', proposed);
+    output
+}
+
+fn push_diff_lines(output: &mut String, prefix: char, text: &str) {
+    for line in text.split_inclusive('\n') {
+        output.push(prefix);
+        output.push_str(line);
+        if !line.ends_with('\n') {
+            output.push('\n');
+            output.push_str("\\ No newline at end of file\n");
+        }
+    }
+}
+
+fn interactive_fix(loaded: &LoadedConfig, reports: &[FileReport]) -> anyhow::Result<i32> {
+    anyhow::ensure!(
+        std::io::stdin().is_terminal() && std::io::stderr().is_terminal(),
+        "`fix --interactive` needs an interactive terminal"
+    );
+    let mut apply_all: HashMap<String, String> = HashMap::new();
+    let mut fixed = 0;
+    let mut skipped = 0;
+    let mut skipped_multiple = 0;
+    let mut unfixable = 0;
+    let mut quit = false;
+
+    for report in reports {
+        let mut edits: Vec<(usize, usize, String)> = Vec::new();
+        for item in &report.items {
+            let issue = &item.issue;
+            if let Some(replacement) = apply_all.get(&issue.word) {
+                edits.push((issue.offset, issue.len, replacement.clone()));
+                fixed += 1;
+                continue;
+            }
+
+            eprintln!(
+                "\n{}:{}:{}: {} [{}]\n  {}",
+                report.path.display(),
+                issue.line,
+                display_column(item),
+                issue.word,
+                issue.kind.code(),
+                item.line_text
+            );
+            if issue.suggestions.is_empty() {
+                unfixable += 1;
+                eprintln!("  no replacement candidates");
+            }
+
+            let actions = [
+                "apply a replacement",
+                "skip",
+                "apply this replacement to every occurrence of the word",
+                "add the word to the project dictionary",
+                "quit",
+            ];
+            let default = if issue.suggestions.is_empty() { 1 } else { 0 };
+            match Select::new()
+                .with_prompt("Action")
+                .items(&actions)
+                .default(default)
+                .interact()?
+            {
+                0 => {
+                    if let Some(replacement) = select_replacement(issue)? {
+                        edits.push((issue.offset, issue.len, replacement));
+                        fixed += 1;
+                    } else {
+                        skipped += 1;
+                    }
+                }
+                1 => {
+                    skipped += 1;
+                    if issue.suggestions.len() > 1 {
+                        skipped_multiple += 1;
+                    }
+                }
+                2 => {
+                    if let Some(replacement) = select_replacement(issue)? {
+                        apply_all.insert(issue.word.clone(), replacement.clone());
+                        edits.push((issue.offset, issue.len, replacement));
+                        fixed += 1;
+                    } else {
+                        skipped += 1;
+                    }
+                }
+                3 => {
+                    crate::words::append_words(
+                        &loaded.project_words_path(),
+                        std::slice::from_ref(&issue.word),
+                    )?;
+                    eprintln!("added `{}` to the project dictionary", issue.word);
+                    skipped += 1;
+                }
+                _ => {
+                    quit = true;
+                    break;
+                }
+            }
+        }
+
+        if !edits.is_empty() {
+            anyhow::ensure!(
+                file_is_unchanged(
+                    &report.path,
+                    report.original_text.as_bytes(),
+                    report.modified
+                ),
+                "{} changed on disk after scanning; refusing to overwrite it",
+                report.path.display()
+            );
+            let updated = apply_replacements(&report.original_text, &mut edits)?;
+            write_in_place(&report.path, &updated)?;
+        }
+        if quit {
+            break;
+        }
+    }
+
+    eprintln!(
+        "{fixed} fixed, {skipped} skipped ({skipped_multiple} multiple candidates), {unfixable} unfixable"
+    );
+    Ok(if quit || skipped + unfixable > 0 {
+        1
+    } else {
+        0
+    })
+}
+
+fn select_replacement(issue: &Issue) -> anyhow::Result<Option<String>> {
+    match issue.suggestions.as_slice() {
+        [] => Ok(None),
+        [replacement] => Ok(Some(replacement.clone())),
+        candidates => {
+            let selected = Select::new()
+                .with_prompt(format!("Replacement for `{}`", issue.word))
+                .items(candidates)
+                .default(0)
+                .interact()?;
+            Ok(Some(candidates[selected].clone()))
+        }
+    }
+}
+
+fn apply_replacements(
+    original: &str,
+    edits: &mut [(usize, usize, String)],
+) -> anyhow::Result<String> {
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
+    let mut output = original.to_string();
+    let mut previous_start = original.len();
+    for (offset, length, replacement) in edits {
+        let end = offset.saturating_add(*length);
+        anyhow::ensure!(
+            *offset <= end
+                && end <= output.len()
+                && output.is_char_boundary(*offset)
+                && output.is_char_boundary(end)
+                && end <= previous_start,
+            "invalid or overlapping fix range at byte {offset}"
+        );
+        output.replace_range(*offset..end, replacement);
+        previous_start = *offset;
+    }
+    Ok(output)
 }
 
 /// Write through a sibling temp file + rename, preserving permissions.
@@ -329,7 +579,7 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
             "standard input (`-`) cannot be combined with file paths"
         );
         anyhow::ensure!(
-            !options.fix,
+            options.fix == FixMode::None,
             "standard input cannot be used with --write or `fix`"
         );
     } else {
@@ -395,10 +645,25 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
             &checker,
             &options.paths,
             options.threads,
-            options.fix,
+            options.fix == FixMode::Apply,
             options.no_ignore,
         )?
     };
+
+    if options.fix == FixMode::DryRun {
+        let code = dry_run(&reports, options.quiet)?;
+        if options.verbose > 0 {
+            eprintln!("elapsed: {:.3}s", started.elapsed().as_secs_f64());
+        }
+        return Ok(code);
+    }
+    if options.fix == FixMode::Interactive {
+        let code = interactive_fix(&loaded, &reports)?;
+        if options.verbose > 0 {
+            eprintln!("elapsed: {:.3}s", started.elapsed().as_secs_f64());
+        }
+        return Ok(code);
+    }
 
     let color = color_enabled(options.color, options.format);
     let mut issue_count = 0usize;
@@ -454,7 +719,7 @@ pub fn run(options: RunOptions) -> anyhow::Result<i32> {
             "{} issue(s) in {} file(s) — {} file(s) checked",
             issue_count, files_with_issues, stats.checked
         );
-        if options.fix {
+        if options.fix == FixMode::Apply {
             summary.push_str(&format!(", {fixed_count} fixed"));
         }
         if stats.skipped_binary > 0 {
@@ -676,5 +941,29 @@ mod tests {
                 "skipped_large"
             ])
         );
+    }
+
+    #[test]
+    fn replacement_application_is_ordered_and_rejects_overlap() {
+        let mut edits = vec![(0, 3, "the".to_string()), (4, 3, "receive".to_string())];
+        assert_eq!(
+            apply_replacements("teh rcv", &mut edits).unwrap(),
+            "the receive"
+        );
+
+        let mut overlapping = vec![(0, 3, "a".to_string()), (2, 2, "b".to_string())];
+        assert!(apply_replacements("test", &mut overlapping).is_err());
+    }
+
+    #[test]
+    fn overwrite_guard_detects_same_length_changes() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("input.md");
+        std::fs::write(&path, "teh\n").unwrap();
+        let modified = std::fs::metadata(&path).unwrap().modified().ok();
+        assert!(file_is_unchanged(&path, b"teh\n", modified));
+
+        std::fs::write(&path, "the\n").unwrap();
+        assert!(!file_is_unchanged(&path, b"teh\n", modified));
     }
 }

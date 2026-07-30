@@ -89,6 +89,8 @@ _arguments "${_arguments_options[@]}" : \
 '(-v --verbose)--quiet[Print findings only, without summaries]' \
 '*-v[Report configuration sources, skipped files, and elapsed time]' \
 '*--verbose[Report configuration sources, skipped files, and elapsed time]' \
+'(--interactive)--dry-run[Print a unified diff without writing files]' \
+'--interactive[Confirm or redirect each finding interactively]' \
 '-h[Print help]' \
 '--help[Print help]' \
 '*::paths -- Files or directories to check (`-` reads standard input):_files' \
@@ -303,6 +305,14 @@ _arguments "${_arguments_options[@]}" : \
 ':shell:(bash elvish fish powershell zsh)' \
 && ret=0
 ;;
+(completion-candidates)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':kind:(dict-add dict-remove words-add word-file config-key)' \
+'::prefix:_default' \
+&& ret=0
+;;
 (lsp)
 _arguments "${_arguments_options[@]}" : \
 '--stdio[Use standard input/output transport. Accepted for client compatibility; stdio is always the transport]' \
@@ -410,6 +420,10 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(completion-candidates)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (lsp)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -437,6 +451,7 @@ _ayame-spell_commands() {
 'init:Write a starter ayame-spell.toml in the current directory' \
 'config:Print the effective merged configuration' \
 'completions:Generate a shell completion script on standard output' \
+'completion-candidates:Internal, non-network completion candidate provider' \
 'lsp:Run the LSP server (used by editor integrations)' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -446,6 +461,11 @@ _ayame-spell_commands() {
 _ayame-spell__check_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell check commands' commands "$@"
+}
+(( $+functions[_ayame-spell__completion-candidates_commands] )) ||
+_ayame-spell__completion-candidates_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell completion-candidates commands' commands "$@"
 }
 (( $+functions[_ayame-spell__completions_commands] )) ||
 _ayame-spell__completions_commands() {
@@ -563,6 +583,7 @@ _ayame-spell__help_commands() {
 'init:Write a starter ayame-spell.toml in the current directory' \
 'config:Print the effective merged configuration' \
 'completions:Generate a shell completion script on standard output' \
+'completion-candidates:Internal, non-network completion candidate provider' \
 'lsp:Run the LSP server (used by editor integrations)' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -572,6 +593,11 @@ _ayame-spell__help_commands() {
 _ayame-spell__help__check_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help check commands' commands "$@"
+}
+(( $+functions[_ayame-spell__help__completion-candidates_commands] )) ||
+_ayame-spell__help__completion-candidates_commands() {
+    local commands; commands=()
+    _describe -t commands 'ayame-spell help completion-candidates commands' commands "$@"
 }
 (( $+functions[_ayame-spell__help__completions_commands] )) ||
 _ayame-spell__help__completions_commands() {
@@ -740,3 +766,23 @@ if [ "$funcstack[1]" = "_ayame-spell" ]; then
 else
     compdef _ayame-spell ayame-spell
 fi
+
+# ayame-spell dynamic completion (cache-only; never performs network I/O).
+_ayame_spell_dynamic_wrapper() {
+    local kind=""
+    if (( CURRENT >= 3 )); then
+        case "${words[CURRENT-2]} ${words[CURRENT-1]}" in
+            "dict add") kind="dict-add" ;;
+            "dict remove") kind="dict-remove" ;;
+            "words add") kind="words-add" ;;
+        esac
+    fi
+    if [[ -n "$kind" ]]; then
+        local -a candidates
+        candidates=("${(@f)$(command ayame-spell __complete "$kind" "$PREFIX")}")
+        _describe 'candidate' candidates
+    else
+        _ayame-spell "$@"
+    fi
+}
+compdef _ayame_spell_dynamic_wrapper ayame-spell

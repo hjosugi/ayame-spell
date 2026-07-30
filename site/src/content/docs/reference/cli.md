@@ -23,7 +23,7 @@ Exit status and machine-readable fields are documented in
 | --- | --- |
 | `ayame-spell [PATH]...` | Check paths, or the current directory when omitted. |
 | `check [PATH]...` | Run a check explicitly. |
-| `fix [PATH]...` | Apply safe fixes to files. |
+| `fix [PATH]...` | Apply safe fixes, preview a diff, or review findings interactively. |
 | `words collect [PATH]...` | Collect findings ranked by frequency. |
 | `words add <WORDS>...` | Add project or user words. |
 | `words triage [PATH]...` | Review several findings interactively. |
@@ -42,6 +42,8 @@ Exit status and machine-readable fields are documented in
 | --- | --- | --- |
 | `[PATH]...` | default, `check`, `fix`, `words collect`, `words triage` | Files or directories. |
 | `-w`, `--write` | default, `check` | Apply safe fixes in place. |
+| `--dry-run` | `fix` | Print the exact unified diff without writing. |
+| `--interactive` | `fix` | Review each finding before writing. |
 | `--format <FORMAT>` | default, `check` | `human`, `brief`, or `json`; default `human`. |
 | `-j`, `--threads <THREADS>` | default, `check`, `fix` | Worker count; defaults to CPU count. |
 | `--min-count <N>` | `words collect` | Emit words seen at least N times; default 1. |
@@ -91,6 +93,12 @@ eval (ayame-spell completions elvish | slurp)
 ```
 
 Release archives contain pre-generated files in `completions/`.
+Registry names and flagged words are completed through a hidden, cache-only
+candidate provider rather than `clap_complete::dynamic`: this keeps the Rust
+1.80 toolchain and all five generated shells while guaranteeing that Tab never
+performs network I/O. `dict list` / `dict add` refresh the registry-index cache,
+and `words collect` refreshes the word cache. An empty cache returns no
+candidates immediately.
 
 ## Generated command help
 
@@ -240,6 +248,8 @@ Options:
       --max-file-size <BYTES>  Skip files larger than this many bytes (overrides
                                `[files].max-file-size`)
   -j, --threads <THREADS>      Worker threads (overrides the detected CPU count)
+      --dry-run                Print a unified diff without writing files
+      --interactive            Confirm or redirect each finding interactively
   -h, --help                   Print help
 ```
 

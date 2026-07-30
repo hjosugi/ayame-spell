@@ -47,6 +47,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print the effective merged configuration'
             cand completions 'Generate a shell completion script on standard output'
+            cand completion-candidates 'Internal, non-network completion candidate provider'
             cand lsp 'Run the LSP server (used by editor integrations)'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -88,6 +89,8 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand --quiet 'Print findings only, without summaries'
             cand -v 'Report configuration sources, skipped files, and elapsed time'
             cand --verbose 'Report configuration sources, skipped files, and elapsed time'
+            cand --dry-run 'Print a unified diff without writing files'
+            cand --interactive 'Confirm or redirect each finding interactively'
             cand -h 'Print help'
             cand --help 'Print help'
         }
@@ -212,6 +215,10 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand -h 'Print help'
             cand --help 'Print help'
         }
+        &'ayame-spell;completion-candidates'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
         &'ayame-spell;lsp'= {
             cand --stdio 'Use standard input/output transport. Accepted for client compatibility; stdio is always the transport'
             cand -h 'Print help'
@@ -225,6 +232,7 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
             cand init 'Write a starter ayame-spell.toml in the current directory'
             cand config 'Print the effective merged configuration'
             cand completions 'Generate a shell completion script on standard output'
+            cand completion-candidates 'Internal, non-network completion candidate provider'
             cand lsp 'Run the LSP server (used by editor integrations)'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -269,12 +277,20 @@ set edit:completion:arg-completer[ayame-spell] = {|@words|
         }
         &'ayame-spell;help;completions'= {
         }
+        &'ayame-spell;help;completion-candidates'= {
+        }
         &'ayame-spell;help;lsp'= {
         }
         &'ayame-spell;help;help'= {
         }
     ]
-    if (eq $words[-2] --format) {
+    if (and (>= (count $words) 3) (eq $words[-3] dict) (eq $words[-2] add)) {
+        each {|candidate| cand $candidate 'Registry dictionary'} (ayame-spell __complete dict-add $words[-1] | from-lines)
+    } elif (and (>= (count $words) 3) (eq $words[-3] dict) (eq $words[-2] remove)) {
+        each {|candidate| cand $candidate 'Installed dictionary'} (ayame-spell __complete dict-remove $words[-1] | from-lines)
+    } elif (and (>= (count $words) 3) (eq $words[-3] words) (eq $words[-2] add)) {
+        each {|candidate| cand $candidate 'Flagged word'} (ayame-spell __complete words-add $words[-1] | from-lines)
+    } elif (eq $words[-2] --format) {
         cand human 'Output format'
         cand brief 'Output format'
         cand json 'Output format'

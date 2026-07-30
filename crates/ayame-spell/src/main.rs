@@ -141,6 +141,12 @@ enum Cmd {
     Fix {
         #[command(flatten)]
         scan: ScanArgs,
+        /// Print a unified diff without writing files.
+        #[arg(long, conflicts_with = "interactive")]
+        dry_run: bool,
+        /// Confirm or redirect each finding interactively.
+        #[arg(long)]
+        interactive: bool,
     },
     /// Word management: bulk collection, triage, and dictionary additions.
     Words {
@@ -171,6 +177,13 @@ enum Cmd {
         #[arg(value_enum)]
         shell: clap_complete::Shell,
     },
+    /// Internal, non-network completion candidate provider.
+    #[command(name = "completion-candidates", alias = "__complete", hide = true)]
+    Complete {
+        #[arg(value_enum)]
+        kind: CompletionKind,
+        prefix: Option<String>,
+    },
     /// Run the LSP server (used by editor integrations).
     Lsp {
         /// Use standard input/output transport. Accepted for client
@@ -178,6 +191,15 @@ enum Cmd {
         #[arg(long)]
         stdio: bool,
     },
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum CompletionKind {
+    DictAdd,
+    DictRemove,
+    WordsAdd,
+    WordFile,
+    ConfigKey,
 }
 
 fn main() {
@@ -189,13 +211,43 @@ fn main() {
     }
     let cli = Cli::parse();
     let result = match cli.cmd {
-        None => run_scan(cli.scan, cli.write, cli.format),
+        None => run_scan(
+            cli.scan,
+            if cli.write {
+                check::FixMode::Apply
+            } else {
+                check::FixMode::None
+            },
+            cli.format,
+        ),
         Some(Cmd::Check {
             scan,
             write,
             format,
-        }) => run_scan(scan, write, format),
-        Some(Cmd::Fix { scan }) => run_scan(scan, true, Format::Human),
+        }) => run_scan(
+            scan,
+            if write {
+                check::FixMode::Apply
+            } else {
+                check::FixMode::None
+            },
+            format,
+        ),
+        Some(Cmd::Fix {
+            scan,
+            dry_run,
+            interactive,
+        }) => run_scan(
+            scan,
+            if dry_run {
+                check::FixMode::DryRun
+            } else if interactive {
+                check::FixMode::Interactive
+            } else {
+                check::FixMode::Apply
+            },
+            Format::Human,
+        ),
         Some(Cmd::Words { cmd }) => words::run(cmd),
         Some(Cmd::Dict { cmd }) => dict::run(cmd),
         Some(Cmd::Init {
@@ -205,6 +257,9 @@ fn main() {
         }) => init(force, interactive, yes),
         Some(Cmd::Config) => print_config(),
         Some(Cmd::Completions { shell }) => print_completions(shell),
+        Some(Cmd::Complete { kind, prefix }) => {
+            complete(kind, prefix.as_deref().unwrap_or_default())
+        }
         Some(Cmd::Lsp { stdio: _ }) => lsp::run(),
     };
     match result {
@@ -216,7 +271,60 @@ fn main() {
     }
 }
 
-fn run_scan(scan: ScanArgs, fix: bool, format: Format) -> anyhow::Result<i32> {
+fn complete(kind: CompletionKind, prefix: &str) -> anyhow::Result<i32> {
+    let candidates = match kind {
+        CompletionKind::DictAdd => dict::completion_names(prefix, false)?,
+        CompletionKind::DictRemove => dict::completion_names(prefix, true)?,
+        CompletionKind::WordsAdd => words::completion_words(prefix)?,
+        CompletionKind::WordFile => word_file_candidates(prefix)?,
+        CompletionKind::ConfigKey => [
+            "check.mode",
+            "check.min-word-len",
+            "check.max-token-len",
+            "files.exclude",
+            "files.include-hidden",
+            "files.max-file-size",
+            "words.project",
+            "words.ignore",
+            "words.dictionaries",
+            "corrections.builtin",
+            "corrections.extra",
+            "japanese.enabled",
+            "japanese.katakana-style",
+        ]
+        .iter()
+        .filter(|key| key.starts_with(prefix))
+        .map(|key| (*key).to_string())
+        .collect(),
+    };
+    for candidate in candidates {
+        println!("{candidate}");
+    }
+    Ok(0)
+}
+
+fn word_file_candidates(prefix: &str) -> anyhow::Result<Vec<String>> {
+    let mut candidates = Vec::new();
+    for entry in std::fs::read_dir(std::env::current_dir()?)? {
+        let entry = entry?;
+        if !entry.file_type()?.is_file() {
+            continue;
+        }
+        let path = entry.path();
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let extension = path.extension().and_then(|value| value.to_str());
+        if name.starts_with(prefix)
+            && (name == "ayame-words.txt"
+                || matches!(extension, Some("txt" | "dic" | "dict" | "words")))
+        {
+            candidates.push(name);
+        }
+    }
+    candidates.sort();
+    Ok(candidates)
+}
+
+fn run_scan(scan: ScanArgs, fix: check::FixMode, format: Format) -> anyhow::Result<i32> {
     check::run(check::RunOptions {
         paths: scan.paths,
         fix,
@@ -255,12 +363,98 @@ fn completion_script(shell: clap_complete::Shell) -> anyhow::Result<Vec<u8>> {
         output = add_elvish_value_completions(script)?.into_bytes();
     }
 
+    output = add_dynamic_completion_hooks(shell, output);
     Ok(output)
+}
+
+fn add_dynamic_completion_hooks(shell: clap_complete::Shell, mut output: Vec<u8>) -> Vec<u8> {
+    let hook = match shell {
+        clap_complete::Shell::Bash => {
+            r#"
+# ayame-spell dynamic completion (cache-only; never performs network I/O).
+_ayame_spell_dynamic_wrapper() {
+    local cur="${COMP_WORDS[COMP_CWORD]}" kind=""
+    if (( COMP_CWORD >= 2 )); then
+        case "${COMP_WORDS[COMP_CWORD-2]} ${COMP_WORDS[COMP_CWORD-1]}" in
+            "dict add") kind="dict-add" ;;
+            "dict remove") kind="dict-remove" ;;
+            "words add") kind="words-add" ;;
+        esac
+    fi
+    if [[ -z "$kind" && "${COMP_WORDS[COMP_CWORD-1]}" == "--words" ]]; then
+        kind="word-file"
+    fi
+    if [[ -n "$kind" ]]; then
+        mapfile -t COMPREPLY < <(command ayame-spell __complete "$kind" "$cur")
+        return
+    fi
+    _ayame-spell "$@"
+}
+complete -o bashdefault -o default -F _ayame_spell_dynamic_wrapper ayame-spell
+"#
+        }
+        clap_complete::Shell::Zsh => {
+            r#"
+# ayame-spell dynamic completion (cache-only; never performs network I/O).
+_ayame_spell_dynamic_wrapper() {
+    local kind=""
+    if (( CURRENT >= 3 )); then
+        case "${words[CURRENT-2]} ${words[CURRENT-1]}" in
+            "dict add") kind="dict-add" ;;
+            "dict remove") kind="dict-remove" ;;
+            "words add") kind="words-add" ;;
+        esac
+    fi
+    if [[ -n "$kind" ]]; then
+        local -a candidates
+        candidates=("${(@f)$(command ayame-spell __complete "$kind" "$PREFIX")}")
+        _describe 'candidate' candidates
+    else
+        _ayame-spell "$@"
+    fi
+}
+compdef _ayame_spell_dynamic_wrapper ayame-spell
+"#
+        }
+        clap_complete::Shell::Fish => {
+            r#"
+# ayame-spell dynamic completion (cache-only; never performs network I/O).
+complete -c ayame-spell -n '__fish_seen_subcommand_from dict; and __fish_seen_subcommand_from add' -f -a '(command ayame-spell __complete dict-add (commandline -ct))'
+complete -c ayame-spell -n '__fish_seen_subcommand_from dict; and __fish_seen_subcommand_from remove' -f -a '(command ayame-spell __complete dict-remove (commandline -ct))'
+complete -c ayame-spell -n '__fish_seen_subcommand_from words; and __fish_seen_subcommand_from add' -f -a '(command ayame-spell __complete words-add (commandline -ct))'
+"#
+        }
+        clap_complete::Shell::PowerShell | clap_complete::Shell::Elvish => "",
+        _ => "",
+    };
+    output.extend_from_slice(hook.as_bytes());
+    output
 }
 
 fn add_powershell_value_completions(script: String) -> anyhow::Result<String> {
     const ANCHOR: &str = "    $command = @(\n";
     const VALUE_COMPLETIONS: &str = r#"    $lastElement = $commandElements[$commandElements.Count - 1]
+    $dynamicKind = if ($commandElements.Count -ge 3 -and
+                       $lastElement.Value -eq $wordToComplete) {
+        $context = @(
+            $commandElements[$commandElements.Count - 3].Value,
+            $commandElements[$commandElements.Count - 2].Value
+        ) -join ' '
+        switch ($context) {
+            'dict add' { 'dict-add' }
+            'dict remove' { 'dict-remove' }
+            'words add' { 'words-add' }
+        }
+    }
+    if ($null -ne $dynamicKind) {
+        & ayame-spell __complete $dynamicKind $wordToComplete |
+            ForEach-Object {
+                [CompletionResult]::new(
+                    $_, $_, [CompletionResultType]::ParameterValue, $_)
+            }
+        return
+    }
+
     $valueFor = if ($lastElement.Value -in @('--format', 'completions')) {
         $lastElement.Value
     } elseif ($commandElements.Count -ge 3 -and
@@ -292,7 +486,13 @@ fn add_powershell_value_completions(script: String) -> anyhow::Result<String> {
 
 fn add_elvish_value_completions(script: String) -> anyhow::Result<String> {
     const ANCHOR: &str = "    $completions[$command]\n}\n";
-    const VALUE_COMPLETIONS: &str = r#"    if (eq $words[-2] --format) {
+    const VALUE_COMPLETIONS: &str = r#"    if (and (>= (count $words) 3) (eq $words[-3] dict) (eq $words[-2] add)) {
+        each {|candidate| cand $candidate 'Registry dictionary'} (ayame-spell __complete dict-add $words[-1] | from-lines)
+    } elif (and (>= (count $words) 3) (eq $words[-3] dict) (eq $words[-2] remove)) {
+        each {|candidate| cand $candidate 'Installed dictionary'} (ayame-spell __complete dict-remove $words[-1] | from-lines)
+    } elif (and (>= (count $words) 3) (eq $words[-3] words) (eq $words[-2] add)) {
+        each {|candidate| cand $candidate 'Flagged word'} (ayame-spell __complete words-add $words[-1] | from-lines)
+    } elif (eq $words[-2] --format) {
         cand human 'Output format'
         cand brief 'Output format'
         cand json 'Output format'
@@ -545,6 +745,10 @@ mod tests {
                     "{shell} completion output should contain {candidate}"
                 );
             }
+            assert!(
+                script.contains("__complete"),
+                "{shell} completion output should use the cache-only provider"
+            );
         }
     }
 

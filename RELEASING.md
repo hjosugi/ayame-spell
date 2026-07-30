@@ -15,6 +15,16 @@ from the `Release` GitHub Actions workflow.
 The workflow extracts the matching CHANGELOG section as the GitHub Release
 body. A missing or empty section fails before the release is created.
 
+Set the repository variable `PUBLISH_CRATES=true` and secret
+`CARGO_REGISTRY_TOKEN` to publish `ayame-spell-core` followed by
+`ayame-spell` on a tag push. The job is safe to rerun: it skips a version that
+already exists and waits for the core version to become available before
+publishing the CLI. Keep `PUBLISH_CRATES` unset until the credential and crate
+ownership have been verified.
+
+Set `PUBLISH_VSCODE=true` together with `VSCE_PAT` and `OVSX_PAT` to publish
+the platform VSIX files after their release artifacts and checksums succeed.
+
 ## Artifact guarantees
 
 - Rust builds use the committed lockfile via `cargo build --locked`.

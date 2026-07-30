@@ -210,6 +210,18 @@ fn fix_is_idempotent() {
     let project = Project::new();
     let input = project.write("input.rs", "teh １２３ＡＢＣ\n");
 
+    let dry_run = project.run(&["fix", "--dry-run", "input.rs"]);
+    assert_code(&dry_run, 1);
+    let diff = String::from_utf8_lossy(&dry_run.stdout);
+    assert!(diff.contains("--- a/input.rs"));
+    assert!(diff.contains("-teh １２３ＡＢＣ"));
+    assert!(diff.contains("+the 123ABC"));
+    assert_eq!(fs::read_to_string(&input).unwrap(), "teh １２３ＡＢＣ\n");
+
+    let interactive = project.run(&["fix", "--interactive", "input.rs"]);
+    assert_code(&interactive, 2);
+    assert!(String::from_utf8_lossy(&interactive.stderr).contains("needs an interactive terminal"));
+
     let first = project.run(&["fix", "input.rs"]);
     assert_code(&first, 0);
     let fixed = fs::read_to_string(&input).expect("fixed input");
@@ -429,6 +441,9 @@ fn words_commands_cover_collect_add_and_noninteractive_triage() {
     let collect = project.run(&["words", "collect", "--plain", "input.md"]);
     assert_code(&collect, 0);
     assert_eq!(String::from_utf8_lossy(&collect.stdout), "teh\n");
+    let completion = project.run(&["__complete", "words-add", "te"]);
+    assert_code(&completion, 0);
+    assert_eq!(String::from_utf8_lossy(&completion.stdout), "teh\n");
 
     let add = project.run(&["words", "add", "ProjectTerm"]);
     assert_code(&add, 0);
@@ -555,6 +570,9 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
     let records: Value = serde_json::from_slice(&list_json.stdout).unwrap();
     assert_eq!(records[0]["name"], "fixture");
     assert_eq!(records[0]["installed"], false);
+    let add_completion = run(&["__complete", "dict-add", "fix"]);
+    assert_code(&add_completion, 0);
+    assert_eq!(String::from_utf8_lossy(&add_completion.stdout), "fixture\n");
 
     let search = run(&["dict", "search", "dictionary"]);
     assert_code(&search, 0);
@@ -571,6 +589,12 @@ fn dictionary_commands_use_an_offline_fixture_registry() {
     assert!(fs::read_to_string(project.root.join("ayame-spell.toml"))
         .unwrap()
         .contains("registry:fixture"));
+    let remove_completion = run(&["__complete", "dict-remove", "fix"]);
+    assert_code(&remove_completion, 0);
+    assert_eq!(
+        String::from_utf8_lossy(&remove_completion.stdout),
+        "fixture\n"
+    );
 
     let info = run(&["dict", "info", "fixture", "--json"]);
     assert_code(&info, 0);
@@ -609,7 +633,20 @@ fn init_config_and_completions_subcommands_work() {
 
     let completions = project.run(&["completions", "bash"]);
     assert_code(&completions, 0);
-    assert!(String::from_utf8_lossy(&completions.stdout).contains("_ayame-spell"));
+    let completions = String::from_utf8_lossy(&completions.stdout);
+    assert!(completions.contains("_ayame-spell"));
+    assert!(completions.contains("kind=\"dict-add\""));
+    assert!(completions.contains("ayame-spell __complete \"$kind\""));
+
+    project.write("team.words", "ProjectTerm\n");
+    let word_file = project.run(&["__complete", "word-file", "team"]);
+    assert_code(&word_file, 0);
+    assert_eq!(String::from_utf8_lossy(&word_file.stdout), "team.words\n");
+
+    let empty_project = Project::new();
+    let empty = empty_project.run(&["__complete", "dict-add", "anything"]);
+    assert_code(&empty, 0);
+    assert!(empty.stdout.is_empty());
 }
 
 fn lsp_frame(value: Value) -> Vec<u8> {

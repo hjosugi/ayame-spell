@@ -8,6 +8,7 @@
 use std::collections::HashSet;
 use std::io::{IsTerminal, Read};
 use std::path::PathBuf;
+use std::time::{Duration, SystemTime};
 
 use anyhow::Context;
 use clap::{Subcommand, ValueEnum};
@@ -18,6 +19,7 @@ use sha2::{Digest, Sha256};
 use crate::words::{add_to_string_array, remove_from_string_array};
 
 const DEFAULT_REGISTRY: &str = "https://hjosugi.github.io/ayame-spell/registry/index.json";
+const INDEX_TTL: Duration = Duration::from_secs(24 * 60 * 60);
 
 #[derive(Subcommand)]
 pub enum DictCmd {
@@ -100,7 +102,7 @@ impl DictKind {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 struct Index {
     #[allow(dead_code)]
     version: u32,
@@ -125,12 +127,67 @@ fn registry_url() -> String {
 }
 
 fn fetch_index() -> anyhow::Result<Index> {
+    if let Some(index) = read_cached_index(true)? {
+        return Ok(index);
+    }
     let url = registry_url();
-    let body = ureq::get(&url)
-        .call()
-        .with_context(|| format!("cannot fetch registry index {url}"))?
-        .into_string()?;
-    serde_json::from_str(&body).with_context(|| format!("invalid registry index at {url}"))
+    let fetched = match ureq::get(&url).call() {
+        Ok(response) => response.into_string()?,
+        Err(error) => {
+            if let Some(index) = read_cached_index(false)? {
+                eprintln!("warning: cannot refresh registry index ({error}); using cached copy");
+                return Ok(index);
+            }
+            return Err(error).with_context(|| format!("cannot fetch registry index {url}"));
+        }
+    };
+    let index: Index = serde_json::from_str(&fetched)
+        .with_context(|| format!("invalid registry index at {url}"))?;
+    if let Some(path) = ayame_spell_core::registry_index_cache_path() {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(path, fetched)?;
+    }
+    Ok(index)
+}
+
+fn read_cached_index(require_fresh: bool) -> anyhow::Result<Option<Index>> {
+    let Some(path) = ayame_spell_core::registry_index_cache_path() else {
+        return Ok(None);
+    };
+    if require_fresh {
+        let fresh = std::fs::metadata(&path)
+            .and_then(|metadata| metadata.modified())
+            .ok()
+            .and_then(|modified| SystemTime::now().duration_since(modified).ok())
+            .is_some_and(|age| age <= INDEX_TTL);
+        if !fresh {
+            return Ok(None);
+        }
+    }
+    match std::fs::read_to_string(path) {
+        Ok(contents) => Ok(Some(
+            serde_json::from_str(&contents).context("invalid cached registry index")?,
+        )),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error.into()),
+    }
+}
+
+/// Return cached registry candidates without performing network I/O.
+pub fn completion_names(prefix: &str, installed_only: bool) -> anyhow::Result<Vec<String>> {
+    let prefix = prefix.to_lowercase();
+    let installed = installed_names();
+    let mut names: Vec<String> = read_cached_index(false)?
+        .into_iter()
+        .flat_map(|index| index.dictionaries)
+        .filter(|entry| !installed_only || installed.contains(&entry.name))
+        .map(|entry| entry.name)
+        .filter(|name| name.to_lowercase().starts_with(&prefix))
+        .collect();
+    names.sort();
+    Ok(names)
 }
 
 fn source_url(entry: &Entry) -> String {

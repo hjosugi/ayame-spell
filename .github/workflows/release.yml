@@ -154,6 +154,53 @@ jobs:
             release-assets/SHA256SUMS \
             --clobber
 
+  publish-crates:
+    if: >-
+      github.event_name == 'push' &&
+      vars.PUBLISH_CRATES == 'true'
+    needs: checksums
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Verify publishing credential is configured
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          test -n "$CARGO_REGISTRY_TOKEN" || {
+            echo 'CARGO_REGISTRY_TOKEN is required when PUBLISH_CRATES=true'
+            exit 1
+          }
+      - name: Publish core then CLI
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          crate_exists() {
+            curl --fail --silent --show-error \
+              "https://crates.io/api/v1/crates/$1/$version" \
+              >/dev/null 2>&1
+          }
+
+          if crate_exists ayame-spell-core; then
+            echo "ayame-spell-core $version is already published"
+          else
+            cargo publish --locked -p ayame-spell-core
+          fi
+
+          for attempt in {1..12}; do
+            crate_exists ayame-spell-core && break
+            echo "waiting for ayame-spell-core $version to become available"
+            sleep 10
+          done
+          crate_exists ayame-spell-core
+
+          if crate_exists ayame-spell; then
+            echo "ayame-spell $version is already published"
+          else
+            cargo publish --locked -p ayame-spell
+          fi
+
   publish-vscode:
     if: >-
       github.event_name == 'push' &&

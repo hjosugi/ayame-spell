@@ -97,12 +97,16 @@ eval (ayame-spell completions elvish | slurp)
 ```
 
 Release archives also contain pre-generated scripts in `completions/`.
+Dictionary names and words use local caches populated by `dict list` /
+`dict add` and `words collect`; pressing Tab never waits for the network.
 
 ## Quick start
 
 ```sh
 ayame-spell                  # check current directory, zero config
 ayame-spell fix              # apply safe fixes in place
+ayame-spell fix --dry-run    # preview the exact unified diff
+ayame-spell fix --interactive # review each finding before writing
 ayame-spell init             # write a starter ayame-spell.toml
 
 # dictionary mode with shared wordlists:
