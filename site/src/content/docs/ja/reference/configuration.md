@@ -26,6 +26,15 @@ description: ayame-spell の全設定キー、既定値、マージ規則、上�
 `ayame-spell config` を実行すると、読み込んだファイルと既定値を反映した最終
 設定を表示できます。
 
+分離した自動処理やポータブル環境では、次の環境変数で OS の既定場所を
+置き換えられます。
+
+| 環境変数 | 意味 |
+| --- | --- |
+| `AYAME_SPELL_CONFIG_DIR` | ユーザー全体の `config.toml` と `words.txt` を置くディレクトリ。 |
+| `AYAME_SPELL_CACHE_DIR` | アプリ用キャッシュディレクトリ。レジストリ辞書は `dicts/` 以下へ保存。 |
+| `AYAME_SPELL_REGISTRY` | 辞書レジストリの `index.json` URL。 |
+
 ## `[check]`
 
 | キー | 型 | 既定値 | 意味 |

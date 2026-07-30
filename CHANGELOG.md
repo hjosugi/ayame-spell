@@ -16,6 +16,9 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   advisories, source provenance, and licenses.
 - A generated manual page in release archives and packaged-binary smoke tests
   on every release target.
+- Cross-platform CLI integration tests covering every command, stable output,
+  configuration discovery, fixes, directives, and an offline dictionary
+  registry.
 
 ### Changed
 
@@ -23,6 +26,8 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   declared Rust 1.80 MSRV remains buildable.
 - Release builds now use `Cargo.lock`, and GitHub Release notes come from the
   matching version section in this changelog.
+- Global configuration and cache locations can be isolated with
+  `AYAME_SPELL_CONFIG_DIR` and `AYAME_SPELL_CACHE_DIR`.
 
 ## [0.3.1] - 2026-07-30
 

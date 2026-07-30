@@ -1,0 +1,9 @@
+---
+source: crates/ayame-spell/tests/cli.rs
+expression: "normalized(&project, &output)"
+---
+status: 1
+stdout:
+{"version":1,"type":"issue","path":"input.md","line":1,"column":9,"offset":8,"length":3,"word":"teh","kind":"typo","suggestions":["the"],"fix":"the","message":"`teh` should be `the`"}
+{"version":1,"type":"summary","issues":1,"files_with_issues":1,"files_checked":1,"fixed":0,"skipped_binary":0,"skipped_large":0}
+stderr:

@@ -1,0 +1,9 @@
+---
+source: crates/ayame-spell/tests/cli.rs
+expression: "normalized(&project, &output)"
+---
+status: 1
+stdout:
+input.md:1:9: teh → the [typo]
+stderr:
+1 issue(s) in 1 file(s) — 1 file(s) checked

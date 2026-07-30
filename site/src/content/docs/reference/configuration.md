@@ -27,6 +27,15 @@ replacing equal global keys. `[[overrides]]` entries are also appended.
 Run `ayame-spell config` to print the effective merged configuration and the
 files from which it was loaded.
 
+For isolated automation and portable installations, these environment
+variables replace the corresponding platform locations:
+
+| Variable | Meaning |
+| --- | --- |
+| `AYAME_SPELL_CONFIG_DIR` | Directory containing global `config.toml` and `words.txt`. |
+| `AYAME_SPELL_CACHE_DIR` | Application cache directory; registry files are stored under `dicts/`. |
+| `AYAME_SPELL_REGISTRY` | URL of the dictionary registry `index.json`. |
+
 ## `[check]`
 
 | Key | Type | Default | Meaning |

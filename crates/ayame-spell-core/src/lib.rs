@@ -27,10 +27,18 @@ pub use issue::{Issue, IssueKind};
 
 use std::path::PathBuf;
 
+fn configured_dir(variable: &str) -> Option<PathBuf> {
+    std::env::var_os(variable)
+        .filter(|value| !value.is_empty())
+        .map(PathBuf::from)
+}
+
 /// Directory where registry dictionaries are cached
 /// (`~/.cache/ayame-spell/dicts`).
 pub fn registry_cache_dir() -> Option<PathBuf> {
-    dirs::cache_dir().map(|d| d.join("ayame-spell").join("dicts"))
+    configured_dir("AYAME_SPELL_CACHE_DIR")
+        .or_else(|| dirs::cache_dir().map(|d| d.join("ayame-spell")))
+        .map(|d| d.join("dicts"))
 }
 
 /// Path of the cached registry dictionary `name`, if the cache directory is
@@ -42,7 +50,8 @@ pub fn registry_cache_path(name: &str) -> Option<PathBuf> {
 /// Directory for global (per-user) configuration
 /// (`~/.config/ayame-spell`).
 pub fn global_config_dir() -> Option<PathBuf> {
-    dirs::config_dir().map(|d| d.join("ayame-spell"))
+    configured_dir("AYAME_SPELL_CONFIG_DIR")
+        .or_else(|| dirs::config_dir().map(|d| d.join("ayame-spell")))
 }
 
 /// Path of the global word list (`~/.config/ayame-spell/words.txt`).
