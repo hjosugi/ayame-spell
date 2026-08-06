@@ -89,11 +89,12 @@ Pushing `v*` runs `.github/workflows/release.yml`:
 5. publish the five VSIX packages to both stores only when
    `PUBLISH_VSCODE=true`.
 
-The publishing job uses the package files directly:
+The publishing job first verifies all five expected filenames, then passes the
+complete package set directly to each CLI:
 
 ```sh
-npx vsce publish --packagePath path/to/package.vsix
-npx ovsx publish path/to/package.vsix
+npx vsce publish --packagePath path/to/package-1.vsix path/to/package-2.vsix
+npx ovsx publish --packagePath path/to/package-1.vsix path/to/package-2.vsix
 ```
 
 `vsce` reads `VSCE_PAT`; `ovsx` reads `OVSX_PAT`.

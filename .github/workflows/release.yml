@@ -190,6 +190,7 @@ jobs:
             release-manifests/ayame-spell.rb \
             release-manifests/ayame-spell.json \
             release-manifests/PKGBUILD \
+            release-manifests/.SRCINFO \
             release-manifests/install.sh \
             release-manifests/install.ps1 \
             "release-manifests/ayame-spell-npm-${GITHUB_REF_NAME}.tgz" \
@@ -232,6 +233,9 @@ jobs:
       github.event_name == 'push' &&
       vars.PUBLISH_NPM == 'true'
     needs: checksums
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -239,23 +243,14 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: npm
-          cache-dependency-path: packages/npm/package-lock.json
+          package-manager-cache: false
+      - name: Install an npm CLI with trusted publishing support
+        run: npm install --global npm@11.5.1
       - run: python3 packaging/check_versions.py
       - run: npm ci --ignore-scripts --prefix packages/npm
       - run: npm test --prefix packages/npm
-      - name: Verify npm credential is configured
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          test -n "$NODE_AUTH_TOKEN" || {
-            echo 'NPM_TOKEN is required when PUBLISH_NPM=true'
-            exit 1
-          }
       - name: Publish native wrapper
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish ./packages/npm --access public --provenance
+        run: npm publish ./packages/npm --access public
 
   publish-crates:
     if: >-
@@ -327,6 +322,12 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --dir release-assets \
             --pattern '*.vsix'
+          for target in \
+            win32-x64 linux-x64 linux-arm64 darwin-x64 darwin-arm64
+          do
+            test -f \
+              "release-assets/ayame-spell-${GITHUB_REF_NAME}-${target}.vsix"
+          done
       - name: Verify publishing credentials are configured
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
@@ -344,18 +345,22 @@ jobs:
         working-directory: editors/vscode
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: >-
-          npx vsce publish
-          --packagePath ../../release-assets/*.vsix
-          --skip-duplicate
+        run: |
+          packages=(../../release-assets/*.vsix)
+          test "${#packages[@]}" -eq 5
+          npx vsce publish \
+            --packagePath "${packages[@]}" \
+            --skip-duplicate
       - name: Publish to Open VSX
         working-directory: editors/vscode
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        run: >-
-          npx ovsx publish
-          --packagePath ../../release-assets/*.vsix
-          --skip-duplicate
+        run: |
+          packages=(../../release-assets/*.vsix)
+          test "${#packages[@]}" -eq 5
+          npx ovsx publish \
+            --packagePath "${packages[@]}" \
+            --skip-duplicate
 
   repair-intel-macos:
     if: github.event_name == 'workflow_dispatch'

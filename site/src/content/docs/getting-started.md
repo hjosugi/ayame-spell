@@ -47,8 +47,8 @@ docker run --rm -v "$PWD:/work" -w /work \
   ghcr.io/hjosugi/ayame-spell:0.4.0 check .
 ```
 
-An `ayame-spell-bin` `PKGBUILD` is attached to each release for AUR
-maintainers and direct `makepkg -si` use. See the
+An x86_64/aarch64 `ayame-spell-bin` `PKGBUILD` and matching `.SRCINFO` are
+attached to each release for AUR maintainers and direct `makepkg -si` use. See the
 [distribution source](https://github.com/hjosugi/ayame-spell/tree/main/packaging)
 for the reproducible manifest generator.
 
