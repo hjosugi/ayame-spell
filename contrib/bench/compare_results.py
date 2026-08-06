@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when candidate throughput regresses materially from main."""
+"""Fail when candidate throughput or peak memory regresses materially."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("baseline", type=Path)
     parser.add_argument("candidate", type=Path)
     parser.add_argument("--max-slowdown-percent", type=float, default=35.0)
+    parser.add_argument("--max-rss-growth-percent", type=float, default=35.0)
     return parser.parse_args()
 
 
@@ -27,7 +28,7 @@ def main() -> None:
     candidate_time = candidate["wall_seconds"]["median"]
     slowdown = (candidate_time / baseline_time - 1) * 100
     print(
-        f"main median: {baseline_time:.4f}s; "
+        f"baseline median: {baseline_time:.4f}s; "
         f"candidate median: {candidate_time:.4f}s; "
         f"slowdown: {slowdown:+.1f}% "
         f"(limit {args.max_slowdown_percent:.1f}%)"
@@ -35,6 +36,22 @@ def main() -> None:
     if slowdown > args.max_slowdown_percent:
         raise SystemExit(
             "performance regression exceeds the noise-tolerant threshold"
+        )
+
+    baseline_rss = baseline["peak_rss_mib"]
+    candidate_rss = candidate["peak_rss_mib"]
+    if baseline_rss <= 0:
+        raise SystemExit("baseline peak RSS must be greater than zero")
+    rss_growth = (candidate_rss / baseline_rss - 1) * 100
+    print(
+        f"baseline peak RSS: {baseline_rss:.1f} MiB; "
+        f"candidate peak RSS: {candidate_rss:.1f} MiB; "
+        f"growth: {rss_growth:+.1f}% "
+        f"(limit {args.max_rss_growth_percent:.1f}%)"
+    )
+    if rss_growth > args.max_rss_growth_percent:
+        raise SystemExit(
+            "peak-memory regression exceeds the noise-tolerant threshold"
         )
 
 

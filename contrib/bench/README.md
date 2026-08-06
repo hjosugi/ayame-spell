@@ -12,15 +12,28 @@ python3 contrib/bench/run_benchmark.py \
   --output benchmarks/results/local.json
 ```
 
+To measure dictionary mode with every shipped English wordlist:
+
+```sh
+python3 contrib/bench/run_benchmark.py \
+  --binary target/release/ayame-spell \
+  --corpus /tmp/ayame-corpus.md \
+  --config contrib/quality/ayame-spell.toml \
+  --repeat 3 \
+  --output benchmarks/results/local-dictionary.json
+```
+
 The generator writes exactly 35 MiB and 400,000 lines by default. The runner
 records every wall-time sample, median throughput, peak child-process RSS,
 machine details, commit, command, corpus SHA-256, and CLI summary. It always
 uses `--no-cache`.
 
-The pull-request CI job builds both `origin/main` and the proposed revision,
-runs both against the same corpus, and fails above a 35% median slowdown.
-This threshold tolerates shared-runner noise while ensuring a change that
-halves throughput cannot merge.
+The performance CI job runs for pull requests and non-initial pushes to
+`main`. It builds the event's exact base revision and the proposed revision,
+runs five samples in default and full-dictionary modes against the same corpus,
+and fails either mode above a 35% median slowdown or 35% peak-RSS growth.
+These thresholds tolerate shared-runner noise while rejecting material
+throughput or memory regressions.
 
 ## Comparison runs
 

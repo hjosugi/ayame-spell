@@ -8,22 +8,25 @@ description: ayame-spell の処理速度、ピークメモリ、比較計測、C
 
 ## 基準結果
 
-2026-07-30 に release build した ayame-spell 0.4.0 は、cache を使わず
-35 MiB / 40 万行の corpus 全体を確認しました。
+2026-07-31 に release build した post-0.4.0 の ayame-spell は、cache を
+使わず 35 MiB / 40 万行の corpus 全体を確認しました。
 
-| 指標 | 結果 |
-| --- | ---: |
-| 3 回の中央値 | 1.598 s |
-| throughput | 21.90 MiB/s |
-| 最速 | 1.527 s |
-| peak RSS | 679.6 MiB |
-| 確認ファイル | 1 |
-| skip ファイル | 0 |
+| 指標 | 既定設定 | 全英語辞書 |
+| --- | ---: | ---: |
+| 3 回の中央値 | 0.817 s | 1.078 s |
+| throughput | 42.83 MiB/s | 32.46 MiB/s |
+| 最速 | 0.778 s | 1.067 s |
+| peak RSS | 121.1 MiB | 129.3 MiB |
+| 確認ファイル | 1 | 1 |
+| skip ファイル | 0 | 0 |
 
-これは、再現可能な artifact がなかった従来の 56 MB というメモリ表記を
-置き換えるものです。
-[生の結果](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-linux-x86_64.json)
+日本語の数字 scan で全 character を materialize せず streaming することで、
+公開済み v0.4.0 基準より中央値を 48.9%短縮し、peak RSS を 82.2%削減しました。
+[生の結果](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-linux-x86_64.json)
 には、全 sample、command、version、machine 情報、CLI summary を記録しています。
+[全英語辞書の結果](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-dictionary-linux-x86_64.json)
+は、配布する15個の英語wordlist（121,003項目）、project list、追加correctionsを
+全て有効にしています。
 
 ## 比較
 
@@ -33,7 +36,7 @@ cache を無効化し、必要な tool では大きな file の上限を引き�
 
 | Tool | version / rule | 中央値 | throughput | peak RSS |
 | --- | --- | ---: | ---: | ---: |
-| ayame-spell | 0.4.0、既定の corrections + 日本語確認 | 1.598 s | 21.90 MiB/s | 679.6 MiB |
+| ayame-spell | post-0.4.0、既定の corrections + 日本語確認 | 0.817 s | 42.83 MiB/s | 121.1 MiB |
 | typos | 1.48.0、既定設定 | 1.348 s | 25.97 MiB/s | 61.4 MiB |
 | cSpell | 10.0.1、既定設定 | 7.630 s | 4.59 MiB/s | 527.8 MiB |
 | textlint | 15.7.1 + spellcheck-tech-word 5.0.0 | >60 s（timeout） | <0.58 MiB/s | 停止時 1003.2 MiB |
@@ -88,7 +91,9 @@ cargo bench -p ayame-spell-core
 
 ## 性能劣化の防止
 
-pull request CI は candidate と `origin/main` の両方を build し、同じ corpus
-に対して cache なしで各 3 回計測します。candidate の中央値が 35% を超えて
-遅くなると失敗します。この幅で shared runner の揺らぎを吸収しつつ、
-throughput が半減する変更は reject します。
+性能 CI は pull request と `main` への初回以外の push で実行します。
+candidate と event の正確な base revision の両方を build し、同じ corpus
+に対して既定設定と全英語辞書の両方を cache なしで各 5 回計測します。
+どちらかの candidate の中央値が 35% を超えて遅くなるか、peak RSS が 35% を
+超えて増えると失敗します。この幅で shared runner の揺らぎを吸収しつつ、
+実質的な速度・メモリ劣化を reject します。

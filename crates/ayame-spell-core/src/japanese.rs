@@ -514,10 +514,8 @@ fn number_consistency_issues(text: &str) -> Vec<Issue> {
 
 fn number_occurrences(text: &str) -> Vec<NumberOccurrence> {
     let mut occurrences = Vec::new();
-    let indices: Vec<(usize, char)> = text.char_indices().collect();
-    let mut cursor = 0usize;
-    while cursor < indices.len() {
-        let (start, character) = indices[cursor];
+    let mut indices = text.char_indices().peekable();
+    while let Some((start, character)) = indices.next() {
         let style = if character.is_ascii_digit() {
             Some(NumberStyle::Arabic)
         } else if kanji_digit(character).is_some() {
@@ -526,36 +524,44 @@ fn number_occurrences(text: &str) -> Vec<NumberOccurrence> {
             None
         };
         let Some(style) = style else {
-            cursor += 1;
             continue;
         };
-        let mut end_cursor = cursor;
         let mut digits = String::new();
-        while end_cursor < indices.len() {
-            let (_, candidate) = indices[end_cursor];
+        match style {
+            NumberStyle::Arabic => digits.push(character),
+            NumberStyle::Kanji => {
+                digits.push(kanji_digit(character).expect("number style came from a kanji digit"))
+            }
+        }
+        while let Some(&(_, candidate)) = indices.peek() {
             match style {
-                NumberStyle::Arabic if candidate.is_ascii_digit() => digits.push(candidate),
-                NumberStyle::Arabic if candidate == ',' => {}
+                NumberStyle::Arabic if candidate.is_ascii_digit() => {
+                    digits.push(candidate);
+                    indices.next();
+                }
+                NumberStyle::Arabic if candidate == ',' => {
+                    indices.next();
+                }
                 NumberStyle::Kanji => {
                     let Some(digit) = kanji_digit(candidate) else {
                         break;
                     };
                     digits.push(digit);
+                    indices.next();
                 }
                 NumberStyle::Arabic => break,
             }
-            end_cursor += 1;
         }
-        let Some(&(unit_offset, unit)) = indices.get(end_cursor) else {
+        let Some(&(unit_offset, unit)) = indices.peek() else {
             break;
         };
         if !matches!(
             unit,
             '円' | '人' | '件' | '年' | '月' | '日' | '時' | '分' | '秒'
         ) {
-            cursor += 1;
             continue;
         }
+        indices.next();
         let end = unit_offset + unit.len_utf8();
         let form = text[start..end].to_string();
         occurrences.push(NumberOccurrence {
@@ -564,7 +570,6 @@ fn number_occurrences(text: &str) -> Vec<NumberOccurrence> {
             canonical: format!("{digits}{unit}"),
             style,
         });
-        cursor = end_cursor + 1;
     }
     occurrences
 }
@@ -897,6 +902,30 @@ mod tests {
             .iter()
             .any(|issue| issue.word == "．" && issue.kind == IssueKind::JaPunctuation));
         assert!(c.document_issues("子供だけ。1,000円だけ。").is_empty());
+    }
+
+    #[test]
+    fn number_occurrences_stream_ascii_and_kanji_forms() {
+        let text = "費用は1,000円、予備は42件。比較値は一〇〇〇円。";
+        let occurrences = number_occurrences(text);
+        let forms: Vec<(&str, &str)> = occurrences
+            .iter()
+            .map(|occurrence| (occurrence.form.as_str(), occurrence.canonical.as_str()))
+            .collect();
+        assert_eq!(
+            forms,
+            [
+                ("1,000円", "1000円"),
+                ("42件", "42件"),
+                ("一〇〇〇円", "1000円"),
+            ]
+        );
+        for occurrence in occurrences {
+            assert_eq!(
+                &text[occurrence.offset..occurrence.offset + occurrence.form.len()],
+                occurrence.form
+            );
+        }
     }
 
     #[test]
