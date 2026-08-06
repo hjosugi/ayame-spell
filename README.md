@@ -48,7 +48,8 @@ in a single fast Rust binary.
   (サーバ vs サーバー). Plus fullwidth-alphanumeric, halfwidth-katakana,
   and fullwidth-space checks.
 - **Measured** — the reproducible 35 MiB / 400k-line benchmark currently runs
-  in 1.60 s (21.90 MiB/s); see the
+  in 0.82 s (42.83 MiB/s, 121.1 MiB peak RSS). Enabling all 121,003 shipped
+  English wordlist entries takes 1.08 s and 129.3 MiB; see the
   [full environment, memory, and comparison results](https://hjosugi.github.io/ayame-spell/benchmarks/).
   No silent truncation, ever: skipped files are counted and reported.
 

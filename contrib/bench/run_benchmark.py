@@ -19,6 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--binary", type=Path, required=True)
     parser.add_argument("--corpus", type=Path, required=True)
+    parser.add_argument("--config", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--repeat", type=int, default=3)
     parser.add_argument("--revision")
@@ -50,15 +51,19 @@ def main() -> None:
         raise SystemExit("--repeat must be at least 1")
     binary = args.binary.resolve()
     corpus = args.corpus.resolve()
-    command = [
-        str(binary),
-        "check",
-        "--no-config",
-        "--no-cache",
-        "--format",
-        "json",
-        str(corpus),
-    ]
+    command = [str(binary), "check"]
+    if args.config:
+        command.extend(["--config", str(args.config.resolve())])
+    else:
+        command.append("--no-config")
+    command.extend(
+        [
+            "--no-cache",
+            "--format",
+            "json",
+            str(corpus),
+        ]
+    )
 
     samples = []
     summary = None

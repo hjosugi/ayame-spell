@@ -8,22 +8,26 @@ corpus itself is not committed.
 
 ## Reference result
 
-On 2026-07-30, ayame-spell 0.4.0 built in release mode checked the complete
-35 MiB / 400,000-line corpus with no cache:
+On 2026-07-31, the post-0.4.0 release-mode build checked the complete 35 MiB /
+400,000-line corpus with no cache:
 
-| Metric | Result |
-| --- | ---: |
-| Median of 3 runs | 1.598 s |
-| Throughput | 21.90 MiB/s |
-| Fastest run | 1.527 s |
-| Peak RSS | 679.6 MiB |
-| Files checked | 1 |
-| Files skipped | 0 |
+| Metric | Defaults | Full dictionary |
+| --- | ---: | ---: |
+| Median of 3 runs | 0.817 s | 1.078 s |
+| Throughput | 42.83 MiB/s | 32.46 MiB/s |
+| Fastest run | 0.778 s | 1.067 s |
+| Peak RSS | 121.1 MiB | 129.3 MiB |
+| Files checked | 1 | 1 |
+| Files skipped | 0 | 0 |
 
-This replaces the earlier 56 MB memory claim, which was not backed by a
-reproducible artifact. The
-[raw result](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-linux-x86_64.json)
-records every sample, command, version, machine field, and CLI summary.
+Streaming the Japanese number scan instead of materializing every character
+made the median 48.9% faster and reduced peak RSS by 82.2% from the published
+v0.4.0 reference. The
+[raw result](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-linux-x86_64.json)
+records every sample, command, version, machine field, and CLI summary. The
+[full-dictionary result](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-dictionary-linux-x86_64.json)
+uses all 15 shipped English wordlists (121,003 entries) plus the project list
+and extra corrections.
 
 ## Comparison
 
@@ -33,7 +37,7 @@ and each completed tool ran three times.
 
 | Tool | Version / rules | Median | Throughput | Peak RSS |
 | --- | --- | ---: | ---: | ---: |
-| ayame-spell | 0.4.0, default corrections + Japanese checks | 1.598 s | 21.90 MiB/s | 679.6 MiB |
+| ayame-spell | post-0.4.0, default corrections + Japanese checks | 0.817 s | 42.83 MiB/s | 121.1 MiB |
 | typos | 1.48.0, defaults | 1.348 s | 25.97 MiB/s | 61.4 MiB |
 | cSpell | 10.0.1, defaults | 7.630 s | 4.59 MiB/s | 527.8 MiB |
 | textlint | 15.7.1 + spellcheck-tech-word 5.0.0 | >60 s (timeout) | <0.58 MiB/s | 1003.2 MiB at stop |
@@ -90,7 +94,9 @@ cargo bench -p ayame-spell-core
 
 ## Regression guard
 
-Pull-request CI builds both the candidate revision and `origin/main`, generates
-one shared corpus, and records three no-cache runs for each binary. The job
-fails when the candidate median is more than 35% slower. That tolerance absorbs
-shared-runner noise while still rejecting a change that halves throughput.
+Performance CI runs for pull requests and non-initial pushes to `main`. It
+builds the candidate and the event's exact base revision, generates one shared
+corpus, and records five no-cache runs in both default and full-dictionary
+modes for each binary. Either mode fails when the candidate median is more than
+35% slower or peak RSS grows by more than 35%. That tolerance absorbs
+shared-runner noise while rejecting material throughput or memory regressions.
