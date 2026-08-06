@@ -46,9 +46,10 @@ docker run --rm -v "$PWD:/work" -w /work \
   ghcr.io/hjosugi/ayame-spell:0.4.0 check .
 ```
 
-各 release には AUR maintainer と直接の `makepkg -si` 用に
-`ayame-spell-bin` の `PKGBUILD` も添付します。再現可能な manifest generator
-は[配布用 source](https://github.com/hjosugi/ayame-spell/tree/main/packaging)
+各 release には AUR maintainer と直接の `makepkg -si` 用に、x86_64/aarch64
+対応 `ayame-spell-bin` の `PKGBUILD` と `.SRCINFO` を添付します。再現可能な
+manifest generator は
+[配布用 source](https://github.com/hjosugi/ayame-spell/tree/main/packaging)
 にあります。
 
 ## Rust でインストール

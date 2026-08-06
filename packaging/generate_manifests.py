@@ -125,24 +125,34 @@ def scoop(tag: str, checksums: dict[str, str]) -> str:
 
 
 def pkgbuild(tag: str, checksums: dict[str, str]) -> str:
-    name = asset(tag, "linux-x64")
+    x64_name = asset(tag, "linux-x64")
+    arm64_name = asset(tag, "linux-arm64")
     version = tag.removeprefix("v")
-    sha = checksum(checksums, name)
+    x64_sha = checksum(checksums, x64_name)
+    arm64_sha = checksum(checksums, arm64_name)
     return f'''# Maintainer: ayame-spell contributors
 pkgname=ayame-spell-bin
 pkgver={version}
 pkgrel=1
 pkgdesc="Fast, low-noise English and Japanese spell checker"
-arch=('x86_64')
+arch=('x86_64' 'aarch64')
 url="https://hjosugi.github.io/ayame-spell/"
 license=('MIT' 'Apache-2.0')
-provides=('ayame-spell')
+depends=('gcc-libs' 'glibc')
+provides=("ayame-spell=$pkgver")
 conflicts=('ayame-spell')
-source=("{name}::https://github.com/{REPOSITORY}/releases/download/{tag}/{name}")
-sha256sums=('{sha}')
+source_x86_64=("{x64_name}::https://github.com/{REPOSITORY}/releases/download/{tag}/{x64_name}")
+sha256sums_x86_64=('{x64_sha}')
+source_aarch64=("{arm64_name}::https://github.com/{REPOSITORY}/releases/download/{tag}/{arm64_name}")
+sha256sums_aarch64=('{arm64_sha}')
 
 package() {{
-  local root="$srcdir/ayame-spell-{tag}-x86_64-unknown-linux-gnu"
+  local target
+  case "$CARCH" in
+    x86_64) target=x86_64-unknown-linux-gnu ;;
+    aarch64) target=aarch64-unknown-linux-gnu ;;
+  esac
+  local root="$srcdir/ayame-spell-{tag}-$target"
   install -Dm755 "$root/ayame-spell" "$pkgdir/usr/bin/ayame-spell"
   install -Dm644 "$root/man/ayame-spell.1" "$pkgdir/usr/share/man/man1/ayame-spell.1"
   install -Dm644 "$root/LICENSE-MIT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
@@ -157,6 +167,33 @@ package() {{
 '''
 
 
+def srcinfo(tag: str, checksums: dict[str, str]) -> str:
+    x64_name = asset(tag, "linux-x64")
+    arm64_name = asset(tag, "linux-arm64")
+    version = tag.removeprefix("v")
+    base = f"https://github.com/{REPOSITORY}/releases/download/{tag}"
+    return f'''pkgbase = ayame-spell-bin
+\tpkgdesc = Fast, low-noise English and Japanese spell checker
+\tpkgver = {version}
+\tpkgrel = 1
+\turl = https://hjosugi.github.io/ayame-spell/
+\tarch = x86_64
+\tarch = aarch64
+\tlicense = MIT
+\tlicense = Apache-2.0
+\tdepends = gcc-libs
+\tdepends = glibc
+\tprovides = ayame-spell={version}
+\tconflicts = ayame-spell
+\tsource_x86_64 = {x64_name}::{base}/{x64_name}
+\tsha256sums_x86_64 = {checksum(checksums, x64_name)}
+\tsource_aarch64 = {arm64_name}::{base}/{arm64_name}
+\tsha256sums_aarch64 = {checksum(checksums, arm64_name)}
+
+pkgname = ayame-spell-bin
+'''
+
+
 def main() -> None:
     args = parse_args()
     tag = args.tag if args.tag.startswith("v") else f"v{args.tag}"
@@ -165,6 +202,7 @@ def main() -> None:
     (args.output_dir / "ayame-spell.rb").write_text(formula(tag, checksums))
     (args.output_dir / "ayame-spell.json").write_text(scoop(tag, checksums))
     (args.output_dir / "PKGBUILD").write_text(pkgbuild(tag, checksums))
+    (args.output_dir / ".SRCINFO").write_text(srcinfo(tag, checksums))
 
 
 if __name__ == "__main__":

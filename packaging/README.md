@@ -5,9 +5,10 @@
 - `ayame-spell.rb` for direct Homebrew formula installation or publication in
   `hjosugi/homebrew-tap`;
 - `ayame-spell.json` for direct Scoop installation or a Scoop bucket;
-- `PKGBUILD` for the `ayame-spell-bin` AUR package.
+- `PKGBUILD` and `.SRCINFO` for the x86_64/aarch64
+  `ayame-spell-bin` AUR package.
 
-The release workflow generates and attaches all three only after every
+The release workflow generates and attaches all four only after every
 platform archive exists and its checksum is known:
 
 ```sh
