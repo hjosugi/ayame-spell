@@ -8,7 +8,8 @@ from the `Release` GitHub Actions workflow.
 1. Move the release entries out of `Unreleased` in `CHANGELOG.md` and add a
    dated `## [X.Y.Z]` section.
 2. Keep the workspace and VS Code extension versions in lockstep.
-3. Run the same checks as CI, including the Rust 1.80 MSRV check.
+3. Run the same checks as CI, including the MSRV check against the
+   `rust-version` in the root `Cargo.toml`.
 4. Merge or push the release commit to `main`, wait for CI, then create and push
    `vX.Y.Z`.
 

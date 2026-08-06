@@ -6,7 +6,7 @@ kept in lockstep. A release such as `0.2.0` uses tag `v0.2.0`.
 ## Prerequisites
 
 - Node.js 22
-- Rust 1.80 or newer
+- Rust 1.91 or newer
 - Linux desktop libraries required by VS Code Electron tests
 - `xvfb-run` for headless Linux integration tests
 
