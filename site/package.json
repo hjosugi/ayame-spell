@@ -18,6 +18,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "js-yaml": "4.3.1"
   }
 }
