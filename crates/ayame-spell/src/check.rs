@@ -291,7 +291,7 @@ pub fn scan(
         if entry.file_name() == ".git" || entry.file_name() == BASELINE_FILE {
             return false;
         }
-        cache_directory.as_ref().map_or(true, |directory| {
+        cache_directory.as_ref().is_none_or(|directory| {
             !entry
                 .file_type()
                 .is_some_and(|file_type| file_type.is_dir())

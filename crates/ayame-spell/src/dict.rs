@@ -328,8 +328,8 @@ fn installed_names() -> HashSet<String> {
 }
 
 fn matches_filters(entry: &Entry, lang: Option<Language>, kind: Option<DictKind>) -> bool {
-    lang.map_or(true, |value| entry.language == value.as_str())
-        && kind.map_or(true, |value| entry.kind == value.as_str())
+    lang.is_none_or(|value| entry.language == value.as_str())
+        && kind.is_none_or(|value| entry.kind == value.as_str())
 }
 
 #[derive(Serialize)]

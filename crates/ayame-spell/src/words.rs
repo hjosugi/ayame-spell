@@ -272,7 +272,7 @@ fn triage(
         originals,
     } = collect_words(paths)?;
     list.retain(|item| {
-        item.count >= min_count && kind.map_or(true, |filter| filter.matches(item.kind))
+        item.count >= min_count && kind.is_none_or(|filter| filter.matches(item.kind))
     });
     if let Some(limit) = limit {
         list.truncate(limit);

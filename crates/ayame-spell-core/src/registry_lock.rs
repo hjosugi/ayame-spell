@@ -117,9 +117,9 @@ pub fn resolve(root: &Path, reference: &str) -> anyhow::Result<ResolvedRegistryR
         anyhow::ensure!(!version.is_empty(), "empty registry version for `{name}`");
     }
     let lock = RegistryLock::load(root)?;
-    let locked = lock.get(name).filter(|dictionary| {
-        requested_version.map_or(true, |version| version == dictionary.version)
-    });
+    let locked = lock
+        .get(name)
+        .filter(|dictionary| requested_version.is_none_or(|version| version == dictionary.version));
     let version = requested_version
         .map(str::to_string)
         .or_else(|| locked.map(|dictionary| dictionary.version.clone()));
