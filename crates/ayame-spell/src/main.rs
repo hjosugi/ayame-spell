@@ -1,5 +1,6 @@
 mod check;
 mod dict;
+mod file_uri;
 mod lsp;
 mod migrate;
 mod words;
@@ -766,7 +767,7 @@ fn init(force: bool, interactive: bool, yes: bool) -> anyhow::Result<i32> {
 fn init_interactive(path: &Path) -> anyhow::Result<i32> {
     let mode_index = Select::new()
         .with_prompt("Checking mode")
-        .items(&[
+        .items([
             "corrections (low-noise known typos)",
             "dictionary (all unknown words)",
         ])
@@ -787,7 +788,7 @@ fn init_interactive(path: &Path) -> anyhow::Result<i32> {
         let styles = ["consistency", "long", "short", "off"];
         styles[Select::new()
             .with_prompt("Katakana long-vowel policy")
-            .items(&styles)
+            .items(styles)
             .default(0)
             .interact()?]
     } else {
@@ -915,7 +916,7 @@ fn print_config() -> anyhow::Result<i32> {
     if let Some(p) = &loaded.global_file {
         println!("# global config: {}", p.display());
     }
-    print!("{}", toml_edit::ser::to_string_pretty(&loaded.config)?);
+    print!("{}", toml::to_string_pretty(&loaded.config)?);
     Ok(0)
 }
 

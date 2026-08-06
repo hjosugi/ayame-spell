@@ -54,7 +54,7 @@ for the reproducible manifest generator.
 
 ## Install with Rust
 
-Install from crates.io with Rust 1.80 or newer:
+Install from crates.io with Rust 1.91 or newer:
 
 ```sh
 cargo install ayame-spell

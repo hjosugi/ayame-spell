@@ -38,7 +38,7 @@ cargo deny check
 npm run check --prefix site
 ```
 
-workspace の MSRV はルート `Cargo.toml` の `rust-version`（現在は Rust 1.80）
+workspace の MSRV はルート `Cargo.toml` の `rust-version`（現在は Rust 1.91）
 です。CI は stable Rust の lint・test job に加えて、このバージョンで workspace
 をコンパイルします。
 

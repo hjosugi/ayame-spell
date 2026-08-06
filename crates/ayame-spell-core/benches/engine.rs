@@ -2,7 +2,8 @@ use ayame_spell_core::corrections::Corrections;
 use ayame_spell_core::dictionary::WordSets;
 use ayame_spell_core::japanese::{consistency_issues, KatakanaOcc};
 use ayame_spell_core::tokenizer::{words_in_line, TokenizerOptions};
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use std::hint::black_box;
 
 fn tokenizer(c: &mut Criterion) {
     let input = "The state-of-the-art AyameSpellService validates developer's APIs, \

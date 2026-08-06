@@ -51,7 +51,7 @@ Verify the archive against `SHA256SUMS` from the same release.
 
 ```yaml
 spell:
-  image: rust:1.80
+  image: rust:1.91
   cache:
     paths:
       - .cargo/
@@ -68,7 +68,7 @@ version: 2.1
 jobs:
   spelling:
     docker:
-      - image: cimg/rust:1.80
+      - image: cimg/rust:1.91
     steps:
       - checkout
       - run: cargo install --locked ayame-spell

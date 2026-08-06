@@ -54,7 +54,7 @@ manifest generator は
 
 ## Rust でインストール
 
-Rust 1.80 以降を使って crates.io からインストールします。
+Rust 1.91 以降を使って crates.io からインストールします。
 
 ```sh
 cargo install ayame-spell

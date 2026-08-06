@@ -38,7 +38,7 @@ npm run check --prefix site
 ```
 
 The workspace MSRV is the `rust-version` in the root `Cargo.toml` (currently
-Rust 1.80). CI compiles the workspace with that exact toolchain in addition to
+Rust 1.91). CI compiles the workspace with that exact toolchain in addition to
 running lint and test jobs on stable Rust.
 
 If your change affects generated content, regenerate it and commit the result:

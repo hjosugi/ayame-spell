@@ -168,7 +168,7 @@ fn fetch_index() -> anyhow::Result<Index> {
     }
     let url = registry_url();
     let fetched = match ureq::get(&url).call() {
-        Ok(response) => response.into_string()?,
+        Ok(mut response) => response.body_mut().read_to_string()?,
         Err(error) => {
             if let Some(index) = read_cached_index(false)? {
                 eprintln!("warning: cannot refresh registry index ({error}); using cached copy");
@@ -236,11 +236,12 @@ fn source_url(file: &str) -> String {
 }
 
 fn fetch_bytes(url: &str) -> anyhow::Result<Vec<u8>> {
-    let resp = ureq::get(url)
+    let mut resp = ureq::get(url)
         .call()
         .with_context(|| format!("cannot fetch {url}"))?;
     let mut buf = Vec::new();
-    resp.into_reader()
+    resp.body_mut()
+        .as_reader()
         .take(64 * 1024 * 1024)
         .read_to_end(&mut buf)?;
     Ok(buf)
