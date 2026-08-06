@@ -12,6 +12,52 @@ use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use tempfile::TempDir;
 
+/// `file:` URI for an absolute path, as an LSP client would send it.
+///
+/// The server's own conversion is unit-tested in `src/file_uri.rs`; this is
+/// the client half, kept deliberately simple because the paths here are
+/// temporary directories under the platform's temp root.
+fn file_uri(path: &Path) -> String {
+    const ESCAPE: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS
+        .add(b' ')
+        .add(b'"')
+        .add(b'#')
+        .add(b'%')
+        .add(b'<')
+        .add(b'>')
+        .add(b'?')
+        .add(b'[')
+        .add(b']')
+        .add(b'^')
+        .add(b'`')
+        .add(b'{')
+        .add(b'|')
+        .add(b'}');
+    assert!(path.is_absolute(), "{} must be absolute", path.display());
+    let text = path.to_str().expect("UTF-8 path").replace('\\', "/");
+    let text = if text.starts_with('/') {
+        text
+    } else {
+        format!("/{text}")
+    };
+    let encoded = text
+        .split('/')
+        .map(|segment| percent_encoding::utf8_percent_encode(segment, ESCAPE).to_string())
+        .collect::<Vec<_>>()
+        .join("/");
+    format!("file://{encoded}")
+}
+
+/// Directory form, with the trailing slash clients use for workspace roots.
+fn directory_uri(path: &Path) -> String {
+    let uri = file_uri(path);
+    if uri.ends_with('/') {
+        uri
+    } else {
+        format!("{uri}/")
+    }
+}
+
 struct Project {
     _temp: TempDir,
     root: PathBuf,
@@ -1168,12 +1214,8 @@ fn lsp_completes_initialize_and_shutdown() {
 fn lsp_full_lifecycle_pull_hover_actions_commands_and_incremental_sync() {
     let project = Project::new();
     let document = project.write("input.md", "This is teh.\n");
-    let uri = lsp_types::Url::from_file_path(&document)
-        .unwrap()
-        .to_string();
-    let root_uri = lsp_types::Url::from_directory_path(&project.root)
-        .unwrap()
-        .to_string();
+    let uri = file_uri(&document);
+    let root_uri = directory_uri(&project.root);
     let mut input = Vec::new();
     for message in [
         json!({
@@ -1388,12 +1430,8 @@ fn lsp_normalises_every_japanese_variant_occurrence() {
         "[japanese]\nkatakana-style = \"long\"\n",
     );
     let document = project.write("input.md", "サーバ と サーバ\n");
-    let uri = lsp_types::Url::from_file_path(document)
-        .unwrap()
-        .to_string();
-    let root_uri = lsp_types::Url::from_directory_path(&project.root)
-        .unwrap()
-        .to_string();
+    let uri = file_uri(&document);
+    let root_uri = directory_uri(&project.root);
     let mut input = Vec::new();
     for message in [
         json!({

@@ -22,7 +22,7 @@ use lsp_types::{
     DocumentDiagnosticParams, DocumentDiagnosticReport, DocumentDiagnosticReportResult,
     ExecuteCommandParams, FullDocumentDiagnosticReport, Hover, HoverContents, HoverParams,
     InitializeParams, MarkupContent, MarkupKind, NumberOrString, Position,
-    PublishDiagnosticsParams, Range, RelatedFullDocumentDiagnosticReport, TextEdit, Url,
+    PublishDiagnosticsParams, Range, RelatedFullDocumentDiagnosticReport, TextEdit, Uri,
     WorkspaceDiagnosticParams, WorkspaceDiagnosticReport, WorkspaceDiagnosticReportResult,
     WorkspaceDocumentDiagnosticReport, WorkspaceEdit, WorkspaceFullDocumentDiagnosticReport,
 };
@@ -55,8 +55,8 @@ struct Server {
     loaded: LoadedConfig,
     checker: Checker,
     editor_options: EditorOptions,
-    docs: HashMap<Url, Doc>,
-    pending: HashMap<Url, Instant>,
+    docs: HashMap<Uri, Doc>,
+    pending: HashMap<Uri, Instant>,
     cancelled_requests: HashSet<RequestId>,
     next_request_id: i32,
 }
@@ -139,12 +139,8 @@ pub fn run() -> anyhow::Result<i32> {
         .workspace_folders
         .as_ref()
         .and_then(|folders| folders.first())
-        .and_then(|folder| folder.uri.to_file_path().ok())
-        .or_else(|| {
-            init.root_uri
-                .as_ref()
-                .and_then(|uri| uri.to_file_path().ok())
-        })
+        .and_then(|folder| crate::file_uri::to_path(&folder.uri))
+        .or_else(|| init.root_uri.as_ref().and_then(crate::file_uri::to_path))
         .or_else(|| std::env::current_dir().ok())
         .context("cannot determine workspace root")?;
 
@@ -280,7 +276,10 @@ impl Server {
                             if let Err(error) =
                                 apply_content_changes(&mut doc.text, p.content_changes)
                             {
-                                self.log(format!("{uri}: invalid incremental edit: {error:#}"));
+                                let uri_text = uri.as_str();
+                                self.log(format!(
+                                    "{uri_text}: invalid incremental edit: {error:#}"
+                                ));
                             } else {
                                 doc.version = p.text_document.version;
                                 doc.large_warning_shown = false;
@@ -340,13 +339,13 @@ impl Server {
         for w in warnings {
             self.log(format!("warning: {w}"));
         }
-        let uris: Vec<Url> = self.docs.keys().cloned().collect();
+        let uris: Vec<Uri> = self.docs.keys().cloned().collect();
         for uri in uris {
             self.publish(&uri);
         }
     }
 
-    fn schedule(&mut self, uri: Url) {
+    fn schedule(&mut self, uri: Uri) {
         let debounce = self
             .editor_options
             .debounce_ms
@@ -358,7 +357,7 @@ impl Server {
 
     fn publish_due(&mut self) {
         let now = Instant::now();
-        let uris: Vec<Url> = self
+        let uris: Vec<Uri> = self
             .pending
             .iter()
             .filter(|(_, deadline)| **deadline <= now)
@@ -370,8 +369,8 @@ impl Server {
         }
     }
 
-    fn rel_path(&self, uri: &Url) -> Option<PathBuf> {
-        let p = uri.to_file_path().ok()?;
+    fn rel_path(&self, uri: &Uri) -> Option<PathBuf> {
+        let p = crate::file_uri::to_path(uri)?;
         Some(
             p.strip_prefix(&self.root)
                 .map(|r| r.to_path_buf())
@@ -379,7 +378,7 @@ impl Server {
         )
     }
 
-    fn analyze_document(&mut self, uri: &Url) -> Vec<Diagnostic> {
+    fn analyze_document(&mut self, uri: &Uri) -> Vec<Diagnostic> {
         let rel = self.rel_path(uri);
         let max_size = if self.loaded.config.files.max_file_size == 0 {
             LARGE_DOC_BYTES
@@ -396,7 +395,8 @@ impl Server {
             doc.large_warning_shown = true;
             if should_warn {
                 self.show_warning(format!(
-                    "{uri}: skipped {} byte document (LSP limit: {max_size} bytes)",
+                    "{}: skipped {} byte document (LSP limit: {max_size} bytes)",
+                    uri.as_str(),
                     document_len
                 ));
             }
@@ -411,13 +411,14 @@ impl Server {
         doc.issues = issues;
         if capped {
             self.log(format!(
-                "{uri}: more than {MAX_DIAGNOSTICS} findings; diagnostics were capped"
+                "{}: more than {MAX_DIAGNOSTICS} findings; diagnostics were capped",
+                uri.as_str()
             ));
         }
         diagnostics
     }
 
-    fn publish(&mut self, uri: &Url) {
+    fn publish(&mut self, uri: &Uri) {
         let diagnostics = self.analyze_document(uri);
         let version = self.docs.get(uri).map(|doc| doc.version);
         self.notify::<lsp_types::notification::PublishDiagnostics>(PublishDiagnosticsParams {
@@ -447,7 +448,7 @@ impl Server {
         &mut self,
         _params: WorkspaceDiagnosticParams,
     ) -> WorkspaceDiagnosticReportResult {
-        let uris: Vec<Url> = self.docs.keys().cloned().collect();
+        let uris: Vec<Uri> = self.docs.keys().cloned().collect();
         let mut items = Vec::with_capacity(uris.len());
         for uri in uris {
             self.pending.remove(&uri);
@@ -738,7 +739,7 @@ impl Server {
             CMD_FIX_ALL => {
                 #[derive(Deserialize)]
                 struct Args {
-                    uri: Url,
+                    uri: Uri,
                 }
                 let args: Args = first_arg(&params)?;
                 self.pending.remove(&args.uri);
@@ -774,7 +775,7 @@ impl Server {
     }
 
     fn republish_all(&mut self) {
-        let uris: Vec<Url> = self.docs.keys().cloned().collect();
+        let uris: Vec<Uri> = self.docs.keys().cloned().collect();
         for uri in uris {
             self.pending.remove(&uri);
             self.publish(&uri);
@@ -944,9 +945,10 @@ fn position_to_offset(text: &str, position: Position) -> Option<usize> {
     (utf16 == position.character).then_some(line_end)
 }
 
-fn directive_line(uri: &Url, directive: &str) -> String {
+fn directive_line(uri: &Uri, directive: &str) -> String {
     match uri
         .path()
+        .as_str()
         .rsplit_once('.')
         .map(|(_, extension)| extension.to_ascii_lowercase())
         .as_deref()
@@ -959,9 +961,10 @@ fn directive_line(uri: &Url, directive: &str) -> String {
     }
 }
 
-fn directive_suffix(uri: &Url) -> &'static str {
+fn directive_suffix(uri: &Uri) -> &'static str {
     match uri
         .path()
+        .as_str()
         .rsplit_once('.')
         .map(|(_, extension)| extension.to_ascii_lowercase())
         .as_deref()

@@ -143,7 +143,9 @@ impl JapaneseChecker {
     /// Load literal `[variants]` and the supported prh-style
     /// `[[rules]] pattern/replace` subset from TOML.
     pub fn load_variant_rules(&mut self, text: &str) -> anyhow::Result<usize> {
-        let value: toml::Value = text.parse()?;
+        // `toml::Value`'s `FromStr` parses a single value expression, not a
+        // document, so `[[rules]]` fails there. `from_str` parses a document.
+        let value: toml::Value = toml::from_str(text)?;
         let table = value
             .get("variants")
             .and_then(toml::Value::as_table)
@@ -931,15 +933,30 @@ mod tests {
     #[test]
     fn regex_variant_rules_support_a_prh_style_subset() {
         let mut c = checker(KatakanaStyle::Off);
-        c.load_variant_rules(
-            r#"
+        let loaded = c
+            .load_variant_rules(
+                r#"
             [[rules]]
             pattern = "Web ?サイト"
             replace = "ウェブサイト"
             "#,
-        )
-        .unwrap();
+            )
+            .unwrap();
+        assert_eq!(loaded, 1, "the [[rules]] array must be read");
         let issues = check(&c, "Web サイトを開く");
         assert_eq!(issues[0].suggestions, ["ウェブサイト"]);
+    }
+
+    /// A rule file written by `ayame-spell import prh` must load back. This
+    /// caught a document-vs-value TOML parsing regression that made every
+    /// imported prh rule silently unusable.
+    #[test]
+    fn variant_rule_files_round_trip_with_a_leading_array_of_tables() {
+        let mut c = checker(KatakanaStyle::Off);
+        let loaded = c
+            .load_variant_rules("[[rules]]\npattern = \"サーバ\"\nreplace = \"サーバー\"\n")
+            .unwrap();
+        assert_eq!(loaded, 1);
+        assert_eq!(check(&c, "サーバを再起動")[0].suggestions, ["サーバー"]);
     }
 }

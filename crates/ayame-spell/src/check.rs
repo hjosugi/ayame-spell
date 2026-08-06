@@ -801,7 +801,7 @@ fn interactive_fix(loaded: &LoadedConfig, reports: &[FileReport]) -> anyhow::Res
             let default = if issue.suggestions.is_empty() { 1 } else { 0 };
             match Select::new()
                 .with_prompt("Action")
-                .items(&actions)
+                .items(actions)
                 .default(default)
                 .interact()?
             {

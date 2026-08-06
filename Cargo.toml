@@ -9,7 +9,7 @@ members = [
 [workspace.package]
 version = "0.4.0"
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.91"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/hjosugi/ayame-spell"
 homepage = "https://hjosugi.github.io/ayame-spell/"
@@ -19,8 +19,8 @@ authors = ["hjosugi"]
 ayame-spell-core = { version = "0.4.0", path = "crates/ayame-spell-core" }
 
 anyhow = "1"
-# Exact pins below keep the declared Rust 1.80 MSRV. Later releases that raise
-# their MSRV are evaluated deliberately before an upgrade.
+# Exact pins below keep the declared MSRV. Later releases that raise their MSRV
+# are evaluated deliberately before an upgrade.
 clap = { version = "=4.6.4", features = ["derive", "wrap_help"] }
 clap_complete = "=4.6.8"
 crossbeam-channel = "0.5"
@@ -31,12 +31,13 @@ dirs = "6"
 fst = { version = "0.4", features = ["levenshtein"] }
 globset = "=0.4.19"
 # Criterion's ciborium dependency accepts older half releases. Pin the newest
-# one that still supports the workspace's Rust 1.80 MSRV.
+# one that still supports the workspace MSRV.
 half = "=2.7.1"
 ignore = "=0.4.31"
 lsp-server = "=0.10.0"
 lsp-types = "0.97"
 memchr = "2"
+percent-encoding = "2.3"
 proptest = "=1.11.0"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
