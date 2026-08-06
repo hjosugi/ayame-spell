@@ -37,6 +37,8 @@ attribution is required.
 - [ ] Published version files remain available and unchanged.
 - [ ] `NOTICE.md` contains any required attribution.
 - [ ] `cargo xtask registry` succeeds and regenerates `index.json`.
+- [ ] Representative clean/error fixtures are updated when behavior changes.
+- [ ] `contrib/quality/check_quality.py` succeeds with the freshly built CLI.
 - [ ] `cargo test --workspace` succeeds.
 - [ ] The English and Japanese registry documentation stays in sync.
 
@@ -46,4 +48,6 @@ Run:
 cargo xtask registry
 git diff --check
 cargo test --workspace
+cargo build -p ayame-spell --locked
+python3 contrib/quality/check_quality.py --binary target/debug/ayame-spell
 ```

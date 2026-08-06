@@ -35,6 +35,8 @@ versionを追加し、古いファイルを `[[dictionary.release]]` で残す�
 - [ ] 公開済みversionのファイルを残し、変更していない。
 - [ ] 必要な帰属表示を `NOTICE.md` に記載した。
 - [ ] `cargo xtask registry` が成功し、`index.json` を再生成した。
+- [ ] 動作が変わる場合、代表的な正常／エラー fixture を更新した。
+- [ ] build 直後の CLI で `contrib/quality/check_quality.py` が成功した。
 - [ ] `cargo test --workspace` が成功した。
 - [ ] 日英のレジストリ文書が同期している。
 
@@ -44,4 +46,6 @@ versionを追加し、古いファイルを `[[dictionary.release]]` で残す�
 cargo xtask registry
 git diff --check
 cargo test --workspace
+cargo build -p ayame-spell --locked
+python3 contrib/quality/check_quality.py --binary target/debug/ayame-spell
 ```

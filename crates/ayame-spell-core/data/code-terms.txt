@@ -264,7 +264,6 @@ pnpm
 posix
 postgres
 postgresql
-postgres
 preallocate
 precompute
 precomputed

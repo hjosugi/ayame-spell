@@ -145,6 +145,19 @@ mod tests {
     }
 
     #[test]
+    fn code_terms_are_normalized_and_unique() {
+        let mut seen = HashSet::new();
+        for line in CODE_TERMS.lines() {
+            let word = line.trim();
+            if word.is_empty() || word.starts_with('#') {
+                continue;
+            }
+            assert_eq!(word, word.to_lowercase(), "`{word}` must be lowercase");
+            assert!(seen.insert(word), "`{word}` is duplicated");
+        }
+    }
+
+    #[test]
     fn distance() {
         assert_eq!(edit_distance("kitten", "sitting"), 3);
         assert_eq!(edit_distance("", "abc"), 3);
