@@ -18,6 +18,13 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Breaking:** the minimum supported Rust version is now 1.91, up from 1.80.
+  The refreshed dependency set requires it: `typos-dict` and `dictgen` declare
+  `rust-version = "1.91"`, and `clap_lex` needs the edition-2024 manifest
+  format. Installing from crates.io, the `rust:` CI images, and the documented
+  MSRV all move together.
+- Refreshed 19 Rust dependencies, including `toml` 0.8 to 1.1, `ureq` 2 to 3,
+  `lsp-types` 0.95 to 0.97, `sha2` 0.10 to 0.11, and `criterion` 0.5 to 0.8.
 - Japanese number consistency now scans text as a stream instead of
   materializing every character and byte offset. On the reproducible 35 MiB
   corpus this reduced median wall time from 1.598 s to 0.817 s and peak RSS
@@ -29,6 +36,10 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Removed a duplicate `postgres` entry from the bundled code-term list and
   added a normalization/uniqueness test.
+- Variant rule files written by `ayame-spell import prh` load again. `toml` 1.x
+  parses a bare value rather than a document through `FromStr`, which made
+  every `[[rules]]` file fail to parse; the loader now parses a document and a
+  round-trip test covers it.
 
 ## [0.4.0] - 2026-07-30
 
