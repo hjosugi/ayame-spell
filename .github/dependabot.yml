@@ -39,3 +39,8 @@ updates:
       github-actions:
         patterns:
           - "*"
+    ignore:
+      # The msrv job pins this to the declared MSRV on purpose. Bumping it like
+      # an action version would make the job compile with the newest toolchain
+      # and still report green, so the MSRV moves with `rust-version` instead.
+      - dependency-name: dtolnay/rust-toolchain
