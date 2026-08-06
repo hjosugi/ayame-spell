@@ -130,9 +130,15 @@ pull-request checklist. In a checkout of ayame-spell:
 
    ```sh
    cargo test --workspace
+   cargo build -p ayame-spell --locked
+   python3 contrib/quality/check_quality.py --binary target/debug/ayame-spell
    cargo run -p ayame-spell -- check .
    ```
 
 Keep entries sorted, focused on one ecosystem or writing policy, and free of
 secrets or private identifiers. Generation rejects duplicates and any
-language-list entry already supplied by `en-base`.
+language-list entry already supplied by `en-base`. The quality fixtures run the
+real CLI and guard representative terms from every shipped English wordlist,
+clean prose, known corrections, and unknown-word reporting. They are a
+deterministic regression suite, not a statistical accuracy claim for arbitrary
+prose.

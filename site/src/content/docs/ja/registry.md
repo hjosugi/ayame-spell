@@ -127,9 +127,13 @@ ayame-spell dict --registry https://docs.example.com/spelling/index.json list
 
    ```sh
    cargo test --workspace
+   cargo build -p ayame-spell --locked
+   python3 contrib/quality/check_quality.py --binary target/debug/ayame-spell
    cargo run -p ayame-spell -- check .
    ```
 
 項目はソートし、一つの技術領域または表記方針に絞り、秘密情報や非公開識別子を
 含めません。生成処理は重複と、`en-base` に既にある言語別wordlist項目を拒否
-します。
+します。品質 fixture は実際の CLI を使い、配布する全英語 wordlist の代表語、
+問題のない文章、既知の誤字、未知語の検出を回帰確認します。これは決定的な
+回帰 suite であり、任意の文章に対する統計的な精度保証ではありません。

@@ -1,0 +1,28 @@
+[check]
+mode = "dictionary"
+
+[words]
+project = "accepted-words.txt"
+dictionaries = [
+  "../../site/registry/dicts/en-base.txt",
+  "../../site/registry/dicts/aws.txt",
+  "../../site/registry/dicts/cpp.txt",
+  "../../site/registry/dicts/data-science.txt",
+  "../../site/registry/dicts/docker-k8s.txt",
+  "../../site/registry/dicts/dotnet.txt",
+  "../../site/registry/dicts/finance.txt",
+  "../../site/registry/dicts/gcp.txt",
+  "../../site/registry/dicts/go.txt",
+  "../../site/registry/dicts/java-kotlin.txt",
+  "../../site/registry/dicts/python.txt",
+  "../../site/registry/dicts/rust.txt",
+  "../../site/registry/dicts/terraform.txt",
+  "../../site/registry/dicts/typescript-node.txt",
+  "../../site/registry/dicts/web.txt",
+]
+
+[corrections]
+extra = ["../../site/registry/dicts/en-extra-corrections.tsv"]
+
+[japanese]
+enabled = false
