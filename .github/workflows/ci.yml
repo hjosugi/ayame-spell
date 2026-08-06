@@ -20,6 +20,11 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      - name: Dictionary quality fixtures
+        run: |
+          cargo build -p ayame-spell --locked
+          python3 contrib/quality/check_quality.py \
+            --binary target/debug/ayame-spell
       - name: registry index is up to date
         run: |
           cargo xtask registry
@@ -103,8 +108,12 @@ jobs:
           done
 
   performance:
-    if: github.event_name == 'pull_request'
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event.before != '0000000000000000000000000000000000000000'
     runs-on: ubuntu-latest
+    env:
+      BASELINE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -121,35 +130,56 @@ jobs:
           python3 contrib/bench/run_benchmark.py \
             --binary target/release/ayame-spell \
             --corpus "$RUNNER_TEMP/ayame-corpus.md" \
-            --repeat 3 \
+            --repeat 5 \
             --revision "$GITHUB_SHA" \
-            --output "$RUNNER_TEMP/candidate.json"
-      - name: Measure origin/main
+            --output "$RUNNER_TEMP/candidate-default.json"
+          python3 contrib/bench/run_benchmark.py \
+            --binary target/release/ayame-spell \
+            --corpus "$RUNNER_TEMP/ayame-corpus.md" \
+            --config contrib/quality/ayame-spell.toml \
+            --repeat 5 \
+            --revision "$GITHUB_SHA" \
+            --output "$RUNNER_TEMP/candidate-dictionary.json"
+      - name: Measure the baseline revision
         run: |
-          git worktree add "$RUNNER_TEMP/ayame-main" origin/main
+          git fetch --no-tags origin "$BASELINE_REF"
+          git worktree add "$RUNNER_TEMP/ayame-baseline" "$BASELINE_REF"
           cargo build \
-            --manifest-path "$RUNNER_TEMP/ayame-main/Cargo.toml" \
-            --target-dir "$RUNNER_TEMP/ayame-main-target" \
+            --manifest-path "$RUNNER_TEMP/ayame-baseline/Cargo.toml" \
+            --target-dir "$RUNNER_TEMP/ayame-baseline-target" \
             --release --locked -p ayame-spell
           python3 contrib/bench/run_benchmark.py \
-            --binary "$RUNNER_TEMP/ayame-main-target/release/ayame-spell" \
+            --binary "$RUNNER_TEMP/ayame-baseline-target/release/ayame-spell" \
             --corpus "$RUNNER_TEMP/ayame-corpus.md" \
-            --repeat 3 \
-            --revision origin/main \
-            --output "$RUNNER_TEMP/main.json"
-      - name: Enforce the regression threshold
-        run: >-
-          python3 contrib/bench/compare_results.py
-          "$RUNNER_TEMP/main.json"
-          "$RUNNER_TEMP/candidate.json"
-          --max-slowdown-percent 35
+            --repeat 5 \
+            --revision "$BASELINE_REF" \
+            --output "$RUNNER_TEMP/baseline-default.json"
+          python3 contrib/bench/run_benchmark.py \
+            --binary "$RUNNER_TEMP/ayame-baseline-target/release/ayame-spell" \
+            --corpus "$RUNNER_TEMP/ayame-corpus.md" \
+            --config contrib/quality/ayame-spell.toml \
+            --repeat 5 \
+            --revision "$BASELINE_REF" \
+            --output "$RUNNER_TEMP/baseline-dictionary.json"
+      - name: Enforce the default-mode regression threshold
+        run: |
+          python3 contrib/bench/compare_results.py \
+            "$RUNNER_TEMP/baseline-default.json" \
+            "$RUNNER_TEMP/candidate-default.json" \
+            --max-slowdown-percent 35 \
+            --max-rss-growth-percent 35
+      - name: Enforce the dictionary-mode regression threshold
+        run: |
+          python3 contrib/bench/compare_results.py \
+            "$RUNNER_TEMP/baseline-dictionary.json" \
+            "$RUNNER_TEMP/candidate-dictionary.json" \
+            --max-slowdown-percent 35 \
+            --max-rss-growth-percent 35
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: performance-results
-          path: |
-            ${{ runner.temp }}/main.json
-            ${{ runner.temp }}/candidate.json
+          path: ${{ runner.temp }}/*.json
 
   vscode-extension:
     runs-on: ubuntu-latest
@@ -236,6 +266,7 @@ jobs:
           python3 -m py_compile \
             packaging/check_versions.py \
             packaging/generate_manifests.py
+          python3 packaging/test_generate_manifests.py
           python3 packaging/check_versions.py
           python3 packaging/generate_manifests.py \
             --tag v9.8.7 \
@@ -244,6 +275,10 @@ jobs:
           grep -F 'version "9.8.7"' "$RUNNER_TEMP/manifests/ayame-spell.rb"
           grep -F '"version": "9.8.7"' "$RUNNER_TEMP/manifests/ayame-spell.json"
           grep -F 'pkgver=9.8.7' "$RUNNER_TEMP/manifests/PKGBUILD"
+          grep -F "arch=('x86_64' 'aarch64')" \
+            "$RUNNER_TEMP/manifests/PKGBUILD"
+          grep -F 'pkgver = 9.8.7' "$RUNNER_TEMP/manifests/.SRCINFO"
+          grep -F 'arch = aarch64' "$RUNNER_TEMP/manifests/.SRCINFO"
 
   container:
     runs-on: ubuntu-latest

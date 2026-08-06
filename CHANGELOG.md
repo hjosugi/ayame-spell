@@ -7,6 +7,29 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- End-to-end dictionary quality fixtures covering every shipped English
+  wordlist, clean prose, built-in and registry corrections, and unknown words.
+- Peak-RSS regression enforcement alongside default and full-dictionary
+  throughput comparison on pull requests and non-initial pushes to `main`.
+- AUR `.SRCINFO` generation and aarch64 support for `ayame-spell-bin`.
+- npm trusted publishing through GitHub Actions OIDC.
+
+### Changed
+
+- Japanese number consistency now scans text as a stream instead of
+  materializing every character and byte offset. On the reproducible 35 MiB
+  corpus this reduced median wall time from 1.598 s to 0.817 s and peak RSS
+  from 679.6 MiB to 121.1 MiB.
+- VS Code store publication verifies and publishes the complete five-platform
+  VSIX set.
+
+### Fixed
+
+- Removed a duplicate `postgres` entry from the bundled code-term list and
+  added a normalization/uniqueness test.
+
 ## [0.4.0] - 2026-07-30
 
 ### Added
