@@ -18,7 +18,7 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Verify all shipped versions match
         run: python3 packaging/check_versions.py
       - name: Extract release notes from CHANGELOG
@@ -26,7 +26,7 @@ jobs:
           bash .github/scripts/extract-release-notes.sh \
             "$GITHUB_REF_NAME" > release-notes.md
           grep -q '[^[:space:]]' release-notes.md
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           body_path: release-notes.md
 
@@ -54,7 +54,7 @@ jobs:
             vscode_target: win32-x64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -63,7 +63,7 @@ jobs:
           cargo build --release --locked
           --target ${{ matrix.target }}
           -p ayame-spell
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -126,7 +126,7 @@ jobs:
           grep -F '"type":"issue"' artifact-smoke/output.jsonl
           grep -F '"word":"accomodate"' artifact-smoke/output.jsonl
           grep -F '"type":"summary"' artifact-smoke/output.jsonl
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: |
             ayame-spell-*.tar.gz
@@ -161,8 +161,8 @@ jobs:
     needs: checksums
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - name: Download checksums and generate package manifests
@@ -204,7 +204,7 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
@@ -238,8 +238,8 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
@@ -259,7 +259,7 @@ jobs:
     needs: checksums
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - name: Verify publishing credential is configured
         env:
@@ -306,8 +306,8 @@ jobs:
     needs: checksums
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -368,7 +368,7 @@ jobs:
     env:
       RELEASE_TAG: ${{ inputs.tag }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
       - uses: dtolnay/rust-toolchain@stable
@@ -379,7 +379,7 @@ jobs:
           cargo build --release --locked
           --target x86_64-apple-darwin
           -p ayame-spell
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -428,7 +428,7 @@ jobs:
           grep -F '"type":"issue"' artifact-smoke/output.jsonl
           grep -F '"word":"accomodate"' artifact-smoke/output.jsonl
           grep -F '"type":"summary"' artifact-smoke/output.jsonl
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.tag }}
           files: |
