@@ -19,6 +19,12 @@ updates:
       site-dependencies:
         patterns:
           - "*"
+    ignore:
+      # `@astrojs/check` declares a peer of `^5.0.0 || ^6.0.0`, so TypeScript 7
+      # only resolves on an incremental install and fails a clean one. Minor
+      # and patch updates still flow; drop this once that peer widens.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /editors/vscode
@@ -29,6 +35,12 @@ updates:
       vscode-dependencies:
         patterns:
           - "*"
+    ignore:
+      # typescript-eslint refuses to load against the TypeScript 7 API, so
+      # `npm run lint` fails outright. Tracked as typescript-eslint#10940;
+      # drop this once that lands.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
