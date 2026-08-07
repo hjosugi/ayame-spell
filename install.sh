@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-repository="hjosugi/ayame-spell"
+repository="ayame-editor/ayame-spell"
 version=${AYAME_SPELL_VERSION:-latest}
 install_dir=${AYAME_SPELL_INSTALL_DIR:-"${HOME}/.local/bin"}
 

@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Repository = "hjosugi/ayame-spell"
+$Repository = "ayame-editor/ayame-spell"
 
 if ($Version -eq "latest") {
     $Release = Invoke-RestMethod `
