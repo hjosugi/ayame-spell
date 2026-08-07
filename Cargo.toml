@@ -11,8 +11,8 @@ version = "0.5.0"
 edition = "2021"
 rust-version = "1.91"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/ayame-editor/ayame-spell"
-homepage = "https://ayame-editor.github.io/ayame-spell/"
+repository = "https://github.com/hjosugi/ayame-spell"
+homepage = "https://hjosugi.github.io/ayame-spell/"
 authors = ["hjosugi"]
 
 [workspace.dependencies]
@@ -21,19 +21,19 @@ ayame-spell-core = { version = "0.5.0", path = "crates/ayame-spell-core" }
 anyhow = "1"
 # Exact pins below keep the declared MSRV. Later releases that raise their MSRV
 # are evaluated deliberately before an upgrade.
-clap = { version = "=4.6.4", features = ["derive", "wrap_help"] }
+clap = { version = "=4.6.5", features = ["derive", "wrap_help"] }
 clap_complete = "=4.6.8"
 crossbeam-channel = "0.5"
 criterion = "=0.8.2"
 dialoguer = { version = "0.12", features = ["fuzzy-select"] }
-dictgen = "=0.5.3"
+dictgen = "=0.6.0"
 dirs = "6"
 fst = { version = "0.4", features = ["levenshtein"] }
 globset = "=0.4.19"
 # Criterion's ciborium dependency accepts older half releases. Pin the newest
 # one that still supports the workspace MSRV.
 half = "=2.7.1"
-ignore = "=0.4.31"
+ignore = "=0.4.32"
 lsp-server = "=0.10.0"
 lsp-types = "0.97"
 memchr = "2"
@@ -46,7 +46,7 @@ serde_yaml = "0.9"
 sha2 = "0.11"
 toml = "1.1"
 toml_edit = "0.25"
-typos-dict = "=0.13.31"
+typos-dict = "=0.14.0"
 unicase = "2"
 unicode-normalization = "0.1"
 ureq = "3"
