@@ -60,7 +60,7 @@ in a single fast Rust binary.
 ```sh
 cargo install ayame-spell           # CLI + LSP server
 curl --proto '=https' --tlsv1.2 -LsSf \
-  https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
+  https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/install.sh | sh
 npx https://github.com/ayame-editor/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 

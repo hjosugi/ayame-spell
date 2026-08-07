@@ -10,13 +10,13 @@ shell installer は GitHub Release から環境に合う archive を選び、
 
 ```sh
 curl --proto '=https' --tlsv1.2 -LsSf \
-  https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
+  https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/install.sh | sh
 ```
 
 Windows PowerShell では次を実行します。
 
 ```powershell
-irm https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/install.ps1 | iex
 ```
 
 release ごとに version 固定の Homebrew / Scoop manifest も添付します。
@@ -43,7 +43,7 @@ CI 用 container は次のとおりです。
 
 ```sh
 docker run --rm -v "$PWD:/work" -w /work \
-  ghcr.io/hjosugi/ayame-spell:0.5.0 check .
+  ghcr.io/ayame-editor/ayame-spell:0.5.0 check .
 ```
 
 各 release には AUR maintainer と直接の `makepkg -si` 用に、x86_64/aarch64

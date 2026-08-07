@@ -44,7 +44,7 @@ const localeScript = `
 `;
 
 export default defineConfig({
-  site: "https://hjosugi.github.io",
+  site: "https://ayame-editor.github.io",
   base,
   trailingSlash: "always",
   integrations: [

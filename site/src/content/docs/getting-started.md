@@ -10,13 +10,13 @@ against `SHA256SUMS`, and place the binary in `~/.local/bin`:
 
 ```sh
 curl --proto '=https' --tlsv1.2 -LsSf \
-  https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
+  https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/install.sh | sh
 ```
 
 On Windows PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/install.ps1 | iex
 ```
 
 Release-specific Homebrew and Scoop manifests are attached to each release:
@@ -44,7 +44,7 @@ For CI containers:
 
 ```sh
 docker run --rm -v "$PWD:/work" -w /work \
-  ghcr.io/hjosugi/ayame-spell:0.5.0 check .
+  ghcr.io/ayame-editor/ayame-spell:0.5.0 check .
 ```
 
 An x86_64/aarch64 `ayame-spell-bin` `PKGBUILD` and matching `.SRCINFO` are

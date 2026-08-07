@@ -4,7 +4,7 @@ Fast, low-noise spell checking for code and prose in **English and Japanese**.
 The platform-specific extension includes the Rust language server, so no Rust
 toolchain or separate CLI installation is required.
 
-![ayame-spell checks English corrections, Japanese notation, and bulk word review](https://raw.githubusercontent.com/hjosugi/ayame-spell/main/editors/vscode/media/ayame-spell-demo.gif)
+![ayame-spell checks English corrections, Japanese notation, and bulk word review](https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/editors/vscode/media/ayame-spell-demo.gif)
 
 ## Why ayame-spell?
 
@@ -50,13 +50,13 @@ Known misspellings and Japanese notation issues appear as VS Code diagnostics.
 Use Quick Fix for one finding, or run **ayame-spell: Fix All Safe Issues in
 File**.
 
-![A high-confidence English correction](https://raw.githubusercontent.com/hjosugi/ayame-spell/main/editors/vscode/media/corrections.png)
+![A high-confidence English correction](https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/editors/vscode/media/corrections.png)
 
 The status bar shows the active mode and current-file finding count. Click it to
 cycle `corrections → dictionary → off`. Set `ayame-spell.mode` to `inherit` to
 use the checked-in TOML value instead.
 
-![Japanese notation consistency and mechanical checks](https://raw.githubusercontent.com/hjosugi/ayame-spell/main/editors/vscode/media/japanese-variants.png)
+![Japanese notation consistency and mechanical checks](https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/editors/vscode/media/japanese-variants.png)
 
 Run **ayame-spell: Review Flagged Words (Bulk Add / Ignore)** to select many
 terms, then send them to:
@@ -65,7 +65,7 @@ terms, then send them to:
 - the personal global wordlist for all projects; or
 - `[words].ignore` in `ayame-spell.toml`.
 
-![Bulk review of flagged words](https://raw.githubusercontent.com/hjosugi/ayame-spell/main/editors/vscode/media/review-words.png)
+![Bulk review of flagged words](https://raw.githubusercontent.com/ayame-editor/ayame-spell/main/editors/vscode/media/review-words.png)
 
 ## Commands
 
