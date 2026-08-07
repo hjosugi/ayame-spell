@@ -823,6 +823,21 @@ impl RegistryServer {
                         )
                         .unwrap();
                         stream.write_all(&body).unwrap();
+                        stream.flush().unwrap();
+
+                        // Close gracefully. Dropping the stream while the
+                        // receive queue still holds unread request bytes makes
+                        // Windows close abortively, and the client sees a
+                        // connection reset (os error 10053) instead of a clean
+                        // end of body. Half-close, then drain until the peer
+                        // goes away, so the FIN is what reaches the client.
+                        let _ = stream.shutdown(std::net::Shutdown::Write);
+                        let mut drain = [0_u8; 1024];
+                        while let Ok(read) = stream.read(&mut drain) {
+                            if read == 0 {
+                                break;
+                            }
+                        }
                     }
                     Err(error) if error.kind() == ErrorKind::WouldBlock => {
                         thread::sleep(Duration::from_millis(5));

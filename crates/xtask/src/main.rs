@@ -744,9 +744,9 @@ eval (ayame-spell completions elvish | slurp)
 
 Release archives contain pre-generated files in `completions/`.
 Registry names and flagged words are completed through a hidden, cache-only
-candidate provider rather than `clap_complete::dynamic`: this keeps the Rust
-1.80 toolchain and all five generated shells while guaranteeing that Tab never
-performs network I/O. `dict list` / `dict add` refresh the registry-index cache,
+candidate provider rather than `clap_complete::dynamic`: this keeps all five
+generated shells working while guaranteeing that Tab never performs network
+I/O. `dict list` / `dict add` refresh the registry-index cache,
 and `words collect` refreshes the word cache. An empty cache returns no
 candidates immediately.
 
@@ -869,8 +869,8 @@ eval (ayame-spell completions elvish | slurp)
 
 リリースアーカイブには生成済みファイルが `completions/` に入っています。
 辞書名と指摘語の候補には `clap_complete::dynamic` ではなく、非公開の
-キャッシュ専用候補プロバイダーを採用しました。これにより Rust 1.80 と5種類の
-生成シェルを維持しつつ、Tab 入力時のネットワークアクセスを禁止できます。
+キャッシュ専用候補プロバイダーを採用しました。これにより5種類の生成シェルを
+維持しつつ、Tab 入力時のネットワークアクセスを禁止できます。
 `dict list` / `dict add` が辞書索引キャッシュを、`words collect` が単語
 キャッシュを更新します。空のキャッシュでは候補なしとして即座に戻ります。
 

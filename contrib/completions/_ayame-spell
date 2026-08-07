@@ -111,7 +111,7 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 '-h[Print help]' \
 '--help[Print help]' \
-":: :_ayame-spell__words_commands" \
+":: :_ayame-spell__subcmd__words_commands" \
 "*::: :->words" \
 && ret=0
 
@@ -151,7 +151,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" : \
-":: :_ayame-spell__words__help_commands" \
+":: :_ayame-spell__subcmd__words__subcmd__help_commands" \
 "*::: :->help" \
 && ret=0
 
@@ -190,7 +190,7 @@ _arguments "${_arguments_options[@]}" : \
 '--registry=[Override the registry index URL]:URL:_default' \
 '-h[Print help]' \
 '--help[Print help]' \
-":: :_ayame-spell__dict_commands" \
+":: :_ayame-spell__subcmd__dict_commands" \
 "*::: :->dict" \
 && ret=0
 
@@ -268,7 +268,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" : \
-":: :_ayame-spell__dict__help_commands" \
+":: :_ayame-spell__subcmd__dict__subcmd__help_commands" \
 "*::: :->help" \
 && ret=0
 
@@ -322,7 +322,7 @@ esac
 _arguments "${_arguments_options[@]}" : \
 '-h[Print help]' \
 '--help[Print help]' \
-":: :_ayame-spell__import_commands" \
+":: :_ayame-spell__subcmd__import_commands" \
 "*::: :->import" \
 && ret=0
 
@@ -359,7 +359,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" : \
-":: :_ayame-spell__import__help_commands" \
+":: :_ayame-spell__subcmd__import__subcmd__help_commands" \
 "*::: :->help" \
 && ret=0
 
@@ -476,7 +476,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" : \
-":: :_ayame-spell__help_commands" \
+":: :_ayame-spell__subcmd__help_commands" \
 "*::: :->help" \
 && ret=0
 
@@ -496,7 +496,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (words)
 _arguments "${_arguments_options[@]}" : \
-":: :_ayame-spell__help__words_commands" \
+":: :_ayame-spell__subcmd__help__subcmd__words_commands" \
 "*::: :->words" \
 && ret=0
 
@@ -524,7 +524,7 @@ esac
 ;;
 (dict)
 _arguments "${_arguments_options[@]}" : \
-":: :_ayame-spell__help__dict_commands" \
+":: :_ayame-spell__subcmd__help__subcmd__dict_commands" \
 "*::: :->dict" \
 && ret=0
 
@@ -568,7 +568,7 @@ esac
 ;;
 (import)
 _arguments "${_arguments_options[@]}" : \
-":: :_ayame-spell__help__import_commands" \
+":: :_ayame-spell__subcmd__help__subcmd__import_commands" \
 "*::: :->import" \
 && ret=0
 
@@ -659,33 +659,33 @@ _ayame-spell_commands() {
     )
     _describe -t commands 'ayame-spell commands' commands "$@"
 }
-(( $+functions[_ayame-spell__baseline_commands] )) ||
-_ayame-spell__baseline_commands() {
+(( $+functions[_ayame-spell__subcmd__baseline_commands] )) ||
+_ayame-spell__subcmd__baseline_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell baseline commands' commands "$@"
 }
-(( $+functions[_ayame-spell__check_commands] )) ||
-_ayame-spell__check_commands() {
+(( $+functions[_ayame-spell__subcmd__check_commands] )) ||
+_ayame-spell__subcmd__check_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell check commands' commands "$@"
 }
-(( $+functions[_ayame-spell__completion-candidates_commands] )) ||
-_ayame-spell__completion-candidates_commands() {
+(( $+functions[_ayame-spell__subcmd__completion-candidates_commands] )) ||
+_ayame-spell__subcmd__completion-candidates_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell completion-candidates commands' commands "$@"
 }
-(( $+functions[_ayame-spell__completions_commands] )) ||
-_ayame-spell__completions_commands() {
+(( $+functions[_ayame-spell__subcmd__completions_commands] )) ||
+_ayame-spell__subcmd__completions_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell completions commands' commands "$@"
 }
-(( $+functions[_ayame-spell__config_commands] )) ||
-_ayame-spell__config_commands() {
+(( $+functions[_ayame-spell__subcmd__config_commands] )) ||
+_ayame-spell__subcmd__config_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell config commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict_commands] )) ||
-_ayame-spell__dict_commands() {
+(( $+functions[_ayame-spell__subcmd__dict_commands] )) ||
+_ayame-spell__subcmd__dict_commands() {
     local commands; commands=(
 'list:List available dictionaries and their install status' \
 'add:Download dictionaries and enable them in the project config' \
@@ -698,13 +698,13 @@ _ayame-spell__dict_commands() {
     )
     _describe -t commands 'ayame-spell dict commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__add_commands] )) ||
-_ayame-spell__dict__add_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__add_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__add_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict add commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help_commands] )) ||
-_ayame-spell__dict__help_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help_commands() {
     local commands; commands=(
 'list:List available dictionaries and their install status' \
 'add:Download dictionaries and enable them in the project config' \
@@ -717,88 +717,88 @@ _ayame-spell__dict__help_commands() {
     )
     _describe -t commands 'ayame-spell dict help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__add_commands] )) ||
-_ayame-spell__dict__help__add_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__add_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__add_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help add commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__help_commands] )) ||
-_ayame-spell__dict__help__help_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__help_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__info_commands] )) ||
-_ayame-spell__dict__help__info_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__info_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__info_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help info commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__list_commands] )) ||
-_ayame-spell__dict__help__list_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__list_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__list_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help list commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__remove_commands] )) ||
-_ayame-spell__dict__help__remove_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__remove_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__remove_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help remove commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__search_commands] )) ||
-_ayame-spell__dict__help__search_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__search_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__search_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help search commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__update_commands] )) ||
-_ayame-spell__dict__help__update_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__update_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help update commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__help__vendor_commands] )) ||
-_ayame-spell__dict__help__vendor_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__help__subcmd__vendor_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__help__subcmd__vendor_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict help vendor commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__info_commands] )) ||
-_ayame-spell__dict__info_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__info_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__info_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict info commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__list_commands] )) ||
-_ayame-spell__dict__list_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__list_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__list_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict list commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__remove_commands] )) ||
-_ayame-spell__dict__remove_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__remove_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__remove_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict remove commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__search_commands] )) ||
-_ayame-spell__dict__search_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__search_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__search_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict search commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__update_commands] )) ||
-_ayame-spell__dict__update_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__update_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict update commands' commands "$@"
 }
-(( $+functions[_ayame-spell__dict__vendor_commands] )) ||
-_ayame-spell__dict__vendor_commands() {
+(( $+functions[_ayame-spell__subcmd__dict__subcmd__vendor_commands] )) ||
+_ayame-spell__subcmd__dict__subcmd__vendor_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell dict vendor commands' commands "$@"
 }
-(( $+functions[_ayame-spell__explain_commands] )) ||
-_ayame-spell__explain_commands() {
+(( $+functions[_ayame-spell__subcmd__explain_commands] )) ||
+_ayame-spell__subcmd__explain_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell explain commands' commands "$@"
 }
-(( $+functions[_ayame-spell__fix_commands] )) ||
-_ayame-spell__fix_commands() {
+(( $+functions[_ayame-spell__subcmd__fix_commands] )) ||
+_ayame-spell__subcmd__fix_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell fix commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help_commands] )) ||
-_ayame-spell__help_commands() {
+(( $+functions[_ayame-spell__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__help_commands() {
     local commands; commands=(
 'check:Check files and report issues (the default)' \
 'fix:Apply all safe fixes in place (single-candidate corrections and mechanical notation conversions)' \
@@ -817,33 +817,33 @@ _ayame-spell__help_commands() {
     )
     _describe -t commands 'ayame-spell help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__baseline_commands] )) ||
-_ayame-spell__help__baseline_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__baseline_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__baseline_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help baseline commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__check_commands] )) ||
-_ayame-spell__help__check_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__check_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__check_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help check commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__completion-candidates_commands] )) ||
-_ayame-spell__help__completion-candidates_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__completion-candidates_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__completion-candidates_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help completion-candidates commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__completions_commands] )) ||
-_ayame-spell__help__completions_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__completions_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__completions_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help completions commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__config_commands] )) ||
-_ayame-spell__help__config_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__config_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__config_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help config commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict_commands] )) ||
-_ayame-spell__help__dict_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict_commands() {
     local commands; commands=(
 'list:List available dictionaries and their install status' \
 'add:Download dictionaries and enable them in the project config' \
@@ -855,58 +855,58 @@ _ayame-spell__help__dict_commands() {
     )
     _describe -t commands 'ayame-spell help dict commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict__add_commands] )) ||
-_ayame-spell__help__dict__add_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict__subcmd__add_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict__subcmd__add_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict add commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict__info_commands] )) ||
-_ayame-spell__help__dict__info_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict__subcmd__info_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict__subcmd__info_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict info commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict__list_commands] )) ||
-_ayame-spell__help__dict__list_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict__subcmd__list_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict__subcmd__list_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict list commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict__remove_commands] )) ||
-_ayame-spell__help__dict__remove_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict__subcmd__remove_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict__subcmd__remove_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict remove commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict__search_commands] )) ||
-_ayame-spell__help__dict__search_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict__subcmd__search_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict__subcmd__search_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict search commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict__update_commands] )) ||
-_ayame-spell__help__dict__update_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict__subcmd__update_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict__subcmd__update_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict update commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__dict__vendor_commands] )) ||
-_ayame-spell__help__dict__vendor_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__dict__subcmd__vendor_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__dict__subcmd__vendor_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help dict vendor commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__explain_commands] )) ||
-_ayame-spell__help__explain_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__explain_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__explain_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help explain commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__fix_commands] )) ||
-_ayame-spell__help__fix_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__fix_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__fix_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help fix commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__help_commands] )) ||
-_ayame-spell__help__help_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__help_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__import_commands] )) ||
-_ayame-spell__help__import_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__import_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__import_commands() {
     local commands; commands=(
 'cspell:Import cSpell words, ignores, paths, and known dictionaries' \
 'typos:Import _typos.toml extend-words and extend-exclude' \
@@ -914,38 +914,38 @@ _ayame-spell__help__import_commands() {
     )
     _describe -t commands 'ayame-spell help import commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__import__cspell_commands] )) ||
-_ayame-spell__help__import__cspell_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__import__subcmd__cspell_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__import__subcmd__cspell_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help import cspell commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__import__prh_commands] )) ||
-_ayame-spell__help__import__prh_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__import__subcmd__prh_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__import__subcmd__prh_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help import prh commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__import__typos_commands] )) ||
-_ayame-spell__help__import__typos_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__import__subcmd__typos_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__import__subcmd__typos_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help import typos commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__init_commands] )) ||
-_ayame-spell__help__init_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__init_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__init_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help init commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__lsp_commands] )) ||
-_ayame-spell__help__lsp_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__lsp_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__lsp_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help lsp commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__rules_commands] )) ||
-_ayame-spell__help__rules_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__rules_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__rules_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help rules commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__words_commands] )) ||
-_ayame-spell__help__words_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__words_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__words_commands() {
     local commands; commands=(
 'collect:Collect flagged words across files, ranked by frequency' \
 'add:Add words to the project (default) or global word file' \
@@ -953,23 +953,23 @@ _ayame-spell__help__words_commands() {
     )
     _describe -t commands 'ayame-spell help words commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__words__add_commands] )) ||
-_ayame-spell__help__words__add_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__words__subcmd__add_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__words__subcmd__add_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help words add commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__words__collect_commands] )) ||
-_ayame-spell__help__words__collect_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__words__subcmd__collect_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__words__subcmd__collect_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help words collect commands' commands "$@"
 }
-(( $+functions[_ayame-spell__help__words__triage_commands] )) ||
-_ayame-spell__help__words__triage_commands() {
+(( $+functions[_ayame-spell__subcmd__help__subcmd__words__subcmd__triage_commands] )) ||
+_ayame-spell__subcmd__help__subcmd__words__subcmd__triage_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell help words triage commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import_commands] )) ||
-_ayame-spell__import_commands() {
+(( $+functions[_ayame-spell__subcmd__import_commands] )) ||
+_ayame-spell__subcmd__import_commands() {
     local commands; commands=(
 'cspell:Import cSpell words, ignores, paths, and known dictionaries' \
 'typos:Import _typos.toml extend-words and extend-exclude' \
@@ -978,13 +978,13 @@ _ayame-spell__import_commands() {
     )
     _describe -t commands 'ayame-spell import commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__cspell_commands] )) ||
-_ayame-spell__import__cspell_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__cspell_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__cspell_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell import cspell commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__help_commands] )) ||
-_ayame-spell__import__help_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__help_commands() {
     local commands; commands=(
 'cspell:Import cSpell words, ignores, paths, and known dictionaries' \
 'typos:Import _typos.toml extend-words and extend-exclude' \
@@ -993,53 +993,53 @@ _ayame-spell__import__help_commands() {
     )
     _describe -t commands 'ayame-spell import help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__help__cspell_commands] )) ||
-_ayame-spell__import__help__cspell_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__help__subcmd__cspell_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__help__subcmd__cspell_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell import help cspell commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__help__help_commands] )) ||
-_ayame-spell__import__help__help_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__help__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__help__subcmd__help_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell import help help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__help__prh_commands] )) ||
-_ayame-spell__import__help__prh_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__help__subcmd__prh_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__help__subcmd__prh_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell import help prh commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__help__typos_commands] )) ||
-_ayame-spell__import__help__typos_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__help__subcmd__typos_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__help__subcmd__typos_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell import help typos commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__prh_commands] )) ||
-_ayame-spell__import__prh_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__prh_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__prh_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell import prh commands' commands "$@"
 }
-(( $+functions[_ayame-spell__import__typos_commands] )) ||
-_ayame-spell__import__typos_commands() {
+(( $+functions[_ayame-spell__subcmd__import__subcmd__typos_commands] )) ||
+_ayame-spell__subcmd__import__subcmd__typos_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell import typos commands' commands "$@"
 }
-(( $+functions[_ayame-spell__init_commands] )) ||
-_ayame-spell__init_commands() {
+(( $+functions[_ayame-spell__subcmd__init_commands] )) ||
+_ayame-spell__subcmd__init_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell init commands' commands "$@"
 }
-(( $+functions[_ayame-spell__lsp_commands] )) ||
-_ayame-spell__lsp_commands() {
+(( $+functions[_ayame-spell__subcmd__lsp_commands] )) ||
+_ayame-spell__subcmd__lsp_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell lsp commands' commands "$@"
 }
-(( $+functions[_ayame-spell__rules_commands] )) ||
-_ayame-spell__rules_commands() {
+(( $+functions[_ayame-spell__subcmd__rules_commands] )) ||
+_ayame-spell__subcmd__rules_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell rules commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words_commands] )) ||
-_ayame-spell__words_commands() {
+(( $+functions[_ayame-spell__subcmd__words_commands] )) ||
+_ayame-spell__subcmd__words_commands() {
     local commands; commands=(
 'collect:Collect flagged words across files, ranked by frequency' \
 'add:Add words to the project (default) or global word file' \
@@ -1048,18 +1048,18 @@ _ayame-spell__words_commands() {
     )
     _describe -t commands 'ayame-spell words commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__add_commands] )) ||
-_ayame-spell__words__add_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__add_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__add_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell words add commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__collect_commands] )) ||
-_ayame-spell__words__collect_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__collect_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__collect_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell words collect commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__help_commands] )) ||
-_ayame-spell__words__help_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__help_commands() {
     local commands; commands=(
 'collect:Collect flagged words across files, ranked by frequency' \
 'add:Add words to the project (default) or global word file' \
@@ -1068,28 +1068,28 @@ _ayame-spell__words__help_commands() {
     )
     _describe -t commands 'ayame-spell words help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__help__add_commands] )) ||
-_ayame-spell__words__help__add_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__help__subcmd__add_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__help__subcmd__add_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell words help add commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__help__collect_commands] )) ||
-_ayame-spell__words__help__collect_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__help__subcmd__collect_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__help__subcmd__collect_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell words help collect commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__help__help_commands] )) ||
-_ayame-spell__words__help__help_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__help__subcmd__help_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__help__subcmd__help_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell words help help commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__help__triage_commands] )) ||
-_ayame-spell__words__help__triage_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__help__subcmd__triage_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__help__subcmd__triage_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell words help triage commands' commands "$@"
 }
-(( $+functions[_ayame-spell__words__triage_commands] )) ||
-_ayame-spell__words__triage_commands() {
+(( $+functions[_ayame-spell__subcmd__words__subcmd__triage_commands] )) ||
+_ayame-spell__subcmd__words__subcmd__triage_commands() {
     local commands; commands=()
     _describe -t commands 'ayame-spell words triage commands' commands "$@"
 }

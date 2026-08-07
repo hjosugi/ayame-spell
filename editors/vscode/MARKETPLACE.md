@@ -5,14 +5,14 @@ and Open VSX listings.
 
 ## Identity
 
-| Field                 | Value                                           |
-| --------------------- | ----------------------------------------------- |
-| Extension ID          | `hjosugi.ayame-spell`                           |
-| Package name          | `ayame-spell`                                   |
-| Display name          | ayame-spell — English & Japanese Spell Checker  |
-| Publisher / namespace | `hjosugi`                                       |
-| Categories            | Linters, Programming Languages, Other           |
-| License               | MIT OR Apache-2.0                               |
+| Field                 | Value                                                |
+| --------------------- | ---------------------------------------------------- |
+| Extension ID          | `hjosugi.ayame-spell`                                |
+| Package name          | `ayame-spell`                                        |
+| Display name          | ayame-spell — English & Japanese Spell Checker       |
+| Publisher / namespace | `hjosugi`                                            |
+| Categories            | Linters, Programming Languages, Other                |
+| License               | MIT OR Apache-2.0                                    |
 | Support               | <https://github.com/ayame-editor/ayame-spell/issues> |
 | Homepage              | <https://ayame-editor.github.io/ayame-spell/>        |
 

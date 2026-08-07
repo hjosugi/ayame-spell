@@ -17,223 +17,223 @@ _ayame-spell() {
                 cmd="ayame__spell"
                 ;;
             ayame__spell,baseline)
-                cmd="ayame__spell__baseline"
+                cmd="ayame__spell__subcmd__baseline"
                 ;;
             ayame__spell,check)
-                cmd="ayame__spell__check"
+                cmd="ayame__spell__subcmd__check"
                 ;;
             ayame__spell,completion-candidates)
-                cmd="ayame__spell__completion__candidates"
+                cmd="ayame__spell__subcmd__completion__subcmd__candidates"
                 ;;
             ayame__spell,completions)
-                cmd="ayame__spell__completions"
+                cmd="ayame__spell__subcmd__completions"
                 ;;
             ayame__spell,config)
-                cmd="ayame__spell__config"
+                cmd="ayame__spell__subcmd__config"
                 ;;
             ayame__spell,dict)
-                cmd="ayame__spell__dict"
+                cmd="ayame__spell__subcmd__dict"
                 ;;
             ayame__spell,explain)
-                cmd="ayame__spell__explain"
+                cmd="ayame__spell__subcmd__explain"
                 ;;
             ayame__spell,fix)
-                cmd="ayame__spell__fix"
+                cmd="ayame__spell__subcmd__fix"
                 ;;
             ayame__spell,help)
-                cmd="ayame__spell__help"
+                cmd="ayame__spell__subcmd__help"
                 ;;
             ayame__spell,import)
-                cmd="ayame__spell__import"
+                cmd="ayame__spell__subcmd__import"
                 ;;
             ayame__spell,init)
-                cmd="ayame__spell__init"
+                cmd="ayame__spell__subcmd__init"
                 ;;
             ayame__spell,lsp)
-                cmd="ayame__spell__lsp"
+                cmd="ayame__spell__subcmd__lsp"
                 ;;
             ayame__spell,rules)
-                cmd="ayame__spell__rules"
+                cmd="ayame__spell__subcmd__rules"
                 ;;
             ayame__spell,words)
-                cmd="ayame__spell__words"
+                cmd="ayame__spell__subcmd__words"
                 ;;
-            ayame__spell__dict,add)
-                cmd="ayame__spell__dict__add"
+            ayame__spell__subcmd__dict,add)
+                cmd="ayame__spell__subcmd__dict__subcmd__add"
                 ;;
-            ayame__spell__dict,help)
-                cmd="ayame__spell__dict__help"
+            ayame__spell__subcmd__dict,help)
+                cmd="ayame__spell__subcmd__dict__subcmd__help"
                 ;;
-            ayame__spell__dict,info)
-                cmd="ayame__spell__dict__info"
+            ayame__spell__subcmd__dict,info)
+                cmd="ayame__spell__subcmd__dict__subcmd__info"
                 ;;
-            ayame__spell__dict,list)
-                cmd="ayame__spell__dict__list"
+            ayame__spell__subcmd__dict,list)
+                cmd="ayame__spell__subcmd__dict__subcmd__list"
                 ;;
-            ayame__spell__dict,remove)
-                cmd="ayame__spell__dict__remove"
+            ayame__spell__subcmd__dict,remove)
+                cmd="ayame__spell__subcmd__dict__subcmd__remove"
                 ;;
-            ayame__spell__dict,search)
-                cmd="ayame__spell__dict__search"
+            ayame__spell__subcmd__dict,search)
+                cmd="ayame__spell__subcmd__dict__subcmd__search"
                 ;;
-            ayame__spell__dict,update)
-                cmd="ayame__spell__dict__update"
+            ayame__spell__subcmd__dict,update)
+                cmd="ayame__spell__subcmd__dict__subcmd__update"
                 ;;
-            ayame__spell__dict,vendor)
-                cmd="ayame__spell__dict__vendor"
+            ayame__spell__subcmd__dict,vendor)
+                cmd="ayame__spell__subcmd__dict__subcmd__vendor"
                 ;;
-            ayame__spell__dict__help,add)
-                cmd="ayame__spell__dict__help__add"
+            ayame__spell__subcmd__dict__subcmd__help,add)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__add"
                 ;;
-            ayame__spell__dict__help,help)
-                cmd="ayame__spell__dict__help__help"
+            ayame__spell__subcmd__dict__subcmd__help,help)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__help"
                 ;;
-            ayame__spell__dict__help,info)
-                cmd="ayame__spell__dict__help__info"
+            ayame__spell__subcmd__dict__subcmd__help,info)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__info"
                 ;;
-            ayame__spell__dict__help,list)
-                cmd="ayame__spell__dict__help__list"
+            ayame__spell__subcmd__dict__subcmd__help,list)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__list"
                 ;;
-            ayame__spell__dict__help,remove)
-                cmd="ayame__spell__dict__help__remove"
+            ayame__spell__subcmd__dict__subcmd__help,remove)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__remove"
                 ;;
-            ayame__spell__dict__help,search)
-                cmd="ayame__spell__dict__help__search"
+            ayame__spell__subcmd__dict__subcmd__help,search)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__search"
                 ;;
-            ayame__spell__dict__help,update)
-                cmd="ayame__spell__dict__help__update"
+            ayame__spell__subcmd__dict__subcmd__help,update)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__update"
                 ;;
-            ayame__spell__dict__help,vendor)
-                cmd="ayame__spell__dict__help__vendor"
+            ayame__spell__subcmd__dict__subcmd__help,vendor)
+                cmd="ayame__spell__subcmd__dict__subcmd__help__subcmd__vendor"
                 ;;
-            ayame__spell__help,baseline)
-                cmd="ayame__spell__help__baseline"
+            ayame__spell__subcmd__help,baseline)
+                cmd="ayame__spell__subcmd__help__subcmd__baseline"
                 ;;
-            ayame__spell__help,check)
-                cmd="ayame__spell__help__check"
+            ayame__spell__subcmd__help,check)
+                cmd="ayame__spell__subcmd__help__subcmd__check"
                 ;;
-            ayame__spell__help,completion-candidates)
-                cmd="ayame__spell__help__completion__candidates"
+            ayame__spell__subcmd__help,completion-candidates)
+                cmd="ayame__spell__subcmd__help__subcmd__completion__subcmd__candidates"
                 ;;
-            ayame__spell__help,completions)
-                cmd="ayame__spell__help__completions"
+            ayame__spell__subcmd__help,completions)
+                cmd="ayame__spell__subcmd__help__subcmd__completions"
                 ;;
-            ayame__spell__help,config)
-                cmd="ayame__spell__help__config"
+            ayame__spell__subcmd__help,config)
+                cmd="ayame__spell__subcmd__help__subcmd__config"
                 ;;
-            ayame__spell__help,dict)
-                cmd="ayame__spell__help__dict"
+            ayame__spell__subcmd__help,dict)
+                cmd="ayame__spell__subcmd__help__subcmd__dict"
                 ;;
-            ayame__spell__help,explain)
-                cmd="ayame__spell__help__explain"
+            ayame__spell__subcmd__help,explain)
+                cmd="ayame__spell__subcmd__help__subcmd__explain"
                 ;;
-            ayame__spell__help,fix)
-                cmd="ayame__spell__help__fix"
+            ayame__spell__subcmd__help,fix)
+                cmd="ayame__spell__subcmd__help__subcmd__fix"
                 ;;
-            ayame__spell__help,help)
-                cmd="ayame__spell__help__help"
+            ayame__spell__subcmd__help,help)
+                cmd="ayame__spell__subcmd__help__subcmd__help"
                 ;;
-            ayame__spell__help,import)
-                cmd="ayame__spell__help__import"
+            ayame__spell__subcmd__help,import)
+                cmd="ayame__spell__subcmd__help__subcmd__import"
                 ;;
-            ayame__spell__help,init)
-                cmd="ayame__spell__help__init"
+            ayame__spell__subcmd__help,init)
+                cmd="ayame__spell__subcmd__help__subcmd__init"
                 ;;
-            ayame__spell__help,lsp)
-                cmd="ayame__spell__help__lsp"
+            ayame__spell__subcmd__help,lsp)
+                cmd="ayame__spell__subcmd__help__subcmd__lsp"
                 ;;
-            ayame__spell__help,rules)
-                cmd="ayame__spell__help__rules"
+            ayame__spell__subcmd__help,rules)
+                cmd="ayame__spell__subcmd__help__subcmd__rules"
                 ;;
-            ayame__spell__help,words)
-                cmd="ayame__spell__help__words"
+            ayame__spell__subcmd__help,words)
+                cmd="ayame__spell__subcmd__help__subcmd__words"
                 ;;
-            ayame__spell__help__dict,add)
-                cmd="ayame__spell__help__dict__add"
+            ayame__spell__subcmd__help__subcmd__dict,add)
+                cmd="ayame__spell__subcmd__help__subcmd__dict__subcmd__add"
                 ;;
-            ayame__spell__help__dict,info)
-                cmd="ayame__spell__help__dict__info"
+            ayame__spell__subcmd__help__subcmd__dict,info)
+                cmd="ayame__spell__subcmd__help__subcmd__dict__subcmd__info"
                 ;;
-            ayame__spell__help__dict,list)
-                cmd="ayame__spell__help__dict__list"
+            ayame__spell__subcmd__help__subcmd__dict,list)
+                cmd="ayame__spell__subcmd__help__subcmd__dict__subcmd__list"
                 ;;
-            ayame__spell__help__dict,remove)
-                cmd="ayame__spell__help__dict__remove"
+            ayame__spell__subcmd__help__subcmd__dict,remove)
+                cmd="ayame__spell__subcmd__help__subcmd__dict__subcmd__remove"
                 ;;
-            ayame__spell__help__dict,search)
-                cmd="ayame__spell__help__dict__search"
+            ayame__spell__subcmd__help__subcmd__dict,search)
+                cmd="ayame__spell__subcmd__help__subcmd__dict__subcmd__search"
                 ;;
-            ayame__spell__help__dict,update)
-                cmd="ayame__spell__help__dict__update"
+            ayame__spell__subcmd__help__subcmd__dict,update)
+                cmd="ayame__spell__subcmd__help__subcmd__dict__subcmd__update"
                 ;;
-            ayame__spell__help__dict,vendor)
-                cmd="ayame__spell__help__dict__vendor"
+            ayame__spell__subcmd__help__subcmd__dict,vendor)
+                cmd="ayame__spell__subcmd__help__subcmd__dict__subcmd__vendor"
                 ;;
-            ayame__spell__help__import,cspell)
-                cmd="ayame__spell__help__import__cspell"
+            ayame__spell__subcmd__help__subcmd__import,cspell)
+                cmd="ayame__spell__subcmd__help__subcmd__import__subcmd__cspell"
                 ;;
-            ayame__spell__help__import,prh)
-                cmd="ayame__spell__help__import__prh"
+            ayame__spell__subcmd__help__subcmd__import,prh)
+                cmd="ayame__spell__subcmd__help__subcmd__import__subcmd__prh"
                 ;;
-            ayame__spell__help__import,typos)
-                cmd="ayame__spell__help__import__typos"
+            ayame__spell__subcmd__help__subcmd__import,typos)
+                cmd="ayame__spell__subcmd__help__subcmd__import__subcmd__typos"
                 ;;
-            ayame__spell__help__words,add)
-                cmd="ayame__spell__help__words__add"
+            ayame__spell__subcmd__help__subcmd__words,add)
+                cmd="ayame__spell__subcmd__help__subcmd__words__subcmd__add"
                 ;;
-            ayame__spell__help__words,collect)
-                cmd="ayame__spell__help__words__collect"
+            ayame__spell__subcmd__help__subcmd__words,collect)
+                cmd="ayame__spell__subcmd__help__subcmd__words__subcmd__collect"
                 ;;
-            ayame__spell__help__words,triage)
-                cmd="ayame__spell__help__words__triage"
+            ayame__spell__subcmd__help__subcmd__words,triage)
+                cmd="ayame__spell__subcmd__help__subcmd__words__subcmd__triage"
                 ;;
-            ayame__spell__import,cspell)
-                cmd="ayame__spell__import__cspell"
+            ayame__spell__subcmd__import,cspell)
+                cmd="ayame__spell__subcmd__import__subcmd__cspell"
                 ;;
-            ayame__spell__import,help)
-                cmd="ayame__spell__import__help"
+            ayame__spell__subcmd__import,help)
+                cmd="ayame__spell__subcmd__import__subcmd__help"
                 ;;
-            ayame__spell__import,prh)
-                cmd="ayame__spell__import__prh"
+            ayame__spell__subcmd__import,prh)
+                cmd="ayame__spell__subcmd__import__subcmd__prh"
                 ;;
-            ayame__spell__import,typos)
-                cmd="ayame__spell__import__typos"
+            ayame__spell__subcmd__import,typos)
+                cmd="ayame__spell__subcmd__import__subcmd__typos"
                 ;;
-            ayame__spell__import__help,cspell)
-                cmd="ayame__spell__import__help__cspell"
+            ayame__spell__subcmd__import__subcmd__help,cspell)
+                cmd="ayame__spell__subcmd__import__subcmd__help__subcmd__cspell"
                 ;;
-            ayame__spell__import__help,help)
-                cmd="ayame__spell__import__help__help"
+            ayame__spell__subcmd__import__subcmd__help,help)
+                cmd="ayame__spell__subcmd__import__subcmd__help__subcmd__help"
                 ;;
-            ayame__spell__import__help,prh)
-                cmd="ayame__spell__import__help__prh"
+            ayame__spell__subcmd__import__subcmd__help,prh)
+                cmd="ayame__spell__subcmd__import__subcmd__help__subcmd__prh"
                 ;;
-            ayame__spell__import__help,typos)
-                cmd="ayame__spell__import__help__typos"
+            ayame__spell__subcmd__import__subcmd__help,typos)
+                cmd="ayame__spell__subcmd__import__subcmd__help__subcmd__typos"
                 ;;
-            ayame__spell__words,add)
-                cmd="ayame__spell__words__add"
+            ayame__spell__subcmd__words,add)
+                cmd="ayame__spell__subcmd__words__subcmd__add"
                 ;;
-            ayame__spell__words,collect)
-                cmd="ayame__spell__words__collect"
+            ayame__spell__subcmd__words,collect)
+                cmd="ayame__spell__subcmd__words__subcmd__collect"
                 ;;
-            ayame__spell__words,help)
-                cmd="ayame__spell__words__help"
+            ayame__spell__subcmd__words,help)
+                cmd="ayame__spell__subcmd__words__subcmd__help"
                 ;;
-            ayame__spell__words,triage)
-                cmd="ayame__spell__words__triage"
+            ayame__spell__subcmd__words,triage)
+                cmd="ayame__spell__subcmd__words__subcmd__triage"
                 ;;
-            ayame__spell__words__help,add)
-                cmd="ayame__spell__words__help__add"
+            ayame__spell__subcmd__words__subcmd__help,add)
+                cmd="ayame__spell__subcmd__words__subcmd__help__subcmd__add"
                 ;;
-            ayame__spell__words__help,collect)
-                cmd="ayame__spell__words__help__collect"
+            ayame__spell__subcmd__words__subcmd__help,collect)
+                cmd="ayame__spell__subcmd__words__subcmd__help__subcmd__collect"
                 ;;
-            ayame__spell__words__help,help)
-                cmd="ayame__spell__words__help__help"
+            ayame__spell__subcmd__words__subcmd__help,help)
+                cmd="ayame__spell__subcmd__words__subcmd__help__subcmd__help"
                 ;;
-            ayame__spell__words__help,triage)
-                cmd="ayame__spell__words__help__triage"
+            ayame__spell__subcmd__words__subcmd__help,triage)
+                cmd="ayame__spell__subcmd__words__subcmd__help__subcmd__triage"
                 ;;
             *)
                 ;;
@@ -242,7 +242,7 @@ _ayame-spell() {
 
     case "${cmd}" in
         ayame__spell)
-            opts="-q -v -j -w -h -V --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --write --format --list-rules --lang --help --version [PATH]... check fix words dict import init config baseline explain rules completions completion-candidates lsp help"
+            opts="-q -v -j -w -h -V --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --write --format --list-rules --lang --help --version check fix words dict import init config baseline explain rules completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -299,8 +299,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__baseline)
-            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --prune --help [PATH]..."
+        ayame__subcmd__spell__subcmd__baseline)
+            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --prune --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -349,8 +349,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__check)
-            opts="-q -v -j -w -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --write --format --help [PATH]..."
+        ayame__subcmd__spell__subcmd__check)
+            opts="-q -v -j -w -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --write --format --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -403,8 +403,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__completion__candidates)
-            opts="-h --help dict-add dict-remove words-add word-file config-key [PREFIX]"
+        ayame__subcmd__spell__subcmd__completion__subcmd__candidates)
+            opts="-h --help dict-add dict-remove words-add word-file config-key"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -417,7 +417,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__completions)
+        ayame__subcmd__spell__subcmd__completions)
             opts="-h --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -431,8 +431,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__config)
-            opts="-h --schema --validate --help [PATH]"
+        ayame__subcmd__spell__subcmd__config)
+            opts="-h --schema --validate --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -445,7 +445,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict)
+        ayame__subcmd__spell__subcmd__dict)
             opts="-h --registry --help list add search info remove update vendor help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -463,8 +463,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__add)
-            opts="-h --cache-only --lang --kind --registry --help [NAMES]..."
+        ayame__subcmd__spell__subcmd__dict__subcmd__add)
+            opts="-h --cache-only --lang --kind --registry --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -489,7 +489,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help)
             opts="list add search info remove update vendor help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -503,7 +503,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__add)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__add)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -517,7 +517,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__help)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__help)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -531,7 +531,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__info)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__info)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -545,7 +545,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__list)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__list)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -559,7 +559,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__remove)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__remove)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -573,7 +573,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__search)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__search)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -587,7 +587,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__update)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__update)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -601,7 +601,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__help__vendor)
+        ayame__subcmd__spell__subcmd__dict__subcmd__help__subcmd__vendor)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -615,8 +615,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__info)
-            opts="-h --json --registry --help <NAME>"
+        ayame__subcmd__spell__subcmd__dict__subcmd__info)
+            opts="-h --json --registry --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -633,7 +633,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__list)
+        ayame__subcmd__spell__subcmd__dict__subcmd__list)
             opts="-h --json --lang --kind --registry --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -659,8 +659,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__remove)
-            opts="-h --registry --help <NAME>"
+        ayame__subcmd__spell__subcmd__dict__subcmd__remove)
+            opts="-h --registry --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -677,8 +677,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__search)
-            opts="-h --lang --kind --json --registry --help <QUERY>"
+        ayame__subcmd__spell__subcmd__dict__subcmd__search)
+            opts="-h --lang --kind --json --registry --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -703,7 +703,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__update)
+        ayame__subcmd__spell__subcmd__dict__subcmd__update)
             opts="-h --check --registry --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -721,8 +721,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__dict__vendor)
-            opts="-h --dir --registry --help <NAME>"
+        ayame__subcmd__spell__subcmd__dict__subcmd__vendor)
+            opts="-h --dir --registry --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -743,8 +743,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__explain)
-            opts="-h --lang --help <CODE>"
+        ayame__subcmd__spell__subcmd__explain)
+            opts="-h --lang --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -761,8 +761,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__fix)
-            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --dry-run --interactive --help [PATH]..."
+        ayame__subcmd__spell__subcmd__fix)
+            opts="-q -v -j -h --config --no-config --no-baseline --mode --exclude --no-ignore --hidden --color --quiet --verbose --stdin-filename --max-file-size --threads --no-cache --cache-dir --dry-run --interactive --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -811,7 +811,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help)
+        ayame__subcmd__spell__subcmd__help)
             opts="check fix words dict import init config baseline explain rules completions completion-candidates lsp help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -825,7 +825,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__baseline)
+        ayame__subcmd__spell__subcmd__help__subcmd__baseline)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -839,7 +839,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__check)
+        ayame__subcmd__spell__subcmd__help__subcmd__check)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -853,7 +853,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__completion__candidates)
+        ayame__subcmd__spell__subcmd__help__subcmd__completion__subcmd__candidates)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -867,7 +867,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__completions)
+        ayame__subcmd__spell__subcmd__help__subcmd__completions)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -881,7 +881,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__config)
+        ayame__subcmd__spell__subcmd__help__subcmd__config)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -895,7 +895,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict)
             opts="list add search info remove update vendor"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -909,7 +909,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict__add)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict__subcmd__add)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -923,7 +923,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict__info)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict__subcmd__info)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -937,7 +937,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict__list)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict__subcmd__list)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -951,7 +951,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict__remove)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict__subcmd__remove)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -965,7 +965,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict__search)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict__subcmd__search)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -979,7 +979,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict__update)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict__subcmd__update)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -993,7 +993,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__dict__vendor)
+        ayame__subcmd__spell__subcmd__help__subcmd__dict__subcmd__vendor)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1007,7 +1007,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__explain)
+        ayame__subcmd__spell__subcmd__help__subcmd__explain)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1021,7 +1021,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__fix)
+        ayame__subcmd__spell__subcmd__help__subcmd__fix)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1035,7 +1035,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__help)
+        ayame__subcmd__spell__subcmd__help__subcmd__help)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1049,7 +1049,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__import)
+        ayame__subcmd__spell__subcmd__help__subcmd__import)
             opts="cspell typos prh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1063,7 +1063,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__import__cspell)
+        ayame__subcmd__spell__subcmd__help__subcmd__import__subcmd__cspell)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1077,7 +1077,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__import__prh)
+        ayame__subcmd__spell__subcmd__help__subcmd__import__subcmd__prh)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1091,7 +1091,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__import__typos)
+        ayame__subcmd__spell__subcmd__help__subcmd__import__subcmd__typos)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1105,7 +1105,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__init)
+        ayame__subcmd__spell__subcmd__help__subcmd__init)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1119,7 +1119,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__lsp)
+        ayame__subcmd__spell__subcmd__help__subcmd__lsp)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1133,7 +1133,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__rules)
+        ayame__subcmd__spell__subcmd__help__subcmd__rules)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1147,7 +1147,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__words)
+        ayame__subcmd__spell__subcmd__help__subcmd__words)
             opts="collect add triage"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1161,7 +1161,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__words__add)
+        ayame__subcmd__spell__subcmd__help__subcmd__words__subcmd__add)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1175,7 +1175,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__words__collect)
+        ayame__subcmd__spell__subcmd__help__subcmd__words__subcmd__collect)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1189,7 +1189,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__help__words__triage)
+        ayame__subcmd__spell__subcmd__help__subcmd__words__subcmd__triage)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1203,7 +1203,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import)
+        ayame__subcmd__spell__subcmd__import)
             opts="-h --help cspell typos prh help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1217,8 +1217,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__cspell)
-            opts="-h --dry-run --help [PATH]"
+        ayame__subcmd__spell__subcmd__import__subcmd__cspell)
+            opts="-h --dry-run --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1231,7 +1231,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__help)
+        ayame__subcmd__spell__subcmd__import__subcmd__help)
             opts="cspell typos prh help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1245,7 +1245,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__help__cspell)
+        ayame__subcmd__spell__subcmd__import__subcmd__help__subcmd__cspell)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1259,7 +1259,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__help__help)
+        ayame__subcmd__spell__subcmd__import__subcmd__help__subcmd__help)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1273,7 +1273,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__help__prh)
+        ayame__subcmd__spell__subcmd__import__subcmd__help__subcmd__prh)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1287,7 +1287,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__help__typos)
+        ayame__subcmd__spell__subcmd__import__subcmd__help__subcmd__typos)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1301,8 +1301,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__prh)
-            opts="-h --output --dry-run --help <PATH>"
+        ayame__subcmd__spell__subcmd__import__subcmd__prh)
+            opts="-h --output --dry-run --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1319,8 +1319,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__import__typos)
-            opts="-h --dry-run --help [PATH]"
+        ayame__subcmd__spell__subcmd__import__subcmd__typos)
+            opts="-h --dry-run --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1333,7 +1333,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__init)
+        ayame__subcmd__spell__subcmd__init)
             opts="-h --force --interactive --yes --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1347,7 +1347,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__lsp)
+        ayame__subcmd__spell__subcmd__lsp)
             opts="-h --stdio --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1361,7 +1361,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__rules)
+        ayame__subcmd__spell__subcmd__rules)
             opts="-h --lang --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1379,7 +1379,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words)
+        ayame__subcmd__spell__subcmd__words)
             opts="-h --help collect add triage help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1393,8 +1393,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__add)
-            opts="-h --global --help <WORDS>..."
+        ayame__subcmd__spell__subcmd__words__subcmd__add)
+            opts="-h --global --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1407,8 +1407,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__collect)
-            opts="-h --min-count --plain --json --help [PATH]..."
+        ayame__subcmd__spell__subcmd__words__subcmd__collect)
+            opts="-h --min-count --plain --json --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1425,7 +1425,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__help)
+        ayame__subcmd__spell__subcmd__words__subcmd__help)
             opts="collect add triage help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1439,7 +1439,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__help__add)
+        ayame__subcmd__spell__subcmd__words__subcmd__help__subcmd__add)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1453,7 +1453,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__help__collect)
+        ayame__subcmd__spell__subcmd__words__subcmd__help__subcmd__collect)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1467,7 +1467,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__help__help)
+        ayame__subcmd__spell__subcmd__words__subcmd__help__subcmd__help)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1481,7 +1481,7 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__help__triage)
+        ayame__subcmd__spell__subcmd__words__subcmd__help__subcmd__triage)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1495,8 +1495,8 @@ _ayame-spell() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        ayame__spell__words__triage)
-            opts="-h --kind --min-count --limit --help [PATH]..."
+        ayame__subcmd__spell__subcmd__words__subcmd__triage)
+            opts="-h --kind --min-count --limit --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
