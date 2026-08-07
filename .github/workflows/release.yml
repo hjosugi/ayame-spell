@@ -26,7 +26,7 @@ jobs:
           bash .github/scripts/extract-release-notes.sh \
             "$GITHUB_REF_NAME" > release-notes.md
           grep -q '[^[:space:]]' release-notes.md
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           body_path: release-notes.md
 
@@ -126,7 +126,7 @@ jobs:
           grep -F '"type":"issue"' artifact-smoke/output.jsonl
           grep -F '"word":"accomodate"' artifact-smoke/output.jsonl
           grep -F '"type":"summary"' artifact-smoke/output.jsonl
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: |
             ayame-spell-*.tar.gz
@@ -428,7 +428,7 @@ jobs:
           grep -F '"type":"issue"' artifact-smoke/output.jsonl
           grep -F '"word":"accomodate"' artifact-smoke/output.jsonl
           grep -F '"type":"summary"' artifact-smoke/output.jsonl
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.tag }}
           files: |
