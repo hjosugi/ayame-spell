@@ -23,18 +23,18 @@ release ごとに version 固定の Homebrew / Scoop manifest も添付します
 
 ```sh
 brew install --formula \
-  https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.rb
+  https://github.com/ayame-editor/ayame-spell/releases/latest/download/ayame-spell.rb
 ```
 
 ```powershell
-scoop install https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.json
+scoop install https://github.com/ayame-editor/ayame-spell/releases/latest/download/ayame-spell.json
 ```
 
 Node project では registry account なしで、release 添付の checksum 検証済み
 native wrapper を利用できます。
 
 ```sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
+npx https://github.com/ayame-editor/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 同じ wrapper を npm に公開後は、短い `npx ayame-spell check .` も利用できます。
@@ -49,7 +49,7 @@ docker run --rm -v "$PWD:/work" -w /work \
 各 release には AUR maintainer と直接の `makepkg -si` 用に、x86_64/aarch64
 対応 `ayame-spell-bin` の `PKGBUILD` と `.SRCINFO` を添付します。再現可能な
 manifest generator は
-[配布用 source](https://github.com/hjosugi/ayame-spell/tree/main/packaging)
+[配布用 source](https://github.com/ayame-editor/ayame-spell/tree/main/packaging)
 にあります。
 
 ## Rust でインストール
@@ -61,7 +61,7 @@ cargo install ayame-spell
 ayame-spell --version
 ```
 
-また、[GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest)
+また、[GitHub Releases](https://github.com/ayame-editor/ayame-spell/releases/latest)
 から環境に合うアーカイブを取得し、`ayame-spell`（Windows は
 `ayame-spell.exe`）を `PATH` の通った場所へ置きます。アーカイブの
 `completions/` にはシェル補完も入っています。

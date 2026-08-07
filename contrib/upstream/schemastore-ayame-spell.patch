@@ -10,7 +10,7 @@ index 722437c..9e8c3e1 100644
 +      "name": "ayame-spell configuration",
 +      "description": "Configuration for the ayame-spell English and Japanese spell checker",
 +      "fileMatch": ["ayame-spell.toml", ".ayame-spell.toml"],
-+      "url": "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json"
++      "url": "https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell.json"
 +    },
      {
        "name": "Mermaid config",

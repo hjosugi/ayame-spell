@@ -16,9 +16,9 @@ import {
 
 const CONFIG_SECTION = "ayame-spell";
 const REGISTRY_URL =
-  "https://hjosugi.github.io/ayame-spell/registry/index.json";
+  "https://ayame-editor.github.io/ayame-spell/registry/index.json";
 const CONFIG_TEMPLATE = `# ayame-spell configuration
-# Reference: https://github.com/hjosugi/ayame-spell#configuration
+# Reference: https://github.com/ayame-editor/ayame-spell#configuration
 
 [check]
 mode = "corrections"
@@ -177,7 +177,7 @@ async function startClient(): Promise<void> {
         } else if (choice === "Install help") {
           await vscode.env.openExternal(
             vscode.Uri.parse(
-              "https://github.com/hjosugi/ayame-spell/tree/main/editors/vscode#installation",
+              "https://github.com/ayame-editor/ayame-spell/tree/main/editors/vscode#installation",
             ),
           );
         } else if (choice === "Show output") {

@@ -91,7 +91,7 @@ ayame-spell check . --format brief
 
 ```yaml
 repos:
-  - repo: https://github.com/hjosugi/ayame-spell
+  - repo: https://github.com/ayame-editor/ayame-spell
     rev: v0.5.0
     hooks:
       - id: ayame-spell

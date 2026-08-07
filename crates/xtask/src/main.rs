@@ -600,7 +600,7 @@ fn man_page() -> anyhow::Result<()> {
          .SH EXIT STATUS\n\
          0 means no findings, 1 means findings were reported, and 2 means an error occurred.\n\
          .SH DOCUMENTATION\n\
-         https://hjosugi.github.io/ayame-spell/\n\
+         https://ayame-editor.github.io/ayame-spell/\n\
          .SH AUTHORS\n\
          The ayame-spell contributors.\n",
     );

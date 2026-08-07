@@ -40,7 +40,7 @@ stdout:
       ],
       "tool": {
         "driver": {
-          "informationUri": "https://hjosugi.github.io/ayame-spell/",
+          "informationUri": "https://ayame-editor.github.io/ayame-spell/",
           "name": "ayame-spell",
           "rules": [
             {
@@ -50,7 +50,7 @@ stdout:
               "help": {
                 "text": "The correction table recognized the token as a known misspelling. One candidate is safe to apply automatically; several candidates require a choice. Configuration: [corrections].builtin, [corrections].extra, [corrections.words] How to silence: Add the word to [words].ignore, add an identity correction, or use an inline ayame-spell ignore directive. Example: teh → the"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#typo",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#typo",
               "id": "typo",
               "name": "Known misspelling",
               "properties": {
@@ -71,7 +71,7 @@ stdout:
               "help": {
                 "text": "This rule only runs in dictionary mode. Suggestions are edit-distance matches and are never applied without review. Configuration: [check].mode, [words].project, [words].dictionaries, [words].ignore How to silence: Add the intended word with `words add`, include a dictionary, or add it to [words].ignore. Example: recieve → receive"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#unknown-word",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#unknown-word",
               "id": "unknown-word",
               "name": "Unknown dictionary word",
               "properties": {
@@ -92,7 +92,7 @@ stdout:
               "help": {
                 "text": "The token is valid English, but its regional spelling differs from [check].locale. The default any policy accepts both forms. Configuration: [check].locale How to silence: Set locale to any, choose the matching regional policy, add the word to [words].ignore, or use an inline ignore directive. Example: colour → color (en-US)"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#en-variant",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#en-variant",
               "id": "en-variant",
               "name": "English locale variant",
               "properties": {
@@ -113,7 +113,7 @@ stdout:
               "help": {
                 "text": "The checker found both forms of a known pair, a form that conflicts with the configured long-vowel style, or a configured custom variant. Configuration: [japanese].katakana-style, [japanese.variants], [japanese].variant-files How to silence: Use consistency mode, choose long or short style, remove the custom variant, or use an inline ignore directive. Example: サーバ → サーバー"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-variant",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#ja-variant",
               "id": "ja-variant",
               "name": "Japanese notation variant",
               "properties": {
@@ -134,7 +134,7 @@ stdout:
               "help": {
                 "text": "Characters in the fullwidth ASCII letter and digit ranges were found. The suggested halfwidth form is a safe fix. Configuration: [japanese].enabled How to silence: Disable Japanese checks for the applicable file or use an inline ignore directive. Example: ＡＢＣ１２３ → ABC123"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#fullwidth-alnum",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#fullwidth-alnum",
               "id": "fullwidth-alnum",
               "name": "Fullwidth alphanumeric",
               "properties": {
@@ -155,7 +155,7 @@ stdout:
               "help": {
                 "text": "A halfwidth katakana run was found. Dakuten and handakuten are combined in the suggested fullwidth form. Configuration: [japanese].enabled How to silence: Disable Japanese checks for the applicable file or use an inline ignore directive. Example: ｶﾀｶﾅ → カタカナ"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#halfwidth-kana",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#halfwidth-kana",
               "id": "halfwidth-kana",
               "name": "Halfwidth katakana",
               "properties": {
@@ -176,7 +176,7 @@ stdout:
               "help": {
                 "text": "The fullwidth-space policy applies to prose by default and suggests a normal ASCII space as a safe mechanical fix. Configuration: [japanese].fullwidth-space How to silence: Set the fullwidth-space policy to off or restrict it with a file override. Example: 前　後 → 前 後"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#fullwidth-space",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#fullwidth-space",
               "id": "fullwidth-space",
               "name": "Fullwidth space",
               "properties": {
@@ -197,7 +197,7 @@ stdout:
               "help": {
                 "text": "Compatibility characters such as ㎏ and ㎡ can be represented with ordinary letters and symbols, improving search and interoperability. Configuration: [japanese].flag-compatibility How to silence: Disable flag-compatibility or use an inline ignore directive. Example: ㎏ → kg"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-compatibility",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#ja-compatibility",
               "id": "ja-compatibility",
               "name": "Japanese compatibility character",
               "properties": {
@@ -218,7 +218,7 @@ stdout:
               "help": {
                 "text": "The checker compares equivalent number/unit forms within one document and reports only the minority style. Configuration: [japanese].number-consistency How to silence: Disable number-consistency or make the document use one style. Example: 1,000円 / 一〇〇〇円 → 1,000円"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-number-style",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#ja-number-style",
               "id": "ja-number-style",
               "name": "Japanese number-style inconsistency",
               "properties": {
@@ -239,7 +239,7 @@ stdout:
               "help": {
                 "text": "The checker reports the minority forms when 、/。 and ，/． are mixed in one document. Configuration: [japanese].punctuation-consistency How to silence: Disable punctuation-consistency or make the document use one punctuation style. Example: 説明，続き。 → 説明、続き。"
               },
-              "helpUri": "https://hjosugi.github.io/ayame-spell/reference/rules/#ja-punctuation",
+              "helpUri": "https://ayame-editor.github.io/ayame-spell/reference/rules/#ja-punctuation",
               "id": "ja-punctuation",
               "name": "Japanese punctuation inconsistency",
               "properties": {

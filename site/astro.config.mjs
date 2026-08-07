@@ -54,7 +54,7 @@ export default defineConfig({
         "Fast, low-noise spell checking for English and Japanese code and prose.",
       customCss: ["./src/styles/custom.css"],
       editLink: {
-        baseUrl: "https://github.com/hjosugi/ayame-spell/edit/main/site/",
+        baseUrl: "https://github.com/ayame-editor/ayame-spell/edit/main/site/",
       },
       locales: {
         root: {
@@ -70,7 +70,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/hjosugi/ayame-spell",
+          href: "https://github.com/ayame-editor/ayame-spell",
         },
       ],
       components: {

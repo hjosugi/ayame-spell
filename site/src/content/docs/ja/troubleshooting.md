@@ -112,4 +112,4 @@ ayame-spell --format json | jq -c .
 - 人向けまたは JSON の出力
 
 秘密情報と非公開語彙を取り除いてから
-[GitHub issue](https://github.com/hjosugi/ayame-spell/issues)を作成してください。
+[GitHub issue](https://github.com/ayame-editor/ayame-spell/issues)を作成してください。

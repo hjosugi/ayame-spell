@@ -11,8 +11,8 @@ version = "0.5.0"
 edition = "2021"
 rust-version = "1.91"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/hjosugi/ayame-spell"
-homepage = "https://hjosugi.github.io/ayame-spell/"
+repository = "https://github.com/ayame-editor/ayame-spell"
+homepage = "https://ayame-editor.github.io/ayame-spell/"
 authors = ["hjosugi"]
 
 [workspace.dependencies]

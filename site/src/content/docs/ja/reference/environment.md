@@ -7,7 +7,7 @@ description: レジストリの差し替え、プロジェクト検出、XDG 対
 
 | 変数 | 既定値 | 用途 |
 | --- | --- | --- |
-| `AYAME_SPELL_REGISTRY` | `https://hjosugi.github.io/ayame-spell/registry/index.json` | 辞書レジストリのインデックス URL を差し替える。辞書ファイルの URL はこのインデックスからの相対位置。 |
+| `AYAME_SPELL_REGISTRY` | `https://ayame-editor.github.io/ayame-spell/registry/index.json` | 辞書レジストリのインデックス URL を差し替える。辞書ファイルの URL はこのインデックスからの相対位置。 |
 | `AYAME_SPELL_CONFIG_DIR` | OS 標準の設定ディレクトリ | ユーザー共通の `config.toml` と `words.txt` を置くディレクトリを差し替える。 |
 | `AYAME_SPELL_CACHE_DIR` | OS 標準のキャッシュディレクトリ | レジストリ、補完、差分スキャンのキャッシュルートを差し替える。 |
 

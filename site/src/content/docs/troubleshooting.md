@@ -115,4 +115,4 @@ Include:
 - human or JSON output
 
 Remove secrets and private vocabulary before opening a
-[GitHub issue](https://github.com/hjosugi/ayame-spell/issues).
+[GitHub issue](https://github.com/ayame-editor/ayame-spell/issues).

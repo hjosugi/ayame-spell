@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json",
+  "$id": "https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell.json",
   "title": "ayame-spell configuration",
   "description": "Configuration for ayame-spell. Every key is optional and unknown keys are errors.",
   "type": "object",

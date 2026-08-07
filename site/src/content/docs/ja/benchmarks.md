@@ -22,9 +22,9 @@ description: ayame-spell の処理速度、ピークメモリ、比較計測、C
 
 日本語の数字 scan で全 character を materialize せず streaming することで、
 公開済み v0.4.0 基準より中央値を 48.9%短縮し、peak RSS を 82.2%削減しました。
-[生の結果](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-linux-x86_64.json)
+[生の結果](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-31-linux-x86_64.json)
 には、全 sample、command、version、machine 情報、CLI summary を記録しています。
-[全英語辞書の結果](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-dictionary-linux-x86_64.json)
+[全英語辞書の結果](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-31-dictionary-linux-x86_64.json)
 は、配布する15個の英語wordlist（121,003項目）、project list、追加correctionsを
 全て有効にしています。
 
@@ -42,9 +42,9 @@ cache を無効化し、必要な tool では大きな file の上限を引き�
 | textlint | 15.7.1 + spellcheck-tech-word 5.0.0 | >60 s（timeout） | <0.58 MiB/s | 停止時 1003.2 MiB |
 
 生の記録:
-[typos](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-typos-linux-x86_64.json)、
-[cSpell](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-cspell-linux-x86_64.json)、
-[textlint](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-textlint-linux-x86_64.json)。
+[typos](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-30-typos-linux-x86_64.json)、
+[cSpell](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-30-cspell-linux-x86_64.json)、
+[textlint](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-30-textlint-linux-x86_64.json)。
 
 これは end-to-end の処理速度比較であり、正確さの順位ではありません。tool の
 rule set は同等ではなく、typos は corrections table、cSpell は辞書、選択した
@@ -81,7 +81,7 @@ python3 contrib/bench/run_benchmark.py \
 ```
 
 version を固定した比較 command は
-[`contrib/bench/README.md`](https://github.com/hjosugi/ayame-spell/blob/main/contrib/bench/README.md)
+[`contrib/bench/README.md`](https://github.com/ayame-editor/ayame-spell/blob/main/contrib/bench/README.md)
 にあります。Criterion microbenchmark は tokenizer、correction lookup、
 dictionary lookup と suggestion、日本語 consistency を対象にします。
 

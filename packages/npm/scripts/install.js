@@ -83,7 +83,7 @@ async function install() {
   const tag = `v${packageJson.version}`;
   const [target, extension] = releaseTarget();
   const asset = `ayame-spell-${tag}-${target}.${extension}`;
-  const base = `https://github.com/hjosugi/ayame-spell/releases/download/${tag}`;
+  const base = `https://github.com/ayame-editor/ayame-spell/releases/download/${tag}`;
   const temporary = mkdtempSync(join(tmpdir(), "ayame-spell-npm-"));
   try {
     const [archive, sums] = await Promise.all([

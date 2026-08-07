@@ -5,11 +5,11 @@
   "license": "MIT OR Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hjosugi/ayame-spell.git",
+    "url": "git+https://github.com/ayame-editor/ayame-spell.git",
     "directory": "packages/npm"
   },
-  "homepage": "https://hjosugi.github.io/ayame-spell/",
-  "bugs": "https://github.com/hjosugi/ayame-spell/issues",
+  "homepage": "https://ayame-editor.github.io/ayame-spell/",
+  "bugs": "https://github.com/ayame-editor/ayame-spell/issues",
   "type": "module",
   "bin": {
     "ayame-spell": "bin/ayame-spell.js"

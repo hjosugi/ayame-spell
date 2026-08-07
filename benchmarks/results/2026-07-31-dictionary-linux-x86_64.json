@@ -3,7 +3,7 @@
     "/mnt/data/cache/hsugi/xdg/cargo-target/release/ayame-spell",
     "check",
     "--config",
-    "/mnt/data/github.com/hjosugi/ayame-spell/contrib/quality/ayame-spell.toml",
+    "/mnt/data/github.com/ayame-editor/ayame-spell/contrib/quality/ayame-spell.toml",
     "--no-cache",
     "--format",
     "json",

@@ -704,7 +704,7 @@ fn add_elvish_value_completions(script: String) -> anyhow::Result<String> {
 }
 
 const INIT_TEMPLATE: &str = r#"# ayame-spell configuration
-# Reference: https://hjosugi.github.io/ayame-spell/reference/configuration/
+# Reference: https://ayame-editor.github.io/ayame-spell/reference/configuration/
 
 [check]
 # "corrections": flag only known misspellings (near-zero false positives).

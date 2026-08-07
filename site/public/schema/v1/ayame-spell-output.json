@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell-output.json",
+  "$id": "https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell-output.json",
   "title": "ayame-spell JSON Lines record",
   "description": "One line emitted by ayame-spell --format json, schema version 1.",
   "oneOf": [

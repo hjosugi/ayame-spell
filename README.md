@@ -1,8 +1,8 @@
 # 🌸 ayame-spell
 
-[日本語 README](README.ja.md) · [Documentation](https://hjosugi.github.io/ayame-spell/) · [Design notes](DESIGN.md) · [Contributing](CONTRIBUTING.md)
+[日本語 README](README.ja.md) · [Documentation](https://ayame-editor.github.io/ayame-spell/) · [Design notes](DESIGN.md) · [Contributing](CONTRIBUTING.md)
 
-[![CI](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml/badge.svg)](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml)
+[![CI](https://github.com/ayame-editor/ayame-spell/actions/workflows/ci.yml/badge.svg)](https://github.com/ayame-editor/ayame-spell/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/ayame-spell.svg)](https://crates.io/crates/ayame-spell)
 [![docs.rs](https://img.shields.io/docsrs/ayame-spell)](https://docs.rs/ayame-spell)
 [![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/hjosugi.ayame-spell)](https://marketplace.visualstudio.com/items?itemName=hjosugi.ayame-spell)
@@ -50,7 +50,7 @@ in a single fast Rust binary.
 - **Measured** — the reproducible 35 MiB / 400k-line benchmark currently runs
   in 0.82 s (42.83 MiB/s, 121.1 MiB peak RSS). Enabling all 121,003 shipped
   English wordlist entries takes 1.08 s and 129.3 MiB; see the
-  [full environment, memory, and comparison results](https://hjosugi.github.io/ayame-spell/benchmarks/).
+  [full environment, memory, and comparison results](https://ayame-editor.github.io/ayame-spell/benchmarks/).
   No silent truncation, ever: skipped files are counted and reported.
 
 [typos-dict]: https://github.com/crate-ci/typos
@@ -61,15 +61,15 @@ in a single fast Rust binary.
 cargo install ayame-spell           # CLI + LSP server
 curl --proto '=https' --tlsv1.2 -LsSf \
   https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
+npx https://github.com/ayame-editor/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 VS Code: install the **ayame-spell** extension. Platform-specific VSIX builds
-from [GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest)
+from [GitHub Releases](https://github.com/ayame-editor/ayame-spell/releases/latest)
 include the native server, so no Rust installation is required. See the
 [extension guide](editors/vscode/README.md).
 Homebrew, Scoop, PowerShell, Docker, AUR, archives, and checksum details are in
-the [installation guide](https://hjosugi.github.io/ayame-spell/getting-started/).
+the [installation guide](https://ayame-editor.github.io/ayame-spell/getting-started/).
 
 ### Shell completions
 
@@ -136,17 +136,17 @@ that no longer exist.
 
 CI can be as small as `uses: hjosugi/ayame-spell@v0.5.0`; a composite Action,
 pre-commit check/fix hooks, SARIF upload, GitLab, and CircleCI recipes are in the
-[CI guide](https://hjosugi.github.io/ayame-spell/ci/).
+[CI guide](https://ayame-editor.github.io/ayame-spell/ci/).
 
 ## Configuration
 
 `ayame-spell.toml` (or `.ayame-spell.toml`) at the project root, merged
 over the per-user global config `~/.config/ayame-spell/config.toml`.
 All keys are optional; the defaults are what you saw above.
-See the [complete configuration reference](https://hjosugi.github.io/ayame-spell/reference/configuration/)
+See the [complete configuration reference](https://ayame-editor.github.io/ayame-spell/reference/configuration/)
 for every key, default, merge rule, and override precedence rule.
 Editor completion is available through the published
-[JSON Schema](https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json);
+[JSON Schema](https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell.json);
 use `ayame-spell config --validate` to catch unknown keys with suggestions.
 
 ```toml
@@ -216,7 +216,7 @@ ayame-spell:ignore-file        (anywhere in the file)
 ## Dictionary registry
 
 Shared dictionaries are plain text files served from
-[GitHub Pages](https://hjosugi.github.io/ayame-spell/), sha256-verified on
+[GitHub Pages](https://ayame-editor.github.io/ayame-spell/), sha256-verified on
 download and cached in `~/.cache/ayame-spell/`:
 
 ```console

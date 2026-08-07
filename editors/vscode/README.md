@@ -24,7 +24,7 @@ toolchain or separate CLI installation is required.
 Install `hjosugi.ayame-spell` from the VS Code Marketplace or Open VSX after the
 listing is enabled. Until then, download the VSIX matching the machine where the
 extension host runs from the
-[latest GitHub release](https://github.com/hjosugi/ayame-spell/releases/latest):
+[latest GitHub release](https://github.com/ayame-editor/ayame-spell/releases/latest):
 
 | Host                | VSIX target    |
 | ------------------- | -------------- |
@@ -108,7 +108,7 @@ katakana-style = "consistency"
 ```
 
 The full reference is in the
-[project README](https://github.com/hjosugi/ayame-spell#configuration).
+[project README](https://github.com/ayame-editor/ayame-spell#configuration).
 
 ## Diagnostics and troubleshooting
 
@@ -131,13 +131,13 @@ a filesystem.
 ## Development and publishing
 
 See the
-[publishing runbook](https://github.com/hjosugi/ayame-spell/blob/main/editors/vscode/PUBLISHING.md)
+[publishing runbook](https://github.com/ayame-editor/ayame-spell/blob/main/editors/vscode/PUBLISHING.md)
 for local builds, integration tests, platform VSIX packaging, Marketplace/Open
 VSX credentials, and the release checklist. Listing copy and asset inventory
 live in the
-[Marketplace kit](https://github.com/hjosugi/ayame-spell/blob/main/editors/vscode/MARKETPLACE.md).
+[Marketplace kit](https://github.com/ayame-editor/ayame-spell/blob/main/editors/vscode/MARKETPLACE.md).
 
 ## License
 
 MIT OR Apache-2.0. Bundled and derived data notices are in the
-[project NOTICE](https://github.com/hjosugi/ayame-spell/blob/main/NOTICE.md).
+[project NOTICE](https://github.com/ayame-editor/ayame-spell/blob/main/NOTICE.md).

@@ -40,7 +40,7 @@ the machine running ayame-spell are trust boundaries controlled by the user.
 
 ## Reporting a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/hjosugi/ayame-spell/security/advisories/new).
+Use [GitHub private vulnerability reporting](https://github.com/ayame-editor/ayame-spell/security/advisories/new).
 Do not open a public issue for an undisclosed vulnerability.
 
 Include the affected version, operating system, impact, minimal reproduction,
@@ -62,6 +62,6 @@ effort です。ayame-spell はソース、設定、辞書を読み、`fix` は�
 自分で運用するレジストリを `AYAME_SPELL_REGISTRY` に指定してください。
 
 未公開の脆弱性は
-[GitHub の非公開 vulnerability report](https://github.com/hjosugi/ayame-spell/security/advisories/new)
+[GitHub の非公開 vulnerability report](https://github.com/ayame-editor/ayame-spell/security/advisories/new)
 で報告し、public issue には投稿しないでください。対象 version、OS、影響、
 最小再現、既知の回避策を含め、無関係な個人情報と認証情報は除いてください。

@@ -57,7 +57,7 @@ docs/guide.md:4:3: recieve -> receive
 削除、改名、型変更、意味変更では version 2 に上げます。
 
 機械可読スキーマは
-[`schema/v1/ayame-spell-output.json`](https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell-output.json)
+[`schema/v1/ayame-spell-output.json`](https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell-output.json)
 で公開します。
 
 指摘レコードのフィールド:

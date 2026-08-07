@@ -12,18 +12,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hjosugi/ayame-spell",
+    "url": "https://github.com/ayame-editor/ayame-spell",
     "directory": "editors/vscode"
   },
-  "homepage": "https://hjosugi.github.io/ayame-spell/",
+  "homepage": "https://ayame-editor.github.io/ayame-spell/",
   "bugs": {
-    "url": "https://github.com/hjosugi/ayame-spell/issues"
+    "url": "https://github.com/ayame-editor/ayame-spell/issues"
   },
   "qna": "marketplace",
   "badges": [
     {
-      "url": "https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml/badge.svg",
-      "href": "https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml",
+      "url": "https://github.com/ayame-editor/ayame-spell/actions/workflows/ci.yml/badge.svg",
+      "href": "https://github.com/ayame-editor/ayame-spell/actions/workflows/ci.yml",
       "description": "CI status"
     }
   ],

@@ -13,8 +13,8 @@ and Open VSX listings.
 | Publisher / namespace | `hjosugi`                                       |
 | Categories            | Linters, Programming Languages, Other           |
 | License               | MIT OR Apache-2.0                               |
-| Support               | <https://github.com/hjosugi/ayame-spell/issues> |
-| Homepage              | <https://hjosugi.github.io/ayame-spell/>        |
+| Support               | <https://github.com/ayame-editor/ayame-spell/issues> |
+| Homepage              | <https://ayame-editor.github.io/ayame-spell/>        |
 
 ## Short description
 

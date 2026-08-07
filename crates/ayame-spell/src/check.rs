@@ -1341,7 +1341,7 @@ fn sarif_report(reports: &[FileReport]) -> serde_json::Value {
                     )
                 },
                 "helpUri": format!(
-                    "https://hjosugi.github.io/ayame-spell/reference/rules/#{}",
+                    "https://ayame-editor.github.io/ayame-spell/reference/rules/#{}",
                     kind.code()
                 ),
                 "properties": {
@@ -1388,7 +1388,7 @@ fn sarif_report(reports: &[FileReport]) -> serde_json::Value {
             "tool": {
                 "driver": {
                     "name": "ayame-spell",
-                    "informationUri": "https://hjosugi.github.io/ayame-spell/",
+                    "informationUri": "https://ayame-editor.github.io/ayame-spell/",
                     "version": env!("CARGO_PKG_VERSION"),
                     "rules": rules
                 }

@@ -59,7 +59,7 @@ new `kind` values may be added. A removal, rename, type change, or semantic
 change requires version 2.
 
 The machine-readable schema is published at
-[`schema/v1/ayame-spell-output.json`](https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell-output.json).
+[`schema/v1/ayame-spell-output.json`](https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell-output.json).
 
 Issue fields:
 

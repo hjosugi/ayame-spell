@@ -7,7 +7,7 @@ description: Registry overrides, project discovery, and XDG-compatible config an
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `AYAME_SPELL_REGISTRY` | `https://hjosugi.github.io/ayame-spell/registry/index.json` | Replace the dictionary registry index URL. Dictionary file URLs are resolved relative to this index. |
+| `AYAME_SPELL_REGISTRY` | `https://ayame-editor.github.io/ayame-spell/registry/index.json` | Replace the dictionary registry index URL. Dictionary file URLs are resolved relative to this index. |
 | `AYAME_SPELL_CONFIG_DIR` | Platform config directory | Replace the directory containing the global `config.toml` and `words.txt`. |
 | `AYAME_SPELL_CACHE_DIR` | Platform cache directory | Replace the root for registry, completion, and incremental scan caches. |
 

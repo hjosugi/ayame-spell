@@ -6,7 +6,7 @@ index 0000000..bb8d7cb
 @@ -0,0 +1,36 @@
 +---@brief
 +---
-+--- https://github.com/hjosugi/ayame-spell
++--- https://github.com/ayame-editor/ayame-spell
 +---
 +--- Fast, low-noise English and Japanese spell checking for code and prose.
 +--- Install the `ayame-spell` binary and enable the server with:

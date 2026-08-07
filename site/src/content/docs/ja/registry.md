@@ -111,7 +111,7 @@ ayame-spell dict --registry https://docs.example.com/spelling/index.json list
 
 ファイル形式、サイズ制限、versionの不変性、由来、ライセンス、pull requestの
 チェックリストは
-[辞書コントリビューションガイド](https://github.com/hjosugi/ayame-spell/blob/main/CONTRIBUTING-dictionaries.ja.md)
+[辞書コントリビューションガイド](https://github.com/ayame-editor/ayame-spell/blob/main/CONTRIBUTING-dictionaries.ja.md)
 を参照します。ayame-spell のチェックアウトで次を行います。
 
 1. UTF-8 データを `site/registry/dicts/` に追加する。

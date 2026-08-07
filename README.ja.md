@@ -1,8 +1,8 @@
 # 🌸 ayame-spell
 
-[English README](README.md) · [ドキュメント](https://hjosugi.github.io/ayame-spell/ja/) · [設計メモ](DESIGN.ja.md) · [コントリビューション](CONTRIBUTING.ja.md)
+[English README](README.md) · [ドキュメント](https://ayame-editor.github.io/ayame-spell/ja/) · [設計メモ](DESIGN.ja.md) · [コントリビューション](CONTRIBUTING.ja.md)
 
-[![CI](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml/badge.svg)](https://github.com/hjosugi/ayame-spell/actions/workflows/ci.yml)
+[![CI](https://github.com/ayame-editor/ayame-spell/actions/workflows/ci.yml/badge.svg)](https://github.com/ayame-editor/ayame-spell/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/ayame-spell.svg)](https://crates.io/crates/ayame-spell)
 [![docs.rs](https://img.shields.io/docsrs/ayame-spell)](https://docs.rs/ayame-spell)
 [![VS Marketplace](https://img.shields.io/visual-studio-marketplace/v/hjosugi.ayame-spell)](https://marketplace.visualstudio.com/items?itemName=hjosugi.ayame-spell)
@@ -44,7 +44,7 @@ ayame-spell はこの3つの良いところを1つの Rust バイナリに統合
 - **実測可能** — 再現可能な 35 MiB / 40 万行ベンチマークは現在 0.82 秒
   （42.83 MiB/s、peak RSS 121.1 MiB）。配布する英語wordlist 121,003項目を
   全て有効にしても1.08秒、129.3 MiBです。
-  [環境・メモリ・比較結果](https://hjosugi.github.io/ayame-spell/ja/benchmarks/)
+  [環境・メモリ・比較結果](https://ayame-editor.github.io/ayame-spell/ja/benchmarks/)
   を公開しています。
   スキップしたファイルは必ず件数報告します(黙って打ち切らない)。
 
@@ -54,15 +54,15 @@ ayame-spell はこの3つの良いところを1つの Rust バイナリに統合
 cargo install ayame-spell           # CLI + LSP サーバ
 curl --proto '=https' --tlsv1.2 -LsSf \
   https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
+npx https://github.com/ayame-editor/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 VS Code: **ayame-spell** 拡張をインストールしてください。
-[GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest) の
+[GitHub Releases](https://github.com/ayame-editor/ayame-spell/releases/latest) の
 プラットフォーム別 VSIX にはネイティブサーバーが同梱されるため、Rust の
 インストールは不要です。詳しくは[拡張ガイド](editors/vscode/README.md)を参照してください。
 Homebrew、Scoop、PowerShell、Docker、AUR、archive、checksum の手順は
-[インストールガイド](https://hjosugi.github.io/ayame-spell/ja/getting-started/)
+[インストールガイド](https://ayame-editor.github.io/ayame-spell/ja/getting-started/)
 にまとめています。
 
 ### シェル補完
@@ -126,7 +126,7 @@ ignore リストへ一括で振り分けられます。VS Code では
 
 プロジェクトルートの `ayame-spell.toml`(または `.ayame-spell.toml`)。
 ユーザー全体の設定 `~/.config/ayame-spell/config.toml` に上書きマージされます。
-[完全な設定リファレンス](https://hjosugi.github.io/ayame-spell/ja/reference/configuration/)
+[完全な設定リファレンス](https://ayame-editor.github.io/ayame-spell/ja/reference/configuration/)
 に、全キー、既定値、マージ規則、上書きの優先順位を掲載しています。
 
 ```toml
@@ -185,7 +185,7 @@ ayame-spell:ignore-file        (ファイル内のどこかに書く)
 
 ## 共有辞書レジストリ
 
-辞書は [GitHub Pages](https://hjosugi.github.io/ayame-spell/) から配信され、
+辞書は [GitHub Pages](https://ayame-editor.github.io/ayame-spell/) から配信され、
 ダウンロード時に sha256 検証、`~/.cache/ayame-spell/` にキャッシュされます。
 
 ```console

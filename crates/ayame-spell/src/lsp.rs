@@ -486,7 +486,7 @@ impl Server {
             .is_some_and(|locale| locale.to_ascii_lowercase().starts_with("ja"));
         let info = issue.kind.info(japanese);
         let docs = format!(
-            "https://hjosugi.github.io/ayame-spell/{}/reference/rules/#{}",
+            "https://ayame-editor.github.io/ayame-spell/{}/reference/rules/#{}",
             if japanese { "ja" } else { "" },
             issue.kind.code()
         )

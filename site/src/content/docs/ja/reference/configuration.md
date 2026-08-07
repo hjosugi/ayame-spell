@@ -27,7 +27,7 @@ description: ayame-spell の全設定キー、既定値、マージ規則、上�
 設定を表示できます。
 
 バージョン固定の JSON Schema は
-[`schema/v1/ayame-spell.json`](https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json)
+[`schema/v1/ayame-spell.json`](https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell.json)
 で公開します。同じスキーマは `ayame-spell config --schema` でオフライン出力
 でき、検出した設定または指定ファイルを次のように検証できます。
 
@@ -40,7 +40,7 @@ ayame-spell config --validate config/strict.toml
 扱えるエディターでは、カタログによる自動検出を待たず明示できます。
 
 ```toml
-#:schema https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json
+#:schema https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell.json
 ```
 
 分離した自動処理やポータブル環境では、次の環境変数で OS の既定場所を

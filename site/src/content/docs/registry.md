@@ -111,7 +111,7 @@ The index schema is:
 ## Contribute a dictionary
 
 Follow the complete
-[dictionary contribution guide](https://github.com/hjosugi/ayame-spell/blob/main/CONTRIBUTING-dictionaries.md)
+[dictionary contribution guide](https://github.com/ayame-editor/ayame-spell/blob/main/CONTRIBUTING-dictionaries.md)
 for formats, size limits, version immutability, provenance, licensing, and the
 pull-request checklist. In a checkout of ayame-spell:
 

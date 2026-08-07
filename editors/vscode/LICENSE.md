@@ -5,4 +5,4 @@ Licensed under either of
 
 at your option.
 
-https://github.com/hjosugi/ayame-spell
+https://github.com/ayame-editor/ayame-spell

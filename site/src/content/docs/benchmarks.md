@@ -23,9 +23,9 @@ On 2026-07-31, the post-0.4.0 release-mode build checked the complete 35 MiB /
 Streaming the Japanese number scan instead of materializing every character
 made the median 48.9% faster and reduced peak RSS by 82.2% from the published
 v0.4.0 reference. The
-[raw result](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-linux-x86_64.json)
+[raw result](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-31-linux-x86_64.json)
 records every sample, command, version, machine field, and CLI summary. The
-[full-dictionary result](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-31-dictionary-linux-x86_64.json)
+[full-dictionary result](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-31-dictionary-linux-x86_64.json)
 uses all 15 shipped English wordlists (121,003 entries) plus the project list
 and extra corrections.
 
@@ -43,9 +43,9 @@ and each completed tool ran three times.
 | textlint | 15.7.1 + spellcheck-tech-word 5.0.0 | >60 s (timeout) | <0.58 MiB/s | 1003.2 MiB at stop |
 
 Raw records:
-[typos](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-typos-linux-x86_64.json),
-[cSpell](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-cspell-linux-x86_64.json), and
-[textlint](https://github.com/hjosugi/ayame-spell/blob/main/benchmarks/results/2026-07-30-textlint-linux-x86_64.json).
+[typos](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-30-typos-linux-x86_64.json),
+[cSpell](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-30-cspell-linux-x86_64.json), and
+[textlint](https://github.com/ayame-editor/ayame-spell/blob/main/benchmarks/results/2026-07-30-textlint-linux-x86_64.json).
 
 This is an end-to-end throughput comparison, not a correctness ranking.
 The tools do not implement equivalent rule sets: typos uses a corrections
@@ -84,7 +84,7 @@ python3 contrib/bench/run_benchmark.py \
 ```
 
 The exact pinned comparison commands are in
-[`contrib/bench/README.md`](https://github.com/hjosugi/ayame-spell/blob/main/contrib/bench/README.md).
+[`contrib/bench/README.md`](https://github.com/ayame-editor/ayame-spell/blob/main/contrib/bench/README.md).
 Criterion microbenchmarks cover tokenization, correction lookup, dictionary
 lookup and suggestions, and Japanese consistency:
 

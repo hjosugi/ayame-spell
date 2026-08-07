@@ -54,7 +54,7 @@ def formula(tag: str, checksums: dict[str, str]) -> str:
     sums = {key: checksum(checksums, name) for key, name in names.items()}
     return f'''class AyameSpell < Formula
   desc "Fast, low-noise English and Japanese spell checker"
-  homepage "https://hjosugi.github.io/ayame-spell/"
+  homepage "https://ayame-editor.github.io/ayame-spell/"
   version "{version}"
   license any_of: ["MIT", "Apache-2.0"]
 
@@ -99,7 +99,7 @@ def scoop(tag: str, checksums: dict[str, str]) -> str:
     manifest = {
         "version": version,
         "description": "Fast, low-noise English and Japanese spell checker",
-        "homepage": "https://hjosugi.github.io/ayame-spell/",
+        "homepage": "https://ayame-editor.github.io/ayame-spell/",
         "license": "MIT OR Apache-2.0",
         "architecture": {
             "64bit": {
@@ -136,7 +136,7 @@ pkgver={version}
 pkgrel=1
 pkgdesc="Fast, low-noise English and Japanese spell checker"
 arch=('x86_64' 'aarch64')
-url="https://hjosugi.github.io/ayame-spell/"
+url="https://ayame-editor.github.io/ayame-spell/"
 license=('MIT' 'Apache-2.0')
 depends=('gcc-libs' 'glibc')
 provides=("ayame-spell=$pkgver")
@@ -176,7 +176,7 @@ def srcinfo(tag: str, checksums: dict[str, str]) -> str:
 \tpkgdesc = Fast, low-noise English and Japanese spell checker
 \tpkgver = {version}
 \tpkgrel = 1
-\turl = https://hjosugi.github.io/ayame-spell/
+\turl = https://ayame-editor.github.io/ayame-spell/
 \tarch = x86_64
 \tarch = aarch64
 \tlicense = MIT

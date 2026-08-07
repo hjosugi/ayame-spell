@@ -20,7 +20,7 @@ use ayame_spell_core::registry_lock::{split_reference, LockedDictionary, Registr
 
 use crate::words::{add_to_string_array, remove_from_string_array, replace_registry_reference};
 
-const DEFAULT_REGISTRY: &str = "https://hjosugi.github.io/ayame-spell/registry/index.json";
+const DEFAULT_REGISTRY: &str = "https://ayame-editor.github.io/ayame-spell/registry/index.json";
 const INDEX_TTL: Duration = Duration::from_secs(24 * 60 * 60);
 
 #[derive(Subcommand)]

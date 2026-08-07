@@ -17,7 +17,7 @@ on the editor process's `PATH`, then open a folder containing
 ## VS Code
 
 Install a platform-specific VSIX from
-[GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest). It
+[GitHub Releases](https://github.com/ayame-editor/ayame-spell/releases/latest). It
 includes the native server, so a separate Cargo installation is unnecessary.
 
 1. Download the VSIX for your platform.
@@ -25,7 +25,7 @@ includes the native server, so a separate Cargo installation is unnecessary.
 3. Open a project folder.
 
 Use **ayame-spell: Review Flagged Words** for bulk triage. See the
-[extension README](https://github.com/hjosugi/ayame-spell/tree/main/editors/vscode)
+[extension README](https://github.com/ayame-editor/ayame-spell/tree/main/editors/vscode)
 for server-path and initialization-option settings.
 
 ## Neovim 0.11+

@@ -469,7 +469,7 @@ fn config_schema_and_validation_cover_editor_workflows() {
     let document: Value = serde_json::from_slice(&schema.stdout).unwrap();
     assert_eq!(
         document["$id"],
-        "https://hjosugi.github.io/ayame-spell/schema/v1/ayame-spell.json"
+        "https://ayame-editor.github.io/ayame-spell/schema/v1/ayame-spell.json"
     );
     assert_eq!(
         document["properties"]["japanese"]["properties"]["katakana-style"]["default"],

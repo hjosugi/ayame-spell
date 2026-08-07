@@ -23,18 +23,18 @@ Release-specific Homebrew and Scoop manifests are attached to each release:
 
 ```sh
 brew install --formula \
-  https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.rb
+  https://github.com/ayame-editor/ayame-spell/releases/latest/download/ayame-spell.rb
 ```
 
 ```powershell
-scoop install https://github.com/hjosugi/ayame-spell/releases/latest/download/ayame-spell.json
+scoop install https://github.com/ayame-editor/ayame-spell/releases/latest/download/ayame-spell.json
 ```
 
 Node projects can run the release-attached, checksum-verifying native wrapper
 without a registry account:
 
 ```sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
+npx https://github.com/ayame-editor/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 The shorter `npx ayame-spell check .` command will become available when the
@@ -49,7 +49,7 @@ docker run --rm -v "$PWD:/work" -w /work \
 
 An x86_64/aarch64 `ayame-spell-bin` `PKGBUILD` and matching `.SRCINFO` are
 attached to each release for AUR maintainers and direct `makepkg -si` use. See the
-[distribution source](https://github.com/hjosugi/ayame-spell/tree/main/packaging)
+[distribution source](https://github.com/ayame-editor/ayame-spell/tree/main/packaging)
 for the reproducible manifest generator.
 
 ## Install with Rust
@@ -62,7 +62,7 @@ ayame-spell --version
 ```
 
 You can also download the archive for your platform from
-[GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest),
+[GitHub Releases](https://github.com/ayame-editor/ayame-spell/releases/latest),
 put `ayame-spell` (or `ayame-spell.exe`) on `PATH`, and optionally install a
 shell completion from the archive's `completions/` directory.
 

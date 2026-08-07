@@ -16,7 +16,7 @@ ayame-spell lsp --stdio
 
 ## VS Code
 
-[GitHub Releases](https://github.com/hjosugi/ayame-spell/releases/latest) から
+[GitHub Releases](https://github.com/ayame-editor/ayame-spell/releases/latest) から
 環境に合う VSIX をインストールします。ネイティブサーバーを同梱しているため、
 Cargo による別インストールは不要です。
 
@@ -26,7 +26,7 @@ Cargo による別インストールは不要です。
 
 一括整理には **ayame-spell: Review Flagged Words** を使います。サーバーパスや
 初期化オプションは
-[拡張 README](https://github.com/hjosugi/ayame-spell/tree/main/editors/vscode)
+[拡張 README](https://github.com/ayame-editor/ayame-spell/tree/main/editors/vscode)
 を参照してください。
 
 ## Neovim 0.11 以降

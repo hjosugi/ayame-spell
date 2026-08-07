@@ -1,4 +1,4 @@
-//! Core engine for [ayame-spell](https://github.com/hjosugi/ayame-spell):
+//! Core engine for [ayame-spell](https://github.com/ayame-editor/ayame-spell):
 //! a fast, low-noise spell checker for code and prose, for English and
 //! Japanese.
 //!
