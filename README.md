@@ -134,7 +134,7 @@ For an existing repository, run `ayame-spell baseline .` and commit
 `check --no-baseline` audits everything and `baseline --prune` removes entries
 that no longer exist.
 
-CI can be as small as `uses: hjosugi/ayame-spell@v0.5.0`; a composite Action,
+CI can be as small as `uses: ayame-editor/ayame-spell@v0.5.0`; a composite Action,
 pre-commit check/fix hooks, SARIF upload, GitLab, and CircleCI recipes are in the
 [CI guide](https://ayame-editor.github.io/ayame-spell/ci/).
 

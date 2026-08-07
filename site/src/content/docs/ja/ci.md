@@ -14,7 +14,7 @@ ayame-spell は指摘が残っていると終了コード `1` を返すため、
 
 ```yaml
       - uses: actions/checkout@v6
-      - uses: hjosugi/ayame-spell@v0.5.0
+      - uses: ayame-editor/ayame-spell@v0.5.0
         with:
           version: 0.5.0
 ```

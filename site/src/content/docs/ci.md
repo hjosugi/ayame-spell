@@ -14,7 +14,7 @@ version:
 
 ```yaml
       - uses: actions/checkout@v6
-      - uses: hjosugi/ayame-spell@v0.5.0
+      - uses: ayame-editor/ayame-spell@v0.5.0
         with:
           version: 0.5.0
 ```
