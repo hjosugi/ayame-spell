@@ -54,7 +54,7 @@ ayame-spell はこの3つの良いところを1つの Rust バイナリに統合
 cargo install ayame-spell           # CLI + LSP サーバ
 curl --proto '=https' --tlsv1.2 -LsSf \
   https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.4.0/ayame-spell-npm-v0.4.0.tgz check .
+npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 VS Code: **ayame-spell** 拡張をインストールしてください。

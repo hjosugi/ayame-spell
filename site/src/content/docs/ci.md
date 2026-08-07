@@ -14,9 +14,9 @@ version:
 
 ```yaml
       - uses: actions/checkout@v6
-      - uses: hjosugi/ayame-spell@v0.4.0
+      - uses: hjosugi/ayame-spell@v0.5.0
         with:
-          version: 0.4.0
+          version: 0.5.0
 ```
 
 It downloads the exact checksum-verified GitHub Release and emits native GitHub
@@ -92,7 +92,7 @@ The repository exports both checking and manual fixing hooks:
 ```yaml
 repos:
   - repo: https://github.com/hjosugi/ayame-spell
-    rev: v0.4.0
+    rev: v0.5.0
     hooks:
       - id: ayame-spell
 ```

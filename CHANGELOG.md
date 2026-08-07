@@ -7,6 +7,8 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-07
+
 ### Added
 
 - End-to-end dictionary quality fixtures covering every shipped English
@@ -160,7 +162,8 @@ and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Initial Rust CLI, spell-checking engine, language server, dictionary
   registry, Japanese notation checks, and VS Code language client.
 
-[Unreleased]: https://github.com/hjosugi/ayame-spell/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/hjosugi/ayame-spell/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/hjosugi/ayame-spell/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/hjosugi/ayame-spell/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/hjosugi/ayame-spell/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/hjosugi/ayame-spell/compare/v0.2.0...v0.3.0

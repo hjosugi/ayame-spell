@@ -61,7 +61,7 @@ in a single fast Rust binary.
 cargo install ayame-spell           # CLI + LSP server
 curl --proto '=https' --tlsv1.2 -LsSf \
   https://raw.githubusercontent.com/hjosugi/ayame-spell/main/install.sh | sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.4.0/ayame-spell-npm-v0.4.0.tgz check .
+npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 VS Code: install the **ayame-spell** extension. Platform-specific VSIX builds
@@ -134,7 +134,7 @@ For an existing repository, run `ayame-spell baseline .` and commit
 `check --no-baseline` audits everything and `baseline --prune` removes entries
 that no longer exist.
 
-CI can be as small as `uses: hjosugi/ayame-spell@v0.4.0`; a composite Action,
+CI can be as small as `uses: hjosugi/ayame-spell@v0.5.0`; a composite Action,
 pre-commit check/fix hooks, SARIF upload, GitLab, and CircleCI recipes are in the
 [CI guide](https://hjosugi.github.io/ayame-spell/ci/).
 

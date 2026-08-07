@@ -34,7 +34,7 @@ Node projects can run the release-attached, checksum-verifying native wrapper
 without a registry account:
 
 ```sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.4.0/ayame-spell-npm-v0.4.0.tgz check .
+npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 The shorter `npx ayame-spell check .` command will become available when the
@@ -44,7 +44,7 @@ For CI containers:
 
 ```sh
 docker run --rm -v "$PWD:/work" -w /work \
-  ghcr.io/hjosugi/ayame-spell:0.4.0 check .
+  ghcr.io/hjosugi/ayame-spell:0.5.0 check .
 ```
 
 An x86_64/aarch64 `ayame-spell-bin` `PKGBUILD` and matching `.SRCINFO` are

@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 rust-version = "1.91"
 license = "MIT OR Apache-2.0"
@@ -16,7 +16,7 @@ homepage = "https://hjosugi.github.io/ayame-spell/"
 authors = ["hjosugi"]
 
 [workspace.dependencies]
-ayame-spell-core = { version = "0.4.0", path = "crates/ayame-spell-core" }
+ayame-spell-core = { version = "0.5.0", path = "crates/ayame-spell-core" }
 
 anyhow = "1"
 # Exact pins below keep the declared MSRV. Later releases that raise their MSRV

@@ -14,9 +14,9 @@ ayame-spell は指摘が残っていると終了コード `1` を返すため、
 
 ```yaml
       - uses: actions/checkout@v6
-      - uses: hjosugi/ayame-spell@v0.4.0
+      - uses: hjosugi/ayame-spell@v0.5.0
         with:
-          version: 0.4.0
+          version: 0.5.0
 ```
 
 指定した GitHub Release を checksum 検証して導入し、GitHub の注釈を出力します。
@@ -92,7 +92,7 @@ ayame-spell check . --format brief
 ```yaml
 repos:
   - repo: https://github.com/hjosugi/ayame-spell
-    rev: v0.4.0
+    rev: v0.5.0
     hooks:
       - id: ayame-spell
 ```

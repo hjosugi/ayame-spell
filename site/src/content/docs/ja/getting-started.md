@@ -34,7 +34,7 @@ Node project では registry account なしで、release 添付の checksum 検�
 native wrapper を利用できます。
 
 ```sh
-npx https://github.com/hjosugi/ayame-spell/releases/download/v0.4.0/ayame-spell-npm-v0.4.0.tgz check .
+npx https://github.com/hjosugi/ayame-spell/releases/download/v0.5.0/ayame-spell-npm-v0.5.0.tgz check .
 ```
 
 同じ wrapper を npm に公開後は、短い `npx ayame-spell check .` も利用できます。
@@ -43,7 +43,7 @@ CI 用 container は次のとおりです。
 
 ```sh
 docker run --rm -v "$PWD:/work" -w /work \
-  ghcr.io/hjosugi/ayame-spell:0.4.0 check .
+  ghcr.io/hjosugi/ayame-spell:0.5.0 check .
 ```
 
 各 release には AUR maintainer と直接の `makepkg -si` 用に、x86_64/aarch64
