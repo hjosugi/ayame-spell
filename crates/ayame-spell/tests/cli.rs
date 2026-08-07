@@ -794,9 +794,20 @@ impl RegistryServer {
                         stream
                             .set_read_timeout(Some(Duration::from_secs(2)))
                             .unwrap();
-                        let mut request = [0_u8; 4096];
-                        let size = stream.read(&mut request).unwrap_or(0);
-                        let request_text = String::from_utf8_lossy(&request[..size]);
+                        // Read until the end of the headers. A single read()
+                        // is not enough: the client is free to split the
+                        // request across segments, and a partial first line
+                        // parses as the wrong path and answers 404.
+                        let mut request = Vec::new();
+                        let mut chunk = [0_u8; 1024];
+                        while !request.windows(4).any(|window| window == b"\r\n\r\n") {
+                            match stream.read(&mut chunk) {
+                                Ok(0) => break,
+                                Ok(read) => request.extend_from_slice(&chunk[..read]),
+                                Err(_) => break,
+                            }
+                        }
+                        let request_text = String::from_utf8_lossy(&request);
                         let path = request_text
                             .lines()
                             .next()
