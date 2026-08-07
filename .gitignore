@@ -12,3 +12,9 @@ out/
 /site/public/registry/
 .DS_Store
 /graphify-out/
+.claude/skills/graphify/
+.claude/settings.local.json
+.copilot/skills/graphify/
+.codex/skills/graphify/
+.codex/hooks.json
+graphify-out/
