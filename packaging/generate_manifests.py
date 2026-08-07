@@ -8,7 +8,7 @@ import json
 import re
 from pathlib import Path
 
-REPOSITORY = "hjosugi/ayame-spell"
+REPOSITORY = "ayame-editor/ayame-spell"
 TARGETS = {
     "linux-x64": ("x86_64-unknown-linux-gnu", "tar.gz"),
     "linux-arm64": ("aarch64-unknown-linux-gnu", "tar.gz"),

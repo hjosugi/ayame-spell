@@ -21,7 +21,7 @@ The release workflow uses npm trusted publishing from
 bootstrap. Before setting the repository variable `PUBLISH_NPM=true`, the
 repository owner must publish the package once if it does not exist, then
 configure its npm trusted publisher as GitHub Actions repository
-`hjosugi/ayame-spell` with workflow filename `release.yml`, allowing
+`ayame-editor/ayame-spell` with workflow filename `release.yml`, allowing
 `npm publish`. Trusted publishing adds provenance automatically.
 
 Those npm account and policy operations are intentionally not automated here.
