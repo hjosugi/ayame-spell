@@ -791,6 +791,15 @@ impl RegistryServer {
             while !thread_stop.load(Ordering::Relaxed) {
                 match listener.accept() {
                     Ok((mut stream, _)) => {
+                        // The listener is non-blocking so this loop can poll
+                        // the stop flag, but BSD-derived platforms hand that
+                        // flag to the accepted socket too, and a read timeout
+                        // means nothing on a non-blocking socket. On macOS the
+                        // first read then returned WouldBlock before the
+                        // request had arrived, and the empty request parsed as
+                        // path "/" and answered 404. Put the connection back
+                        // into blocking mode so the timeout below bounds it.
+                        stream.set_nonblocking(false).unwrap();
                         stream
                             .set_read_timeout(Some(Duration::from_secs(2)))
                             .unwrap();
