@@ -13,7 +13,7 @@ The repository includes a composite Action. Pin the release and checker
 version:
 
 ```yaml
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ayame-editor/ayame-spell@v0.5.0
         with:
           version: 0.5.0
@@ -37,7 +37,7 @@ jobs:
   ayame-spell:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo install --locked ayame-spell

@@ -9,6 +9,11 @@ import re
 from pathlib import Path
 
 REPOSITORY = "ayame-editor/ayame-spell"
+
+# AUR expects this content in a file called `.SRCINFO`, but GitHub renames a
+# dot-leading release asset to `default.SRCINFO`. Publish an unambiguous name
+# instead and document the rename.
+SRCINFO_ASSET = "ayame-spell-bin.SRCINFO"
 TARGETS = {
     "linux-x64": ("x86_64-unknown-linux-gnu", "tar.gz"),
     "linux-arm64": ("aarch64-unknown-linux-gnu", "tar.gz"),
@@ -202,7 +207,10 @@ def main() -> None:
     (args.output_dir / "ayame-spell.rb").write_text(formula(tag, checksums))
     (args.output_dir / "ayame-spell.json").write_text(scoop(tag, checksums))
     (args.output_dir / "PKGBUILD").write_text(pkgbuild(tag, checksums))
-    (args.output_dir / ".SRCINFO").write_text(srcinfo(tag, checksums))
+    # Not named `.SRCINFO`: GitHub renames a dot-leading release asset to
+    # `default.SRCINFO`, so publish an explicit name and let the consumer
+    # save it as `.SRCINFO` next to the PKGBUILD.
+    (args.output_dir / SRCINFO_ASSET).write_text(srcinfo(tag, checksums))
 
 
 if __name__ == "__main__":

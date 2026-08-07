@@ -277,8 +277,13 @@ jobs:
           grep -F 'pkgver=9.8.7' "$RUNNER_TEMP/manifests/PKGBUILD"
           grep -F "arch=('x86_64' 'aarch64')" \
             "$RUNNER_TEMP/manifests/PKGBUILD"
-          grep -F 'pkgver = 9.8.7' "$RUNNER_TEMP/manifests/.SRCINFO"
-          grep -F 'arch = aarch64' "$RUNNER_TEMP/manifests/.SRCINFO"
+          grep -F 'pkgver = 9.8.7' \
+            "$RUNNER_TEMP/manifests/ayame-spell-bin.SRCINFO"
+          grep -F 'arch = aarch64' \
+            "$RUNNER_TEMP/manifests/ayame-spell-bin.SRCINFO"
+          # A dot-leading asset is renamed to `default.SRCINFO` on upload, so
+          # the generated name must stay something the release can publish.
+          test ! -e "$RUNNER_TEMP/manifests/.SRCINFO"
 
   container:
     runs-on: ubuntu-latest

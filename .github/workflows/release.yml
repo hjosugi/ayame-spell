@@ -190,7 +190,7 @@ jobs:
             release-manifests/ayame-spell.rb \
             release-manifests/ayame-spell.json \
             release-manifests/PKGBUILD \
-            release-manifests/.SRCINFO \
+            release-manifests/ayame-spell-bin.SRCINFO \
             release-manifests/install.sh \
             release-manifests/install.ps1 \
             "release-manifests/ayame-spell-npm-${GITHUB_REF_NAME}.tgz" \
